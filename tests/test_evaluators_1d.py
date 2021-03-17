@@ -13,12 +13,14 @@ n_events = 1000
 expected_events = n_events * normed_gauss_pdf
 data_points = sps.norm.rvs(size=1000)
 
+
 from GOFevaluation import binned_poisson_gof
 from GOFevaluation import chi2_gof
 
 
-evaluator = GOFevaluation.evaluators_1d(expected_events=expected_events,
-        data_points=data_points,
+evaluator = GOFevaluation.evaluators_1d(data=data_points,
+        pdf=normed_gauss_pdf,
+        nevents_expected=n_events,
         bin_edges=bin_edges)
 results = evaluator.calculate_gof_values()
 print(results)
