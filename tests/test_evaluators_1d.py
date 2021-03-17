@@ -25,5 +25,6 @@ evaluator = GOFevaluation.evaluators_1d(data=data_points,
 results = evaluator.calculate_gof_values()
 print(results)
 
-#  test = GOFevaluation.kstest_gof(data=data_points, interpolated_cdf=expected_events)
+test = GOFevaluation.kstest_gof(data=data_points, pdf=normed_gauss_pdf, nevents_expected=n_events, bin_edges=bin_edges)
+test.calculate_gof()
 

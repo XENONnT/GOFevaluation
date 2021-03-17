@@ -1,6 +1,7 @@
 import scipy.stats as sps
 import numpy as np
 from collections import OrderedDict
+from scipy.interpolate import interp1d
 from GOFevaluation import test_statistics
 
 
@@ -20,7 +21,8 @@ class binned_poisson_gof(test_statistics):
         """
         TODO: Docstring needs to go here
         """
-        value = sps.poisson(self.expected_events).logpmf(self.binned_data).sum()
+        value = sps.poisson(self.expected_events).logpmf(
+            self.binned_data).sum()
         return value
 
 
@@ -42,7 +44,8 @@ class chi2_gof(test_statistics):
         no_empty_bins_data_events = np.where(self.binned_data == 0,
                                              self.empty_bin_value,
                                              self.binned_data)
-        value = sps.chisquare(self.expected_events, no_empty_bins_data_events)[0]
+        value = sps.chisquare(self.expected_events,
+                              no_empty_bins_data_events)[0]
         return value
 
 
@@ -64,19 +67,29 @@ class anderson_test_gof(test_statistics):
         value = sps.anderson_ksamp([self.expected_events, self.binned_data])[0]
         return value
 
+
 # TODO needs to be tested
 class kstest_gof(test_statistics):
     """Docstring for kstest_gof. """
-    def __init__(self, data, interpolated_cdf):
+    def __init__(self, data, pdf, nevents_expected, bin_edges):
         """TODO: to be defined. """
-        test_statistics.__init__(self, data=data, pdf=interpolated_cdf)
+        test_statistics.__init__(self,
+                                 data=data,
+                                 pdf=pdf,
+                                 nevents_expected=nevents_expected)
         self._name = self.__class__.__name__
+        self.bin_edges = bin_edges
+        self.bin_centers = self.bin_edges[:-1] + (self.bin_edges[1:] -
+                                                  self.bin_edges[:-1]) / 2
 
     def calculate_gof(self):
         """
         tested with logc2 as data
         """
-        value = sps.kstest(self.data, cdf=np.cumsum(self.pdf))[0]
+        interp_cdf = interp1d(self.bin_centers,
+                              np.cumsum(self.pdf),
+                              kind='cubic')
+        value = sps.kstest(self.data, cdf=interp_cdf)[0]
         return value
 
 
@@ -109,7 +122,11 @@ class evaluators_1d(object):
             anderson_test_gof(data=data,
                               pdf=pdf,
                               nevents_expected=nevents_expected,
-                              bin_edges=bin_edges)
+                              bin_edges=bin_edges),
+            kstest_gof(data=data,
+                       pdf=pdf,
+                       nevents_expected=nevents_expected,
+                       bin_edges=bin_edges)
         ]
 
     def calculate_gof_values(self):
