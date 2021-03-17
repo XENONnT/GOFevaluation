@@ -7,7 +7,7 @@ class binned_poisson_gof(test_statistics):
     """Docstring for binned_poisson_gof. """
     def __init__(self, data, expectation, bin_edges):
         test_statistics.__init__(self=self, data=data, expectation=expectation)
-        self.name = self.__class__.__name__
+        self._name = self.__class__.__name__
 
         self.bin_edges = bin_edges
         self.bin_data(bin_edges=bin_edges)
@@ -24,7 +24,7 @@ class chi2_gof(test_statistics):
     """Docstring for chi2_gof. """
     def __init__(self, data, expectation, bin_edges, empty_bin_value):
         test_statistics.__init__(self=self, data=data, expectation=expectation)
-        self.name = self.__class__.__name__ + "_" + str(empty_bin_value)
+        self._name = self.__class__.__name__ + "_" + str(empty_bin_value)
         self.empty_bin_value = empty_bin_value
 
         self.bin_edges = bin_edges
@@ -44,6 +44,8 @@ class anderson_test_gof(test_statistics):
         """TODO: to be defined. """
         test_statistics.__init__(self, data=data, expectation=expectation)
 
+        self._name = "anderson_test_gof"
+
         self.bin_edges = bin_edges
         self.bin_data(bin_edges=bin_edges)
 
@@ -57,6 +59,7 @@ class kstest_gof(test_statistics):
     def __init__(self, data, interpolated_cdf):
         """TODO: to be defined. """
         test_statistics.__init__(self, data=data, expectation=interpolated_cdf)
+        self._name = self.__class__.__name__
 
     def calculate_gof(self):
         """
