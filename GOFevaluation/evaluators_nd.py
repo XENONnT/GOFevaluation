@@ -108,5 +108,8 @@ class binned_poisson_chi2_gof(nd_test_statistics):
         hist, bin_edges = np.histogram(fake_gofs, bins=1000)
         cumulative_density = 1.0 - np.cumsum(hist)/np.sum(hist)
         bin_centers = np.mean(np.vstack([bin_edges[0:-1], bin_edges[1:]]), axis=0)
-        pvalue = cumulative_density[np.digitize(gof, bin_edges)-1]
+        try:
+            pvalue = cumulative_density[np.digitize(gof, bin_edges)-1]
+        except IndexError:
+            raise ValueError('Not enough MC\'s run -- GoF is outside toy distribution!')
         return pvalue
