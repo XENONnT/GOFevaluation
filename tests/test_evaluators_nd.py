@@ -3,6 +3,7 @@ import scipy.stats as sps
 import numpy as np
 
 from GOFevaluation import binned_poisson_chi2_gof
+from GOFevaluation import point_to_point_gof
 
 
 def test_dimensions():
@@ -30,6 +31,24 @@ def test_dimensions():
         assert abs(gof_flat - gof) < 1e-8
 
 
+def test_distances():
+    xs = np.linspace(0, 1, 100)
+    xs_ref = np.linspace(0, 1, 200)
+    for nD in [1, 2, 3, 5]:
+        data = np.vstack([xs for i in range(nD)]).T
+        reference = np.vstack([xs for i in range(nD)]).T
+        gofclass = point_to_point_gof(data, reference)
+        gofclass.get_distances()
+
+        assert len(gofclass.d_data_data) == gofclass.nevents_data * \
+            (gofclass.nevents_data-1) / 2
+        assert len(gofclass.d_ref_ref) == gofclass.nevents_ref * \
+            (gofclass.nevents_ref-1) / 2
+        assert len(gofclass.d_data_ref) == gofclass.nevents_ref * \
+            gofclass.nevents_data
+
+
 if __name__ == "__main__":
     test_dimensions()
+    test_distances()
     print("nd tests passed")
