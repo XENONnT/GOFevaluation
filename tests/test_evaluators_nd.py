@@ -6,7 +6,7 @@ from GOFevaluation import binned_poisson_chi2_gof
 
 
 def test_dimensions():
-    #test nD binned GOF in different dimensions:
+    # test nD binned GOF in different dimensions:
     signal_expectation = 100
     xs = np.linspace(0, 1, 100)
     for nD in [1, 2, 3, 5]:

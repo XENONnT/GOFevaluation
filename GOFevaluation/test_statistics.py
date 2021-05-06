@@ -30,7 +30,7 @@ class test_statistics(test_statistics_core):
 
 
 class test_statistics_sample(test_statistics_core):
-    def __init__(self, data, pdf_sample):
+    def __init__(self, data, reference_sample):
         test_statistics_core.__init__(self=self,
                                       data=data)
-        self.pdf_sample = pdf_sample
+        self.reference_sample = reference_sample

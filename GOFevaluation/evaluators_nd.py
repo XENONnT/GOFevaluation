@@ -2,7 +2,9 @@ import scipy.stats as sps
 import numpy as np
 from collections import OrderedDict
 from scipy.interpolate import interp1d
+from sklearn.neighbors import DistanceMetric
 from GOFevaluation import test_statistics
+from GOFevaluation import test_statistics_sample
 
 
 class nd_test_statistics(test_statistics):
@@ -61,14 +63,47 @@ class binned_poisson_chi2_gof(nd_test_statistics):
 # like test_statistics_core that test_statistics inherits from?
 
 
-class mixed_sample_gof(test_statistics_sample):
-    """TBD"""
+class point_to_point_gof(test_statistics_sample):
+    """computes point-to-point gof as described in 
+    https://arxiv.org/abs/hep-ex/0203010.
+    Input:
+    - nevents_data n-dim data samples with shape (nevents_data, n)
+    - nevents_reference n-dim referencesamples with shape (nevents_ref, n)
+    Output:
+    Test Statistic based on 'Statisticsl Energy' """
 
-    def __init__(self, data, pdf_sample):
+    def __init__(self, data, reference_sample):
         test_statistics_sample.__init__(self=self,
                                         data=data,
-                                        pdf_sample=pdf_sample)
+                                        reference_sample=reference_sample)
         self._name = self.__class__.__name__
+        self.nevents_data = np.shape(self.data)[0]
+        self.nevents_ref = np.shape(self.reference_sample)[0]
+
+    def get_distances(self):
+        """get distances of data-data, reference-reference 
+        and data-reference"""
+        # TODO: What about scaling of different units/orders of magnitude?
+        # Calculate distance matrices for tthe two samples
+        dist = DistanceMetric.get_metric('euclidean')
+
+        d_data_data = np.triu(dist.pairwise(self.data))
+        d_data_data.reshape(-1)
+        self.d_data_data = d_data_data[d_data_data > 0]
+
+        d_ref_ref = np.triu(dist.pairwise(self.reference_sample))
+        d_ref_ref.reshape(-1)
+        self.d_ref_ref = d_ref_ref[d_ref_ref > 0]
+
+        self.d_data_ref = dist.pairwise(
+            self.data, self.reference_sample).reshape(-1)
 
     def calculate_gof(self):
-        pass
+        self.get_distances()
+        ret_data_data = 1/self.nevents_data**2 * \
+            np.sum(-np.log(self.d_data_data))
+        ret_ref_ref = 1/self.nevents_ref**2 * np.sum(-np.log(self.d_ref_ref))
+        ret_data_ref = -1/self.nevents_ref/self.nevents_data * \
+            np.sum(-np.log(self.d_data_ref))
+        ret = ret_data_data + ret_ref_ref + ret_data_ref
+        return ret
