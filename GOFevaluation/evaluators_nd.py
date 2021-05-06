@@ -59,8 +59,10 @@ class binned_poisson_chi2_gof(nd_test_statistics):
             self.binned_data)
         return 2 * np.sum(ret)
 
-# QUESTION: Ok like this or should I e.g. create an even slimmer class
-# like test_statistics_core that test_statistics inherits from?
+
+class binned_chi2_gof(nd_test_statistics):
+    # TODO Implement!
+    pass
 
 
 class point_to_point_gof(test_statistics_sample):
