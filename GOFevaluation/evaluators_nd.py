@@ -9,6 +9,7 @@ class nd_test_statistics(test_statistics):
     """
         Override binning to work in arbitrary dimensions
     """
+
     def bin_data(self, bin_edges):
         # function to bin nD data:
         self.binned_data, _ = np.histogramdd(self.data, bins=bin_edges)
@@ -29,6 +30,7 @@ class binned_poisson_chi2_gof(nd_test_statistics):
         While the absolute likelihood is a poor GOF measure
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
     """
+
     def __minimalinit__(self, data, expectations):
         # initialise with already binned data + expectations (typical case):
         nd_test_statistics.__init__(self=self,
@@ -39,7 +41,7 @@ class binned_poisson_chi2_gof(nd_test_statistics):
         self.binned_data = data
 
     def __init__(self, data, pdf, bin_edges, nevents_expected):
-        #initialise with the common call signature
+        # initialise with the common call signature
         nd_test_statistics.__init__(self=self,
                                     data=data,
                                     pdf=pdf,
@@ -54,3 +56,19 @@ class binned_poisson_chi2_gof(nd_test_statistics):
         ret -= sps.poisson(self.pdf * self.nevents_expected).logpmf(
             self.binned_data)
         return 2 * np.sum(ret)
+
+# QUESTION: Ok like this or should I e.g. create an even slimmer class
+# like test_statistics_core that test_statistics inherits from?
+
+
+class mixed_sample_gof(test_statistics_sample):
+    """TBD"""
+
+    def __init__(self, data, pdf_sample):
+        test_statistics_sample.__init__(self=self,
+                                        data=data,
+                                        pdf_sample=pdf_sample)
+        self._name = self.__class__.__name__
+
+    def calculate_gof(self):
+        pass

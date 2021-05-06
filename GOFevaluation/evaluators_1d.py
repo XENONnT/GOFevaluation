@@ -7,6 +7,7 @@ from GOFevaluation import test_statistics
 
 class binned_poisson_gof(test_statistics):
     """Docstring for binned_poisson_gof. """
+
     def __init__(self, data, pdf, nevents_expected, bin_edges):
         test_statistics.__init__(self=self,
                                  data=data,
@@ -28,7 +29,8 @@ class binned_poisson_gof(test_statistics):
 
 class chi2_gof(test_statistics):
     """Docstring for chi2_gof. """
-    def __init__(self, data, pdf, bin_edges, nevents_expected,
+
+    def __init__(self, data, pdf, nevents_expected, bin_edges,
                  empty_bin_value):
         test_statistics.__init__(self=self,
                                  data=data,
@@ -51,6 +53,7 @@ class chi2_gof(test_statistics):
 
 class anderson_test_gof(test_statistics):
     """Docstring for anderson_test_gof. """
+
     def __init__(self, data, pdf, nevents_expected, bin_edges):
         """TODO: to be defined. """
         test_statistics.__init__(self=self,
@@ -71,6 +74,7 @@ class anderson_test_gof(test_statistics):
 # TODO needs to be tested
 class kstest_gof(test_statistics):
     """Docstring for kstest_gof. """
+
     def __init__(self, data, pdf, nevents_expected, bin_edges):
         """TODO: to be defined. """
         test_statistics.__init__(self,
@@ -95,7 +99,8 @@ class kstest_gof(test_statistics):
 
 class evaluators_1d(object):
     """Evaluation class for goodnes of fit measures in Xenon"""
-    def __init__(self, pdf, data, nevents_expected, bin_edges):
+
+    def __init__(self, data, pdf, nevents_expected, bin_edges):
         self.pdf = pdf
         self.data = data
 
