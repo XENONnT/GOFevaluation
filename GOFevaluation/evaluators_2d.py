@@ -3,9 +3,13 @@ import numpy as np
 from collections import OrderedDict
 from collections import namedtuple
 
+# QUESTION: Maybe add class 2d_test_statistics(test_statistics)
+# similar to nD case that overwrites bin_data?
+
 
 class evaluators_2d(object):
     """Evaluation class for goodnes of fit measures in Xenon"""
+
     def __init__(self, expected_events, x_data_points, y_data_points,
                  x_bin_edges, y_bin_edges):
         self.expected_events = expected_events
@@ -33,7 +37,7 @@ class evaluators_2d(object):
 
     def _calculate_gof_values(self):
         # TODO: Fixme
-        ### Two-dimensional binned events & tests:
+        # Two-dimensional binned events & tests:
         #  # best-fit model is: best_fit_hist_generated_mm
         #  hist_data = best_fit_hist_generated_mm.similar_blank_hist()
         #  hist_data.add(unbinned_ll._data)

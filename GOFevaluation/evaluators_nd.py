@@ -2,7 +2,9 @@ import scipy.stats as sps
 import numpy as np
 from collections import OrderedDict
 from scipy.interpolate import interp1d
+from sklearn.neighbors import DistanceMetric
 from GOFevaluation import test_statistics
+from GOFevaluation import test_statistics_sample
 
 
 class binned_poisson_chi2_gof(test_statistics):
@@ -61,14 +63,15 @@ class binned_poisson_chi2_gof(test_statistics):
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_expectations).logpmf(binned_data)
         return 2 * np.sum(ret)
-
+     
     def calculate_gof(self):
-        """Get Chi2 GoF using current class attributes
+        """
+            Get Chi2 GoF using current class attributes
         """
         gof = binned_poisson_chi2_gof.calculate_binned_gof(
             self.binned_data,
             self.pdf * self.nevents_expected
-        )
+            )
         return gof
 
     def sample_gofs(self, n_mc=1000):
@@ -101,3 +104,78 @@ class binned_poisson_chi2_gof(test_statistics):
         except IndexError:
             raise ValueError('Not enough MC\'s run -- GoF is outside toy distribution!')
         return pvalue
+
+
+class binned_chi2_gof(test_statistics):
+    # TODO Implement!
+    pass
+
+
+class point_to_point_gof(test_statistics_sample):
+    """computes point-to-point gof as described in
+    https://arxiv.org/abs/hep-ex/0203010.
+
+    Input:
+    - nevents_data n-dim data samples with shape (nevents_data, n)
+    - nevents_reference n-dim referencesamples with shape (nevents_ref, n)
+
+    Output:
+    Test Statistic based on 'Statisticsl Energy'
+
+    Samples should be pre-processed to have similar scale in each analysis dimension."""
+
+    def __init__(self, data, reference_sample):
+        test_statistics_sample.__init__(
+            self=self, data=data, reference_sample=reference_sample
+        )
+        self._name = self.__class__.__name__
+        self.nevents_data = np.shape(self.data)[0]
+        self.nevents_ref = np.shape(self.reference_sample)[0]
+
+    def get_distances(self):
+        """get distances of data-data, reference-reference
+        and data-reference"""
+
+        dist = DistanceMetric.get_metric("euclidean")
+
+        d_data_data = np.triu(dist.pairwise(self.data))
+        d_data_data.reshape(-1)
+        self.d_data_data = d_data_data[d_data_data > 0]
+
+        d_ref_ref = np.triu(dist.pairwise(self.reference_sample))
+        d_ref_ref.reshape(-1)
+        self.d_ref_ref = d_ref_ref[d_ref_ref > 0]
+
+        self.d_data_ref = dist.pairwise(
+            self.data, self.reference_sample).reshape(-1)
+
+    def get_d_min(self):
+        """find d_min as the average distance of reference_simulation
+        points in the region of highest density"""
+        # For now a very simple approach is chosen as the paper states that
+        # the precise value of this is not critical. One might want to
+        # look into a more proficient way in the future.
+        self.d_min = np.quantile(self.d_ref_ref, 0.001)
+
+    def weighting_function(self, d):
+        """Weigh distances d according to log profile. Pole at d = 0
+        is omitted by introducing d_min that replaces the distance for
+        d < d_min
+        """
+        if not hasattr(self, "d_min"):
+            self.get_d_min()
+        d[d <= self.d_min] = self.d_min
+
+        return -np.log(d)
+
+    def calculate_gof(self, *args, **kwargs):
+        
+        self.get_distances()
+        ret_data_data = (1 / self.nevents_data ** 2 *
+                         np.sum(self.weighting_function(self.d_data_data)))
+        ret_ref_ref = (1 / self.nevents_ref ** 2 *
+                       np.sum(self.weighting_function(self.d_ref_ref)))
+        ret_data_ref = (-1 / self.nevents_ref / self.nevents_data *
+                        np.sum(self.weighting_function(self.d_data_ref)))
+        ret = ret_data_data + ret_ref_ref + ret_data_ref
+        return ret
