@@ -26,7 +26,11 @@ class test_statistics(test_statistics_core):
         self.expected_events = self.pdf * self.nevents_expected
 
     def bin_data(self, bin_edges):
-        self.binned_data, _ = np.histogram(self.data, bins=bin_edges)
+        # function to bin nD data:
+        if len(self.data.shape)==1:
+            self.binned_data, _ = np.histogram(self.data, bins=bin_edges)
+        else:
+            self.binned_data, _ = np.histogramdd(self.data, bins=bin_edges)
 
 
 class test_statistics_sample(test_statistics_core):
