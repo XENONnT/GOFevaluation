@@ -5,19 +5,7 @@ from scipy.interpolate import interp1d
 from GOFevaluation import test_statistics
 
 
-class nd_test_statistics(test_statistics):
-    """
-        Override binning to work in arbitrary dimensions
-    """
-    def bin_data(self, bin_edges):
-        # function to bin nD data:
-        if len(self.data.shape)==1:
-            self.binned_data, _ = np.histogram(self.data, bins=bin_edges)
-        else:
-            self.binned_data, _ = np.histogramdd(self.data, bins=bin_edges)
-
-
-class binned_poisson_chi2_gof(nd_test_statistics):
+class binned_poisson_chi2_gof(test_statistics):
     """
         computes the binned poisson modified Chi2 from Baker+Cousins
         In the limit of large bin counts (10+) this is Chi2 distributed.
@@ -41,7 +29,7 @@ class binned_poisson_chi2_gof(nd_test_statistics):
         In this case the bin-edges don't matter, so we bypass the usual init
         """
         self = cls(None, None, None, None)
-        nd_test_statistics.__init__(self=self,
+        test_statistics.__init__(self=self,
                                     data=data,
                                     pdf=expectations / np.sum(expectations),
                                     nevents_expected=np.sum(expectations))
@@ -56,7 +44,7 @@ class binned_poisson_chi2_gof(nd_test_statistics):
             # bypass init, using binned data
             return
         # initialise with the common call signature
-        nd_test_statistics.__init__(self=self,
+        test_statistics.__init__(self=self,
                                     data=data,
                                     pdf=pdf,
                                     nevents_expected=nevents_expected)
