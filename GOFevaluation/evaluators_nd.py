@@ -122,7 +122,7 @@ class point_to_point_gof(test_statistics_sample):
     Output:
     Test Statistic based on 'Statisticsl Energy'
 
-    Samples must be pre-processed to have similar scale in each analysis dimension."""
+    Samples should be pre-processed to have similar scale in each analysis dimension."""
 
     def __init__(self, data, reference_sample):
         test_statistics_sample.__init__(
