@@ -109,62 +109,6 @@ class binned_chi2_gof(test_statistics):
     pass
 
 
-class kstest_gof(test_statistics):
-    """Goodness of Fit based on the Kolmogorov-Smirnov test
-
-    Input:
-    TODO
-
-    Output:
-    TODO
-    """
-    @classmethod
-    def from_binned(cls, data, expectations):
-        """Initialize with already binned data + expectations
-
-        In this case the bin-edges don't matter, so we bypass the usual init
-        """
-        self = cls(None, None, None, None)
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=expectations / np.sum(expectations),
-                                 nevents_expected=np.sum(expectations))
-        self._name = self.__class__.__name__
-        self.binned_data = data
-        return self
-
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
-        """Initialize with unbinned data and a normalized pdf
-        """
-        if data is None:
-            # bypass init, using binned data
-            return
-        # initialise with the common call signature
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=pdf,
-                                 nevents_expected=nevents_expected)
-        self._name = self.__class__.__name__
-
-        self.bin_edges = bin_edges
-        self.bin_data(bin_edges=bin_edges)
-        return
-
-    @classmethod
-    def calculate_binned_gof(cls, binned_data, binned_expectations):
-        """Get KS GoF from binned data & expectations
-        """
-        # TODO
-        pass
-
-    def calculate_gof(self):
-        """
-            Get KS GoF using current class attributes
-        """
-        # TODO
-        pass
-
-
 class point_to_point_gof(test_statistics_sample):
     """computes point-to-point gof as described in
     https://arxiv.org/abs/hep-ex/0203010.

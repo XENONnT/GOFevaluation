@@ -3,6 +3,7 @@ import numpy as np
 from collections import OrderedDict
 from scipy.interpolate import interp1d
 from GOFevaluation import test_statistics
+from GOFevaluation import test_statistics_sample
 
 
 class binned_poisson_gof(test_statistics):
@@ -71,29 +72,57 @@ class anderson_test_gof(test_statistics):
         return value
 
 
-# TODO needs to be tested
 class kstest_gof(test_statistics):
-    """Docstring for kstest_gof. """
+    """Goodness of Fit based on the Kolmogorov-Smirnov Test.
+
+    Input:
+
+    Output:
+    """
 
     def __init__(self, data, pdf, nevents_expected, bin_edges):
-        """TODO: to be defined. """
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+        assert ((min(data) >= min(bin_centers))
+                & (max(data) <= max(bin_centers))), (
+            "Data point(s) outside of pdf bins. Can't compute GoF.")
         test_statistics.__init__(self,
                                  data=data,
                                  pdf=pdf,
                                  nevents_expected=nevents_expected)
         self._name = self.__class__.__name__
         self.bin_edges = bin_edges
-        self.bin_centers = self.bin_edges[:-1] + (self.bin_edges[1:] -
-                                                  self.bin_edges[:-1]) / 2
+        self.bin_centers = bin_centers
 
     def calculate_gof(self):
         """
-        tested with logc2 as data
+        TODO
         """
         interp_cdf = interp1d(self.bin_centers,
                               np.cumsum(self.pdf),
                               kind='cubic')
         value = sps.kstest(self.data, cdf=interp_cdf)[0]
+        return value
+
+
+class kstest_two_sample_gof(test_statistics_sample):
+    """Goodness of Fit based on the two sample Kolmogorov-Smirnov Test.
+
+    Input:
+
+    Output:
+    """
+
+    def __init__(self, data, reference_sample):
+        test_statistics_sample.__init__(
+            self=self, data=data, reference_sample=reference_sample
+        )
+        self._name = self.__class__.__name__
+
+    def calculate_gof(self):
+        """
+        TODO
+        """
+        value = sps.kstest(self.data, self.reference_sample)[0]
         return value
 
 
