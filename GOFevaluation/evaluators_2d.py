@@ -3,9 +3,6 @@ import numpy as np
 from collections import OrderedDict
 from collections import namedtuple
 
-# QUESTION: Maybe add class 2d_test_statistics(test_statistics)
-# similar to nD case that overwrites bin_data?
-
 
 class evaluators_2d(object):
     """Evaluation class for goodnes of fit measures in Xenon"""
@@ -28,7 +25,8 @@ class evaluators_2d(object):
 
     def bin_data(self, bin_edges):
         """
-        bin_edges: named tuple with "x" and "y" with the bin_edges for both dimensions
+        bin_edges: named tuple with "x" and "y" with the bin_edges for both
+        dimensions
         """
         self.binned_data, _, _ = np.histogram2d(x=self.x_data_points,
                                                 y=self.y_data_points,
