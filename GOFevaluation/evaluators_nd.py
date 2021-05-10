@@ -1,7 +1,5 @@
 import scipy.stats as sps
 import numpy as np
-from collections import OrderedDict
-from scipy.interpolate import interp1d
 from sklearn.neighbors import DistanceMetric
 from GOFevaluation import test_statistics
 from GOFevaluation import test_statistics_sample
@@ -32,9 +30,9 @@ class binned_poisson_chi2_gof(test_statistics):
         """
         self = cls(None, None, None, None)
         test_statistics.__init__(self=self,
-                                    data=data,
-                                    pdf=expectations / np.sum(expectations),
-                                    nevents_expected=np.sum(expectations))
+                                 data=data,
+                                 pdf=expectations / np.sum(expectations),
+                                 nevents_expected=np.sum(expectations))
         self._name = self.__class__.__name__
         self.binned_data = data
         return self
@@ -47,9 +45,9 @@ class binned_poisson_chi2_gof(test_statistics):
             return
         # initialise with the common call signature
         test_statistics.__init__(self=self,
-                                    data=data,
-                                    pdf=pdf,
-                                    nevents_expected=nevents_expected)
+                                 data=data,
+                                 pdf=pdf,
+                                 nevents_expected=nevents_expected)
         self._name = self.__class__.__name__
 
         self.bin_edges = bin_edges
@@ -63,7 +61,7 @@ class binned_poisson_chi2_gof(test_statistics):
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_expectations).logpmf(binned_data)
         return 2 * np.sum(ret)
-     
+
     def calculate_gof(self):
         """
             Get Chi2 GoF using current class attributes
@@ -71,7 +69,7 @@ class binned_poisson_chi2_gof(test_statistics):
         gof = binned_poisson_chi2_gof.calculate_binned_gof(
             self.binned_data,
             self.pdf * self.nevents_expected
-            )
+        )
         return gof
 
     def sample_gofs(self, n_mc=1000):
@@ -84,9 +82,9 @@ class binned_poisson_chi2_gof(test_statistics):
             samples = sps.poisson(self.pdf * self.nevents_expected).rvs()
             fake_gofs[i] = binned_poisson_chi2_gof.calculate_binned_gof(
                 samples,
-                self.pdf * self.nevents_expected, 
+                self.pdf * self.nevents_expected,
             )
-        return fake_gofs 
+        return fake_gofs
 
     def get_pvalue(self, n_mc=1000):
         """Get the p-value of the data under the null hypothesis
@@ -97,12 +95,12 @@ class binned_poisson_chi2_gof(test_statistics):
         gof = self.calculate_gof()
         fake_gofs = self.sample_gofs(n_mc=n_mc)
         hist, bin_edges = np.histogram(fake_gofs, bins=1000)
-        cumulative_density = 1.0 - np.cumsum(hist)/np.sum(hist)
-        bin_centers = np.mean(np.vstack([bin_edges[0:-1], bin_edges[1:]]), axis=0)
+        cumulative_density = 1.0 - np.cumsum(hist) / np.sum(hist)
         try:
-            pvalue = cumulative_density[np.digitize(gof, bin_edges)-1]
+            pvalue = cumulative_density[np.digitize(gof, bin_edges) - 1]
         except IndexError:
-            raise ValueError('Not enough MC\'s run -- GoF is outside toy distribution!')
+            raise ValueError(
+                'Not enough MC\'s run -- GoF is outside toy distribution!')
         return pvalue
 
 
@@ -122,7 +120,8 @@ class point_to_point_gof(test_statistics_sample):
     Output:
     Test Statistic based on 'Statisticsl Energy'
 
-    Samples should be pre-processed to have similar scale in each analysis dimension."""
+    Samples should be pre-processed to have similar scale in each analysis
+    dimension."""
 
     def __init__(self, data, reference_sample):
         test_statistics_sample.__init__(
@@ -169,7 +168,7 @@ class point_to_point_gof(test_statistics_sample):
         return -np.log(d)
 
     def calculate_gof(self, *args, **kwargs):
-        
+
         self.get_distances()
         ret_data_data = (1 / self.nevents_data ** 2 *
                          np.sum(self.weighting_function(self.d_data_data)))

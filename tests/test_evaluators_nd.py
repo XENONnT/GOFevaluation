@@ -1,4 +1,3 @@
-import GOFevaluation
 import scipy.stats as sps
 import numpy as np
 import unittest
@@ -39,7 +38,7 @@ class TestEvaluatorsNd(unittest.TestCase):
         xs_ref = np.linspace(0, 1, 200)
         for nD in [1, 2, 3, 5]:
             data = np.vstack([xs for i in range(nD)]).T
-            reference = np.vstack([xs for i in range(nD)]).T
+            reference = np.vstack([xs_ref for i in range(nD)]).T
             gofclass = point_to_point_gof(data, reference)
             gofclass.get_distances()
 
@@ -49,38 +48,35 @@ class TestEvaluatorsNd(unittest.TestCase):
                              (gofclass.nevents_ref-1) / 2)
             self.assertEqual(len(gofclass.d_data_ref), gofclass.nevents_ref *
                              gofclass.nevents_data)
+
     def test_symmetry(self):
-        #the pointwise energy test is symmetrical in reference and science sample:
-        xs_a = sps.uniform().rvs(50)[:,None]
-        xs_b = sps.uniform().rvs(50)[:,None]
+        # the pointwise energy test is symmetrical in reference and science sample:
+        xs_a = sps.uniform().rvs(50)[:, None]
+        xs_b = sps.uniform().rvs(50)[:, None]
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        gofclass_ab.d_min = 0.01 #set explicitly to avoid asymmetry in setting d_min
+        gofclass_ab.d_min = 0.01  # set explicitly to avoid asymmetry in setting d_min
         gofclass_ab.get_distances()
         gof_ab = gofclass_ab.calculate_gof()
         gofclass_ba = point_to_point_gof(xs_b, xs_a)
-        gofclass_ba.d_min = 0.01 #set explicitly to avoid asymmetry in setting d_min
+        gofclass_ba.d_min = 0.01  # set explicitly to avoid asymmetry in setting d_min
         gofclass_ba.get_distances()
         gof_ba = gofclass_ba.calculate_gof()
 
-        self.assertAlmostEqual(gof_ab, gof_ba, places=6) #it seems precision is a bit low in this case
+        # it seems precision is a bit low in this case
+        self.assertAlmostEqual(gof_ab, gof_ba, places=6)
 
     def test_value(self):
-        #simple values:
-        xs_a = np.array([0])[:,None]
-        xs_b = np.array([1,2])[:,None]
-
+        # simple values:
+        xs_a = np.array([0])[:, None]
+        xs_b = np.array([1, 2])[:, None]
 
         e_data_ref = np.log(2)/2
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        gofclass_ab.d_min = 0.01 #set explicitly to avoid asymmetry in setting d_min
+        gofclass_ab.d_min = 0.01  # set explicitly to avoid asymmetry in setting d_min
         gofclass_ab.get_distances()
         gof_ab = gofclass_ab.calculate_gof()
-        self.assertAlmostEqual(gof_ab, e_data_ref, places=6) #it seems precision is a bit low in this case
-
-
-
-
-
+        # it seems precision is a bit low in this case
+        self.assertAlmostEqual(gof_ab, e_data_ref, places=6)
 
 
 if __name__ == "__main__":

@@ -11,8 +11,9 @@ class test_statistics_core(object):
         raise NotImplementedError("Your goodnes of fit computation goes here!")
 
     def get_result_as_dict(self):
-        assert self._name is not None, str(
-            self.__class__.__name__) + ": You need to define self._name for your goodnes of fit measure!"
+        assert self._name is not None, (str(self.__class__.__name__)
+                                        + ": You need to define self._name "
+                                        + "for your goodnes of fit measure!")
         value = self.calculate_gof()
         return {self._name: value}
 
@@ -27,7 +28,7 @@ class test_statistics(test_statistics_core):
 
     def bin_data(self, bin_edges):
         # function to bin nD data:
-        if len(self.data.shape)==1:
+        if len(self.data.shape) == 1:
             self.binned_data, _ = np.histogram(self.data, bins=bin_edges)
         else:
             self.binned_data, _ = np.histogramdd(self.data, bins=bin_edges)
