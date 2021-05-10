@@ -1,0 +1,5 @@
+numpy
+scipy
+sklearn
+flake8
+pytest
