@@ -139,7 +139,7 @@ class kstest_two_sample_gof(test_statistics_sample):
         calculate supremum of the absolute value of the difference
         of both ECDF via scipy.stats.kstest
         """
-        value = sps.kstest(self.data, self.reference_sample)[0]
+        value = sps.ks_2samp(self.data, self.reference_sample)[0]
         return value
 
 
