@@ -1,4 +1,5 @@
 # GOFevaluation
+![Test package](https://github.com/XENONnT/GOFevaluation/actions/workflows/python-package.yml/badge.svg)
 
 ## Installation
 
