@@ -56,7 +56,7 @@ class binned_poisson_chi2_gof(test_statistics):
 
     @classmethod
     def calculate_binned_gof(cls, binned_data, binned_expectations):
-        """Get Chi2 GoF from binned data & expectations
+        """Get binned poisson chi2 GoF from binned data & expectations
         """
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_expectations).logpmf(binned_data)
@@ -64,7 +64,7 @@ class binned_poisson_chi2_gof(test_statistics):
 
     def calculate_gof(self):
         """
-            Get Chi2 GoF using current class attributes
+            Get binned poisson chi2 GoF using current class attributes
         """
         gof = binned_poisson_chi2_gof.calculate_binned_gof(
             self.binned_data,
@@ -105,8 +105,54 @@ class binned_poisson_chi2_gof(test_statistics):
 
 
 class binned_chi2_gof(test_statistics):
-    # TODO Implement!
-    pass
+    """TODO"""
+    @classmethod
+    def from_binned(cls, data, expectations):
+        """Initialize with already binned data + expectations
+
+        In this case the bin-edges don't matter, so we bypass the usual init
+        """
+        self = cls(None, None, None, None)
+        test_statistics.__init__(self=self,
+                                 data=data,
+                                 pdf=expectations / np.sum(expectations),
+                                 nevents_expected=np.sum(expectations))
+        self._name = self.__class__.__name__
+        self.binned_data = data
+        return self
+
+    def __init__(self, data, pdf, bin_edges, nevents_expected):
+        """Initialize with unbinned data and a normalized pdf
+        """
+        if data is None:
+            # bypass init, using binned data
+            return
+        # initialise with the common call signature
+        test_statistics.__init__(self=self,
+                                 data=data,
+                                 pdf=pdf,
+                                 nevents_expected=nevents_expected)
+        self._name = self.__class__.__name__
+
+        self.bin_edges = bin_edges
+        self.bin_data(bin_edges=bin_edges)
+        return
+
+    @classmethod
+    def calculate_binned_gof(cls, binned_data, binned_expectations):
+        """Get Chi2 GoF from binned data & expectations
+        """
+        gof = sps.chisquare(binned_data,
+                            binned_expectations, axis=None)[0]
+        return gof
+
+    def calculate_gof(self):
+        """
+            Get Chi2 GoF using current class attributes
+        """
+        gof = binned_chi2_gof.calculate_binned_gof(
+            self.binned_data, self.pdf * self.nevents_expected)
+        return gof
 
 
 class point_to_point_gof(test_statistics_sample):
