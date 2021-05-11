@@ -31,24 +31,18 @@ class binned_poisson_gof(test_statistics):
 class chi2_gof(test_statistics):
     """Docstring for chi2_gof. """
 
-    def __init__(self, data, pdf, nevents_expected, bin_edges,
-                 empty_bin_value):
+    def __init__(self, data, pdf, bin_edges, nevents_expected):
         test_statistics.__init__(self=self,
                                  data=data,
                                  pdf=pdf,
                                  nevents_expected=nevents_expected)
-        self._name = self.__class__.__name__ + "_" + str(empty_bin_value)
-        self.empty_bin_value = empty_bin_value
-
+        self._name = self.__class__.__name__
         self.bin_edges = bin_edges
         self.bin_data(bin_edges=bin_edges)
 
     def calculate_gof(self):
-        no_empty_bins_data_events = np.where(self.binned_data == 0,
-                                             self.empty_bin_value,
-                                             self.binned_data)
-        value = sps.chisquare(self.expected_events,
-                              no_empty_bins_data_events)[0]
+        value = sps.chisquare(self.binned_data,
+                              self.expected_events)[0]
         return value
 
 
@@ -173,10 +167,6 @@ class evaluators_1d(object):
                                pdf=pdf,
                                nevents_expected=nevents_expected,
                                bin_edges=bin_edges),
-            adtest_two_sample_gof(data=data,
-                                  pdf=pdf,
-                                  nevents_expected=nevents_expected,
-                                  bin_edges=bin_edges),
             kstest_gof(data=data,
                        pdf=pdf,
                        bin_edges=bin_edges)
