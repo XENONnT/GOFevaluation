@@ -23,8 +23,9 @@ class test_statistics(test_statistics_core):
         test_statistics_core.__init__(self=self,
                                       data=data)
         self.pdf = pdf
-        self.nevents_expected = nevents_expected
-        self.expected_events = self.pdf * self.nevents_expected
+        if nevents_expected is not None:
+            self.nevents_expected = nevents_expected
+            self.expected_events = self.pdf * self.nevents_expected
 
     def bin_data(self, bin_edges):
         # function to bin nD data:

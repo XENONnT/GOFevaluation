@@ -3,6 +3,7 @@ import numpy as np
 from collections import OrderedDict
 from scipy.interpolate import interp1d
 from GOFevaluation import test_statistics
+from GOFevaluation import test_statistics_sample
 
 
 class binned_poisson_gof(test_statistics):
@@ -71,29 +72,74 @@ class anderson_test_gof(test_statistics):
         return value
 
 
-# TODO needs to be tested
 class kstest_gof(test_statistics):
-    """Docstring for kstest_gof. """
+    """Goodness of Fit based on the Kolmogorov-Smirnov Test.
+    Test if data sample comes from given pdf.
 
-    def __init__(self, data, pdf, nevents_expected, bin_edges):
-        """TODO: to be defined. """
+    Input:
+    - data: sample of unbinned data
+    - pdf: binned pdf to be tested
+    - bin_edges: binning of the pdf
+
+    Output:
+    - gof: supremum of the absolute value of the difference of CDF and ECDF
+    """
+
+    def __init__(self, data, pdf, bin_edges):
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+        assert ((min(data) >= min(bin_centers))
+                & (max(data) <= max(bin_centers))), (
+            "Data point(s) outside of pdf bins. Can't compute GoF.")
+
+        # QUESTION: Is this init ok like that with the None value
+        # for the unused parameter or should we rather add a
+        # test_statistics class for unbinned data, binned pdf and
+        # unbinned gof?
+
         test_statistics.__init__(self,
                                  data=data,
                                  pdf=pdf,
-                                 nevents_expected=nevents_expected)
+                                 nevents_expected=None)
         self._name = self.__class__.__name__
         self.bin_edges = bin_edges
-        self.bin_centers = self.bin_edges[:-1] + (self.bin_edges[1:] -
-                                                  self.bin_edges[:-1]) / 2
+        self.bin_centers = bin_centers
 
     def calculate_gof(self):
         """
-        tested with logc2 as data
+        Interpolate CDF from binned pdf and calculate supremum of the
+        absolute value of the difference of CDF and ECDF via scipy.stats.kstest
         """
         interp_cdf = interp1d(self.bin_centers,
                               np.cumsum(self.pdf),
                               kind='cubic')
         value = sps.kstest(self.data, cdf=interp_cdf)[0]
+        return value
+
+
+class kstest_two_sample_gof(test_statistics_sample):
+    """Goodness of Fit based on the Kolmogorov-Smirnov Test for two samples.
+    Test if two samples come from the same pdf.
+
+    Input:
+    - data: sample of unbinned data
+    - reference_sample: sample of unbinned reference
+
+    Output:
+    - gof: supremum of the absolute value of the difference of both ECDF
+    """
+
+    def __init__(self, data, reference_sample):
+        test_statistics_sample.__init__(
+            self=self, data=data, reference_sample=reference_sample
+        )
+        self._name = self.__class__.__name__
+
+    def calculate_gof(self):
+        """
+        calculate supremum of the absolute value of the difference
+        of both ECDF via scipy.stats.kstest
+        """
+        value = sps.ks_2samp(self.data, self.reference_sample)[0]
         return value
 
 
@@ -130,7 +176,6 @@ class evaluators_1d(object):
                               bin_edges=bin_edges),
             kstest_gof(data=data,
                        pdf=pdf,
-                       nevents_expected=nevents_expected,
                        bin_edges=bin_edges)
         ]
 

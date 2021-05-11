@@ -178,3 +178,5 @@ class point_to_point_gof(test_statistics_sample):
                         np.sum(self.weighting_function(self.d_data_ref)))
         ret = ret_data_data + ret_ref_ref + ret_data_ref
         return ret
+
+# %%
