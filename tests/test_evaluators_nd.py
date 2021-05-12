@@ -6,7 +6,7 @@ from GOFevaluation import binned_poisson_chi2_gof
 from GOFevaluation import point_to_point_gof
 
 
-class TestEvaluatorsNd(unittest.TestCase):
+class Test_binned_poisson_chi2_gof(unittest.TestCase):
     def test_dimensions(self):
         # test nD binned GOF in different dimensions:
         signal_expectation = 100
@@ -32,6 +32,8 @@ class TestEvaluatorsNd(unittest.TestCase):
 
             self.assertLess(abs(gof_flat - gof), 1e-8)
 
+
+class Test_point_to_point_gof(unittest.TestCase):
     def test_distances(self):
         # test if number of distance values is correct
         xs = np.linspace(0, 1, 100)
