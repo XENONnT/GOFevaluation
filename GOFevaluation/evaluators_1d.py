@@ -52,23 +52,31 @@ class chi2_gof(test_statistics):
         return value
 
 
-class anderson_test_gof(test_statistics):
-    """Docstring for anderson_test_gof. """
+class adtest_two_sample_gof(test_statistics_sample):
+    """Goodness of Fit based on the two-sample Anderson-Darling test
+    as described in https://www.doi.org/10.1214/aoms/1177706788
+    and https://www.doi.org/10.2307/2288805.
+    Test if two samples come from the same pdf.
 
-    def __init__(self, data, pdf, nevents_expected, bin_edges):
-        """TODO: to be defined. """
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=pdf,
-                                 nevents_expected=nevents_expected)
+    Similar to kstest_two_sample_gof but more weight is given on tail
+    differences due to a different weighting function.
 
-        self._name = "anderson_test_gof"
 
-        self.bin_edges = bin_edges
-        self.bin_data(bin_edges=bin_edges)
+    Input:
+    - data: sample of unbinned data
+    - reference_sample: sample of unbinned reference
+
+    Output:
+    - gof: gof statistic calculated with scipy.stats.anderson_ksamp"""
+
+    def __init__(self, data, reference_sample):
+        test_statistics_sample.__init__(
+            self=self, data=data, reference_sample=reference_sample)
+
+        self._name = self.__class__.__name__
 
     def calculate_gof(self):
-        value = sps.anderson_ksamp([self.expected_events, self.binned_data])[0]
+        value = sps.anderson_ksamp([self.data, self.reference_sample])[0]
         return value
 
 
@@ -90,11 +98,6 @@ class kstest_gof(test_statistics):
         assert ((min(data) >= min(bin_centers))
                 & (max(data) <= max(bin_centers))), (
             "Data point(s) outside of pdf bins. Can't compute GoF.")
-
-        # QUESTION: Is this init ok like that with the None value
-        # for the unused parameter or should we rather add a
-        # test_statistics class for unbinned data, binned pdf and
-        # unbinned gof?
 
         test_statistics.__init__(self,
                                  data=data,
@@ -170,10 +173,10 @@ class evaluators_1d(object):
                                pdf=pdf,
                                nevents_expected=nevents_expected,
                                bin_edges=bin_edges),
-            anderson_test_gof(data=data,
-                              pdf=pdf,
-                              nevents_expected=nevents_expected,
-                              bin_edges=bin_edges),
+            adtest_two_sample_gof(data=data,
+                                  pdf=pdf,
+                                  nevents_expected=nevents_expected,
+                                  bin_edges=bin_edges),
             kstest_gof(data=data,
                        pdf=pdf,
                        bin_edges=bin_edges)

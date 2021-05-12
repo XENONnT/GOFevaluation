@@ -5,6 +5,7 @@ import unittest
 
 from GOFevaluation import kstest_gof
 from GOFevaluation import kstest_two_sample_gof
+from GOFevaluation import adtest_two_sample_gof
 
 
 class Test_kstest_gof(unittest.TestCase):
@@ -69,6 +70,30 @@ class Test_kstest_two_sample_gof(unittest.TestCase):
         gof = gofclass.calculate_gof()
 
         self.assertAlmostEqual(max(dn), gof, places=6)
+
+    def test_symmetry(self):
+        xs_a = sps.norm().rvs(50)
+        xs_b = sps.norm().rvs(50)
+
+        gofclass_ab = kstest_two_sample_gof(xs_a, xs_b)
+        gof_ab = gofclass_ab.calculate_gof()
+        gofclass_ba = kstest_two_sample_gof(xs_b, xs_a)
+        gof_ba = gofclass_ba.calculate_gof()
+
+        self.assertEqual(gof_ab, gof_ba)
+
+
+class Test_adtest_two_sample_gof(unittest.TestCase):
+    def test_symmetry(self):
+        xs_a = sps.norm().rvs(50)
+        xs_b = sps.norm().rvs(50)
+
+        gofclass_ab = adtest_two_sample_gof(xs_a, xs_b)
+        gof_ab = gofclass_ab.calculate_gof()
+        gofclass_ba = adtest_two_sample_gof(xs_b, xs_a)
+        gof_ba = gofclass_ba.calculate_gof()
+
+        self.assertEqual(gof_ab, gof_ba)
 
 
 if __name__ == "__main__":
