@@ -7,18 +7,25 @@ from GOFevaluation import test_statistics_sample
 
 class binned_poisson_chi2_gof(test_statistics):
     """
-        computes the binned poisson modified Chi2 from Baker+Cousins
+        Computes the binned poisson modified Chi2 from Baker+Cousins
         In the limit of large bin counts (10+) this is Chi2 distributed.
         In the general case you may have to toyMC the distribution yourself.
-        Input:
-         - data: array of equal shape as nevents_expected
-             containing observed events in each bin
-         - pdf: normalized histogram of binned expectations
-         - bin_edges: bin-edges of the pdf
-         - nevents_expected: expectation, can be mean of expectation pdf
+
+        Input (unbinned data):
+        - data: array of unbinned data
+        - pdf: normalized histogram of binned expectations
+        - bin_edges: bin-edges of the pdf
+        - nevents_expected: expectation, can be mean of expectation pdf
+
+        Input (binned data):
+        initialise with binned_poisson_chi2_gof.from_binned(...)
+        - data: array of binned data
+        - expectations: array of binned expectations
+
         Output:
-         - the sum of the binned poisson Chi2.
-        reference: https://doi.org/10.1016/0167-5087(84)90016-4
+        - the sum of the binned poisson Chi2.
+
+        Reference: https://doi.org/10.1016/0167-5087(84)90016-4
         While the absolute likelihood is a poor GOF measure
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
     """
@@ -28,6 +35,8 @@ class binned_poisson_chi2_gof(test_statistics):
 
         In this case the bin-edges don't matter, so we bypass the usual init
         """
+        assert (data.shape == expectations.shape), \
+            "Shape of binned data does not match shape of expectations!"
         self = cls(None, None, None, None)
         test_statistics.__init__(self=self,
                                  data=data,
@@ -105,13 +114,32 @@ class binned_poisson_chi2_gof(test_statistics):
 
 
 class binned_chi2_gof(test_statistics):
-    """TODO"""
+    """Compoutes the binned chi2 GoF based on Pearson's chi2.
+
+    Input (unbinned data):
+    - data: array of unbinned data
+    - pdf: normalized histogram of binned expectations
+    - bin_edges: bin-edges of the pdf
+    - nevents_expected: expectation, can be mean of expectation pdf
+
+    Input (binned data):
+    initialise with binned_chi2_gof.from_binned(...)
+        - data: array of binned data
+        - expectations: array of binned expectations
+
+    Output:
+    - Pearson's Chi2
+
+    Reference: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
+    """
     @classmethod
     def from_binned(cls, data, expectations):
         """Initialize with already binned data + expectations
 
         In this case the bin-edges don't matter, so we bypass the usual init
         """
+        assert (data.shape == expectations.shape), \
+            "Shape of binned data does not match shape of expectations!"
         self = cls(None, None, None, None)
         test_statistics.__init__(self=self,
                                  data=data,
@@ -119,6 +147,7 @@ class binned_chi2_gof(test_statistics):
                                  nevents_expected=np.sum(expectations))
         self._name = self.__class__.__name__
         self.binned_data = data
+
         return self
 
     def __init__(self, data, pdf, bin_edges, nevents_expected):
