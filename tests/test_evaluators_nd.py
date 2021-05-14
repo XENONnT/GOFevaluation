@@ -29,7 +29,7 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
 
             gofclass = binned_poisson_chi2_gof(
                 data, mus, bins, signal_expectation)
-            gof = gofclass.calculate_gof()
+            gof = gofclass.get_gof()
 
             self.assertLess(abs(gof_flat - gof), 1e-8)
 
@@ -54,13 +54,13 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
             # calculate gof with both inits
             gofclass = binned_poisson_chi2_gof.from_binned(
                 data=binned_data, expectations=expected_events)
-            gof_from_binned = gofclass.calculate_gof()
+            gof_from_binned = gofclass.get_gof()
 
             gofclass = binned_poisson_chi2_gof(data=data_points,
                                                pdf=normed_pdf,
                                                bin_edges=bin_edges,
                                                nevents_expected=n_events)
-            gof = gofclass.calculate_gof()
+            gof = gofclass.get_gof()
 
             self.assertEqual(gof, gof_from_binned)
 
@@ -89,15 +89,11 @@ class Test_point_to_point_gof(unittest.TestCase):
         xs_a = sps.uniform().rvs(50)[:, None]
         xs_b = sps.uniform().rvs(50)[:, None]
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        # set explicitly to avoid asymmetry in setting d_min
-        gofclass_ab.d_min = 0.01
-        gofclass_ab.get_distances()
-        gof_ab = gofclass_ab.calculate_gof()
+        # set d_min explicitly to avoid asymmetry in setting d_min
+        gof_ab = gofclass_ab.get_gof(d_min=0.01)
         gofclass_ba = point_to_point_gof(xs_b, xs_a)
-        # set explicitly to avoid asymmetry in setting d_min
-        gofclass_ba.d_min = 0.01
-        gofclass_ba.get_distances()
-        gof_ba = gofclass_ba.calculate_gof()
+        # set d_min explicitly to avoid asymmetry in setting d_min
+        gof_ba = gofclass_ba.get_gof(d_min=0.01)
 
         # it seems precision is a bit low in this case
         self.assertAlmostEqual(gof_ab, gof_ba, places=6)
@@ -109,10 +105,8 @@ class Test_point_to_point_gof(unittest.TestCase):
 
         e_data_ref = np.log(2)/2
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        # set explicitly to avoid asymmetry in setting d_min
-        gofclass_ab.d_min = 0.01
-        gofclass_ab.get_distances()
-        gof_ab = gofclass_ab.calculate_gof()
+        # set d_min explicitly to avoid asymmetry in setting d_min
+        gof_ab = gofclass_ab.get_gof(d_min=0.01)
         # it seems precision is a bit low in this case
         self.assertAlmostEqual(gof_ab, e_data_ref, places=6)
 
@@ -148,7 +142,7 @@ class Test_binned_chi2_gof(unittest.TestCase):
 
                 gofclass = binned_chi2_gof.from_binned(
                     data=binned_data, expectations=expected_events)
-                chi2_val = gofclass.calculate_gof()
+                chi2_val = gofclass.get_gof()
                 chi2_vals.append(chi2_val)
 
             ndof = n_bins_per_dim**nD - 1
@@ -189,13 +183,13 @@ class Test_binned_chi2_gof(unittest.TestCase):
             # calculate gof with both inits
             gofclass = binned_chi2_gof.from_binned(
                 data=binned_data, expectations=expected_events)
-            gof_from_binned = gofclass.calculate_gof()
+            gof_from_binned = gofclass.get_gof()
 
             gofclass = binned_chi2_gof(data=data_points,
                                        pdf=normed_pdf,
                                        bin_edges=bin_edges,
                                        nevents_expected=n_events)
-            gof = gofclass.calculate_gof()
+            gof = gofclass.get_gof()
 
             self.assertEqual(gof, gof_from_binned)
 

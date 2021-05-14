@@ -30,10 +30,16 @@ class adtest_two_sample_gof(test_statistics_sample):
 
         self._name = self.__class__.__name__
 
-    def calculate_gof(self):
-        value = sps.anderson_ksamp([self.data, self.reference_sample])[0]
-        self.gof = value
-        return value
+    @classmethod
+    def calculate_gof(cls, data, reference_sample):
+        gof = sps.anderson_ksamp([data, reference_sample])[0]
+        return gof
+
+    def get_gof(self):
+        gof = adtest_two_sample_gof.calculate_gof(
+            self.data, self.reference_sample)
+        self.gof = gof
+        return gof
 
 
 class kstest_gof(test_statistics):
@@ -49,7 +55,7 @@ class kstest_gof(test_statistics):
     - gof: supremum of the absolute value of the difference of CDF and ECDF
     """
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
+    def __init__(self, data, pdf, bin_edges):
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         assert ((min(data) >= min(bin_centers))
                 & (max(data) <= max(bin_centers))), (
@@ -58,23 +64,27 @@ class kstest_gof(test_statistics):
         test_statistics.__init__(self,
                                  data=data,
                                  pdf=pdf,
-                                 nevents_expected=nevents_expected)
+                                 nevents_expected=None)
         self._name = self.__class__.__name__
         self.bin_edges = bin_edges
         self.bin_centers = bin_centers
 
-    def calculate_gof(self):
+    @classmethod
+    def calculate_gof(cls, data, cdf):
+        gof = sps.kstest(data, cdf=cdf)[0]
+        return gof
+
+    def get_gof(self):
         """
         Interpolate CDF from binned pdf and calculate supremum of the
         absolute value of the difference of CDF and ECDF via scipy.stats.kstest
         """
-
         interp_cdf = interp1d(self.bin_centers,
                               np.cumsum(self.pdf),
                               kind='cubic')
-        value = sps.kstest(self.data, cdf=interp_cdf)[0]
-        self.gof = value
-        return value
+        gof = kstest_gof.calculate_gof(self.data, interp_cdf)
+        self.gof = gof
+        return gof
 
     def get_pvalue(self, n_mc=1000):
         raise NotImplementedError("P-value comutation not yet implemented!")
@@ -98,14 +108,20 @@ class kstest_two_sample_gof(test_statistics_sample):
         )
         self._name = self.__class__.__name__
 
-    def calculate_gof(self):
+    @classmethod
+    def calculate_gof(cls, data, reference_sample):
+        gof = sps.ks_2samp(data, reference_sample)[0]
+        return gof
+
+    def get_gof(self):
         """
         calculate supremum of the absolute value of the difference
         of both ECDF via scipy.stats.kstest
         """
-        value = sps.ks_2samp(self.data, self.reference_sample)[0]
-        self.gof = value
-        return value
+        gof = kstest_two_sample_gof.calculate_gof(
+            self.data, self.reference_sample)
+        self.gof = gof
+        return gof
 
 
 class evaluators_1d(object):
