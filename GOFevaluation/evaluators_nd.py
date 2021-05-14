@@ -79,6 +79,7 @@ class binned_poisson_chi2_gof(test_statistics):
             self.binned_data,
             self.pdf * self.nevents_expected
         )
+        self.gof = gof
         return gof
 
     def sample_gofs(self, n_mc=1000):
@@ -101,12 +102,13 @@ class binned_poisson_chi2_gof(test_statistics):
         Gets the distribution of the GoF statistic, and compares it to the
         GoF of the data given the expectations.
         """
-        gof = self.calculate_gof()
+        if not hasattr(self, 'gof'):
+            _ = self.calculate_gof()
         fake_gofs = self.sample_gofs(n_mc=n_mc)
         hist, bin_edges = np.histogram(fake_gofs, bins=1000)
         cumulative_density = 1.0 - np.cumsum(hist) / np.sum(hist)
         try:
-            pvalue = cumulative_density[np.digitize(gof, bin_edges) - 1]
+            pvalue = cumulative_density[np.digitize(self.gof, bin_edges) - 1]
         except IndexError:
             raise ValueError(
                 'Not enough MC\'s run -- GoF is outside toy distribution!')
