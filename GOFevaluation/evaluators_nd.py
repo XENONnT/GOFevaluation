@@ -174,25 +174,25 @@ class point_to_point_gof(test_statistics_sample):
             self=self, data=data, reference_sample=reference_sample
         )
         self._name = self.__class__.__name__
-        self.nevents_data = np.shape(self.data)[0]
-        self.nevents_ref = np.shape(self.reference_sample)[0]
 
-    def get_distances(self):
+    @classmethod
+    def get_distances(cls, data, reference_sample):
         """get distances of data-data, reference-reference
         and data-reference"""
 
         dist = DistanceMetric.get_metric("euclidean")
 
-        d_data_data = np.triu(dist.pairwise(self.data))
+        d_data_data = np.triu(dist.pairwise(data))
         d_data_data.reshape(-1)
-        self.d_data_data = d_data_data[d_data_data > 0]
+        d_data_data = d_data_data[d_data_data > 0]
 
-        d_ref_ref = np.triu(dist.pairwise(self.reference_sample))
+        d_ref_ref = np.triu(dist.pairwise(reference_sample))
         d_ref_ref.reshape(-1)
-        self.d_ref_ref = d_ref_ref[d_ref_ref > 0]
+        d_ref_ref = d_ref_ref[d_ref_ref > 0]
 
-        self.d_data_ref = dist.pairwise(
-            self.data, self.reference_sample).reshape(-1)
+        d_data_ref = dist.pairwise(data, reference_sample).reshape(-1)
+
+        return d_data_data, d_ref_ref, d_data_ref
 
     @classmethod
     def get_d_min(cls, d_ref_ref):
@@ -215,12 +215,16 @@ class point_to_point_gof(test_statistics_sample):
         return -np.log(d)
 
     @classmethod
-    def calculate_gof(cls, nevents_data, nevents_ref, d_data_data, d_ref_ref,
-                      d_data_ref, d_min=None):
+    def calculate_gof(cls, data, reference_sample, d_min=None):
         """Calculate point-to-point GoF.
         If d_min=None, d_min is calculated according to a typical distance
         of the reference sample."""
 
+        nevents_data = np.shape(data)[0]
+        nevents_ref = np.shape(reference_sample)[0]
+
+        d_data_data, d_ref_ref, d_data_ref = cls.get_distances(
+            data, reference_sample)
         if d_min is None:
             d_min = cls.get_d_min(d_ref_ref)
 
@@ -234,10 +238,9 @@ class point_to_point_gof(test_statistics_sample):
         return gof
 
     def get_gof(self, d_min=None):
-        self.get_distances()
-        gof = point_to_point_gof.calculate_gof(
-            self.nevents_data, self.nevents_ref, self.d_data_data,
-            self.d_ref_ref, self.d_data_ref, d_min)
-
+        # self.get_distances()
+        gof = point_to_point_gof.calculate_gof(self.data,
+                                               self.reference_sample,
+                                               d_min)
         self.gof = gof
         return gof

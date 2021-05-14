@@ -73,15 +73,20 @@ class Test_point_to_point_gof(unittest.TestCase):
         for nD in [1, 2, 3, 5]:
             data = np.vstack([xs for i in range(nD)]).T
             reference = np.vstack([xs_ref for i in range(nD)]).T
-            gofclass = point_to_point_gof(data, reference)
-            gofclass.get_distances()
 
-            self.assertEqual(len(gofclass.d_data_data), gofclass.nevents_data *
-                             (gofclass.nevents_data-1) / 2)
-            self.assertEqual(len(gofclass.d_ref_ref), gofclass.nevents_ref *
-                             (gofclass.nevents_ref-1) / 2)
-            self.assertEqual(len(gofclass.d_data_ref), gofclass.nevents_ref *
-                             gofclass.nevents_data)
+            nevents_data = len(data)
+            nevents_ref = len(reference)
+
+            gofclass = point_to_point_gof(data, reference)
+            d_data_data, d_ref_ref, d_data_ref = gofclass.get_distances(
+                data, reference)
+
+            self.assertEqual(len(d_data_data), nevents_data *
+                             (nevents_data-1) / 2)
+            self.assertEqual(len(d_ref_ref), nevents_ref *
+                             (nevents_ref-1) / 2)
+            self.assertEqual(len(d_data_ref), nevents_ref *
+                             nevents_data)
 
     def test_symmetry(self):
         # the pointwise energy test is symmetrical in reference and

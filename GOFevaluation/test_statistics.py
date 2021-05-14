@@ -83,10 +83,13 @@ class test_statistics_sample(test_statistics_core):
         """Get n_perm GoF's by randomly permutating data and reference sample
         """
         n_data = len(self.data)
-        mixed_sample = np.vstack([self.data, self.reference_sample])
+        mixed_sample = np.concatenate([self.data, self.reference_sample],
+                                      axis=0)
         fake_gofs = np.zeros(n_perm)
         for i in range(n_perm):
-            np.random.shuffle(mixed_sample)
+            rng = np.random.default_rng()
+            rng.shuffle(mixed_sample, axis=0)
+
             data_perm = mixed_sample[:n_data]
             reference_perm = mixed_sample[n_data:]
             fake_gofs[i] = self.calculate_gof(data_perm, reference_perm)
