@@ -179,6 +179,12 @@ class point_to_point_gof(test_statistics_sample):
     def get_distances(cls, data, reference_sample):
         """get distances of data-data, reference-reference
         and data-reference"""
+        # For 1D input, arrays need to be transformed in
+        # order for the distance measure method to work
+        if data.ndim == 1:
+            data = np.vstack(data)
+        if reference_sample.ndim == 1:
+            reference_sample = np.vstack(reference_sample)
 
         dist = DistanceMetric.get_metric("euclidean")
 
