@@ -6,6 +6,7 @@ import unittest
 from GOFevaluation import kstest_gof
 from GOFevaluation import kstest_two_sample_gof
 from GOFevaluation import adtest_two_sample_gof
+from GOFevaluation import point_to_point_gof
 
 
 class Test_kstest_gof(unittest.TestCase):
@@ -94,6 +95,35 @@ class Test_adtest_two_sample_gof(unittest.TestCase):
         gof_ba = gofclass_ba.get_gof()
 
         self.assertEqual(gof_ab, gof_ba)
+
+
+class Test_pvalues(unittest.TestCase):
+    def test_two_sample_value(self):
+        """Test if p-value for two identical samples is 1."""
+        # Fixed Standard Normal distributed data
+        data = np.array([-0.80719796,  0.39138662,  0.12886947, -0.4383365,
+                         0.88404481, 0.98167819,  1.22302837,  0.1138414,
+                         0.45974904,  0.48926863])
+
+        gof_objects = [adtest_two_sample_gof(data, data),
+                       kstest_two_sample_gof(data, data),
+                       point_to_point_gof(data, data)]
+        d_mins = [None, None, .00001]
+
+        # For efficiency reasons, try first with few permutations
+        # and only increase number if p-value is outside of bounds.
+        n_perm_step = 100
+        n_perm_max = 1000
+        for gof_object, d_min in zip(gof_objects, d_mins):
+            n_perm = 100
+            while n_perm <= n_perm_max:
+                try:
+                    p_value = gof_object.get_pvalue(n_perm=n_perm, d_min=d_min)
+                    break
+                except ValueError:
+                    p_value = -1
+                    n_perm += n_perm_step
+            self.assertEqual(p_value, 1)
 
 
 if __name__ == "__main__":

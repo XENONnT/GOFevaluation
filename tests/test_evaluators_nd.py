@@ -198,9 +198,33 @@ class Test_binned_chi2_gof(unittest.TestCase):
 
             self.assertEqual(gof, gof_from_binned)
 
-# class Test_pvalues(unittest.TestCase):
-#     def test_two_sample_value(self):
-#         """Test if p-value is above .9 for equal input samples."""
+
+class Test_pvalue(unittest.TestCase):
+    def test_dimension_two_sample(self):
+        """Test if p-value for two identical samples is 1
+        for different dimensional samples."""
+        d_min = .00001
+        for nD in [1, 2, 3]:
+            # Fixed Standard Normal distributed data
+            data = np.array([-0.80719796,  0.39138662,  0.12886947, -0.4383365,
+                             0.88404481, 0.98167819,  1.22302837,  0.1138414,
+                             0.45974904,  0.48926863])
+            data = np.vstack([data for i in range(nD)]).T
+            gof_object = point_to_point_gof(data, data)
+
+            # For efficiency reasons, try first with few permutations
+            # and only increase number if p-value is outside of bounds.
+            n_perm_step = 100
+            n_perm_max = 1000
+            n_perm = 100
+            while n_perm <= n_perm_max:
+                try:
+                    p_value = gof_object.get_pvalue(n_perm=n_perm, d_min=d_min)
+                    break
+                except ValueError:
+                    p_value = -1
+                    n_perm += n_perm_step
+            self.assertEqual(p_value, 1)
 
 
 if __name__ == "__main__":

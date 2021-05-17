@@ -119,7 +119,10 @@ class test_statistics_sample(test_statistics_core):
         and reference sample.
         """
         if not hasattr(self, 'gof'):
-            _ = self.get_gof()
+            if d_min is not None:
+                _ = self.get_gof(d_min=d_min)
+            else:
+                _ = self.get_gof()
         if d_min is not None:
             fake_gofs = self.permutation_gofs(n_perm=n_perm, d_min=d_min)
         else:
