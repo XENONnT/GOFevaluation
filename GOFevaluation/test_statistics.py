@@ -64,12 +64,17 @@ class test_statistics(test_statistics_core):
             _ = self.get_gof()
         fake_gofs = self.sample_gofs(n_mc=n_mc)
         hist, bin_edges = np.histogram(fake_gofs, bins=1000)
-        cumulative_density = 1.0 - np.cumsum(hist) / np.sum(hist)
+        # add 0 bin to the front and truncate cumulative_density
+        # at the end to get pvalue[0] = 1
+        hist = np.concatenate([[0], hist])
+        cumulative_density = (1.0 - np.cumsum(hist) / np.sum(hist))[:-1]
+        index_pvalue = np.digitize(self.gof, bin_edges) - 1
         try:
-            pvalue = cumulative_density[np.digitize(self.gof, bin_edges) - 1]
+            pvalue = cumulative_density[index_pvalue]
         except IndexError:
             raise ValueError(
-                'Not enough MC\'s run -- GoF is outside toy distribution!')
+                f'Index {index_pvalue} is out of bounds. '
+                + 'Not enough MC\'s run!')
         return pvalue
 
 
@@ -79,7 +84,7 @@ class test_statistics_sample(test_statistics_core):
                                       data=data)
         self.reference_sample = reference_sample
 
-    def permutation_gofs(self, n_perm=1000):
+    def permutation_gofs(self, n_perm=1000, d_min=None):
         """Get n_perm GoF's by randomly permutating data and reference sample
         """
         n_data = len(self.data)
@@ -92,10 +97,16 @@ class test_statistics_sample(test_statistics_core):
 
             data_perm = mixed_sample[:n_data]
             reference_perm = mixed_sample[n_data:]
-            fake_gofs[i] = self.calculate_gof(data_perm, reference_perm)
+            if d_min is not None:
+                fake_gofs[i] = self.calculate_gof(
+                    data=data_perm, reference_sample=reference_perm,
+                    d_min=d_min)
+            else:
+                fake_gofs[i] = self.calculate_gof(
+                    data=data_perm, reference_sample=reference_perm)
         return fake_gofs
 
-    def get_pvalue(self, n_perm=1000):
+    def get_pvalue(self, n_perm=1000, d_min=None):
         """Get the p-value of the data under the null hypothesis
 
         Computes the p-value by means of a permutation test of data sample
@@ -103,12 +114,21 @@ class test_statistics_sample(test_statistics_core):
         """
         if not hasattr(self, 'gof'):
             _ = self.get_gof()
-        fake_gofs = self.permutation_gofs(n_perm=n_perm)
+        if d_min is not None:
+            fake_gofs = self.permutation_gofs(n_perm=n_perm, d_min=d_min)
+        else:
+            fake_gofs = self.permutation_gofs(n_perm=n_perm)
         hist, bin_edges = np.histogram(fake_gofs, bins=1000)
-        cumulative_density = 1.0 - np.cumsum(hist) / np.sum(hist)
+        # add 0 bin to the front and truncate cumulative_density
+        # at the end to get pvalue[0] = 1
+        hist = np.concatenate([[0], hist])
+        cumulative_density = (1.0 - np.cumsum(hist) / np.sum(hist))[:-1]
+
+        index_pvalue = np.digitize(self.gof, bin_edges) - 1
         try:
-            pvalue = cumulative_density[np.digitize(self.gof, bin_edges) - 1]
+            pvalue = cumulative_density[index_pvalue]
         except IndexError:
             raise ValueError(
-                'Not enough permutations run -- GoF is outside distribution!')
+                f'Index {index_pvalue} is out of bounds. '
+                + 'Not enough permutations run!')
         return pvalue

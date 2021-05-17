@@ -198,6 +198,10 @@ class Test_binned_chi2_gof(unittest.TestCase):
 
             self.assertEqual(gof, gof_from_binned)
 
+# class Test_pvalues(unittest.TestCase):
+#     def test_two_sample_value(self):
+#         """Test if p-value is above .9 for equal input samples."""
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,6 @@
 import scipy.stats as sps
 import numpy as np
+import warnings
 from collections import OrderedDict
 from scipy.interpolate import interp1d
 from GOFevaluation import test_statistics
@@ -32,6 +33,12 @@ class adtest_two_sample_gof(test_statistics_sample):
 
     @classmethod
     def calculate_gof(cls, data, reference_sample):
+        # mute specific warnings from sps p-value calculation
+        # as this value is not used here anyways:
+        warnings.filterwarnings(
+            "ignore", message="p-value floored: true value smaller than 0.001")
+        warnings.filterwarnings(
+            "ignore", message="p-value capped: true value larger than 0.25")
         gof = sps.anderson_ksamp([data, reference_sample])[0]
         return gof
 
