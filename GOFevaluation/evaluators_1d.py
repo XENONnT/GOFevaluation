@@ -4,6 +4,7 @@ from collections import OrderedDict
 from scipy.interpolate import interp1d
 from GOFevaluation import test_statistics
 from GOFevaluation import test_statistics_sample
+from GOFevaluation import binned_chi2_gof
 
 
 class binned_poisson_gof(test_statistics):
@@ -25,30 +26,6 @@ class binned_poisson_gof(test_statistics):
         """
         value = sps.poisson(self.expected_events).logpmf(
             self.binned_data).sum()
-        return value
-
-
-class chi2_gof(test_statistics):
-    """Docstring for chi2_gof. """
-
-    def __init__(self, data, pdf, nevents_expected, bin_edges,
-                 empty_bin_value):
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=pdf,
-                                 nevents_expected=nevents_expected)
-        self._name = self.__class__.__name__ + "_" + str(empty_bin_value)
-        self.empty_bin_value = empty_bin_value
-
-        self.bin_edges = bin_edges
-        self.bin_data(bin_edges=bin_edges)
-
-    def calculate_gof(self):
-        no_empty_bins_data_events = np.where(self.binned_data == 0,
-                                             self.empty_bin_value,
-                                             self.binned_data)
-        value = sps.chisquare(self.expected_events,
-                              no_empty_bins_data_events)[0]
         return value
 
 
@@ -154,29 +131,14 @@ class evaluators_1d(object):
         self.data = data
 
         self.l_measures_to_calculate = [
-            chi2_gof(data=data,
-                     pdf=pdf,
-                     nevents_expected=nevents_expected,
-                     bin_edges=bin_edges,
-                     empty_bin_value=0.1),
-            chi2_gof(data=data,
-                     pdf=pdf,
-                     nevents_expected=nevents_expected,
-                     bin_edges=bin_edges,
-                     empty_bin_value=0.01),
-            chi2_gof(data=data,
-                     pdf=pdf,
-                     nevents_expected=nevents_expected,
-                     bin_edges=bin_edges,
-                     empty_bin_value=0.001),
+            binned_chi2_gof(data=data,
+                            pdf=pdf,
+                            nevents_expected=nevents_expected,
+                            bin_edges=bin_edges),
             binned_poisson_gof(data=data,
                                pdf=pdf,
                                nevents_expected=nevents_expected,
                                bin_edges=bin_edges),
-            adtest_two_sample_gof(data=data,
-                                  pdf=pdf,
-                                  nevents_expected=nevents_expected,
-                                  bin_edges=bin_edges),
             kstest_gof(data=data,
                        pdf=pdf,
                        bin_edges=bin_edges)

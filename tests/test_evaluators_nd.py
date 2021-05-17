@@ -4,9 +4,10 @@ import unittest
 
 from GOFevaluation import binned_poisson_chi2_gof
 from GOFevaluation import point_to_point_gof
+from GOFevaluation import binned_chi2_gof
 
 
-class TestEvaluatorsNd(unittest.TestCase):
+class Test_binned_poisson_chi2_gof(unittest.TestCase):
     def test_dimensions(self):
         # test nD binned GOF in different dimensions:
         signal_expectation = 100
@@ -32,6 +33,39 @@ class TestEvaluatorsNd(unittest.TestCase):
 
             self.assertLess(abs(gof_flat - gof), 1e-8)
 
+    def test_from_binned(self):
+        """Test if regular init and frtom_binned init give same result"""
+        for nD in range(1, 5+1):
+            # generate uniformly distributed data points and bibn data
+            n_events_per_bin = 5
+            n_bins_per_dim = int(32**(1/nD))
+            n_events = int(n_bins_per_dim**nD * n_events_per_bin)
+
+            data_points = sps.uniform().rvs(size=[n_events, nD])
+            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.array([bin_edges for i in range(nD)])
+            binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
+
+            # generate binned pdf
+            normed_pdf = np.ones(binned_data.shape)
+            normed_pdf /= np.sum(normed_pdf)
+            expected_events = normed_pdf * np.sum(binned_data)
+
+            # calculate gof with both inits
+            gofclass = binned_poisson_chi2_gof.from_binned(
+                data=binned_data, expectations=expected_events)
+            gof_from_binned = gofclass.calculate_gof()
+
+            gofclass = binned_poisson_chi2_gof(data=data_points,
+                                               pdf=normed_pdf,
+                                               bin_edges=bin_edges,
+                                               nevents_expected=n_events)
+            gof = gofclass.calculate_gof()
+
+            self.assertEqual(gof, gof_from_binned)
+
+
+class Test_point_to_point_gof(unittest.TestCase):
     def test_distances(self):
         # test if number of distance values is correct
         xs = np.linspace(0, 1, 100)
@@ -50,15 +84,18 @@ class TestEvaluatorsNd(unittest.TestCase):
                              gofclass.nevents_data)
 
     def test_symmetry(self):
-        # the pointwise energy test is symmetrical in reference and science sample:
+        # the pointwise energy test is symmetrical in reference and
+        # science sample:
         xs_a = sps.uniform().rvs(50)[:, None]
         xs_b = sps.uniform().rvs(50)[:, None]
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        gofclass_ab.d_min = 0.01  # set explicitly to avoid asymmetry in setting d_min
+        # set explicitly to avoid asymmetry in setting d_min
+        gofclass_ab.d_min = 0.01
         gofclass_ab.get_distances()
         gof_ab = gofclass_ab.calculate_gof()
         gofclass_ba = point_to_point_gof(xs_b, xs_a)
-        gofclass_ba.d_min = 0.01  # set explicitly to avoid asymmetry in setting d_min
+        # set explicitly to avoid asymmetry in setting d_min
+        gofclass_ba.d_min = 0.01
         gofclass_ba.get_distances()
         gof_ba = gofclass_ba.calculate_gof()
 
@@ -72,11 +109,95 @@ class TestEvaluatorsNd(unittest.TestCase):
 
         e_data_ref = np.log(2)/2
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        gofclass_ab.d_min = 0.01  # set explicitly to avoid asymmetry in setting d_min
+        # set explicitly to avoid asymmetry in setting d_min
+        gofclass_ab.d_min = 0.01
         gofclass_ab.get_distances()
         gof_ab = gofclass_ab.calculate_gof()
         # it seems precision is a bit low in this case
         self.assertAlmostEqual(gof_ab, e_data_ref, places=6)
+
+
+class Test_binned_chi2_gof(unittest.TestCase):
+    def test_chi2_distribution(self):
+        """check, if binned data follows chi2-distribution with
+        ndof = n_bins - 1 as one would expect. Test for 1-5 dimensions."""
+
+        n_testvalues = 100
+        model = sps.uniform()
+        for nD in range(1, 5+1):
+            # have same number of events per bin and total number
+            # of bins for all tests
+            n_events_per_bin = 20
+            n_bins_per_dim = int(32**(1/nD))
+            n_events = int(n_bins_per_dim**nD * n_events_per_bin)
+
+            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.array([bin_edges for i in range(nD)])
+
+            chi2_vals = []
+            for i in range(n_testvalues):
+                # generate uniformly distributed rvs with fixed random
+                # states for reproducibility
+                data_points = model.rvs(
+                    size=[n_events, nD], random_state=300+i)
+                binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
+
+                normed_pdf = np.ones(binned_data.shape)
+                normed_pdf /= np.sum(normed_pdf)
+                expected_events = normed_pdf * np.sum(binned_data)
+
+                gofclass = binned_chi2_gof.from_binned(
+                    data=binned_data, expectations=expected_events)
+                chi2_val = gofclass.calculate_gof()
+                chi2_vals.append(chi2_val)
+
+            ndof = n_bins_per_dim**nD - 1
+
+            # compare histogram of chi2s to expected chi2(ndof) distribution:
+            n_chi2_bins = 20
+            n, bin_edges = np.histogram(chi2_vals, bins=n_chi2_bins,
+                                        range=(np.quantile(chi2_vals, .01),
+                                               np.quantile(chi2_vals, .99)))
+            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            bin_widths = bin_edges[1:] - bin_edges[:-1]
+            chi2_pdf = sps.chi2.pdf(bin_centers, df=ndof) * \
+                bin_widths * n_testvalues
+
+            # calculate 'reduced chi2' to estimate agreement of chi2 values
+            # and chi2 pdf
+            test_chi2 = np.sum((chi2_pdf-n)**2 / chi2_pdf)/n_chi2_bins
+            self.assertTrue((test_chi2 > 1/3) & (test_chi2 < 3))
+
+    def test_from_binned(self):
+        """Test if regular init and frtom_binned init give same result"""
+        for nD in range(1, 5+1):
+            # generate uniformly distributed data points and bibn data
+            n_events_per_bin = 5
+            n_bins_per_dim = int(32**(1/nD))
+            n_events = int(n_bins_per_dim**nD * n_events_per_bin)
+
+            data_points = sps.uniform().rvs(size=[n_events, nD])
+            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.array([bin_edges for i in range(nD)])
+            binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
+
+            # generate binned pdf
+            normed_pdf = np.ones(binned_data.shape)
+            normed_pdf /= np.sum(normed_pdf)
+            expected_events = normed_pdf * np.sum(binned_data)
+
+            # calculate gof with both inits
+            gofclass = binned_chi2_gof.from_binned(
+                data=binned_data, expectations=expected_events)
+            gof_from_binned = gofclass.calculate_gof()
+
+            gofclass = binned_chi2_gof(data=data_points,
+                                       pdf=normed_pdf,
+                                       bin_edges=bin_edges,
+                                       nevents_expected=n_events)
+            gof = gofclass.calculate_gof()
+
+            self.assertEqual(gof, gof_from_binned)
 
 
 if __name__ == "__main__":

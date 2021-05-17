@@ -7,18 +7,25 @@ from GOFevaluation import test_statistics_sample
 
 class binned_poisson_chi2_gof(test_statistics):
     """
-        computes the binned poisson modified Chi2 from Baker+Cousins
+        Computes the binned poisson modified Chi2 from Baker+Cousins
         In the limit of large bin counts (10+) this is Chi2 distributed.
         In the general case you may have to toyMC the distribution yourself.
-        Input:
-         - data: array of equal shape as nevents_expected
-             containing observed events in each bin
-         - pdf: normalized histogram of binned expectations
-         - bin_edges: bin-edges of the pdf
-         - nevents_expected: expectation, can be mean of expectation pdf
+
+        Input (unbinned data):
+        - data: array of unbinned data
+        - pdf: normalized histogram of binned expectations
+        - bin_edges: bin-edges of the pdf
+        - nevents_expected: expectation, can be mean of expectation pdf
+
+        Input (binned data):
+        initialise with binned_poisson_chi2_gof.from_binned(...)
+        - data: array of binned data
+        - expectations: array of binned expectations
+
         Output:
-         - the sum of the binned poisson Chi2.
-        reference: https://doi.org/10.1016/0167-5087(84)90016-4
+        - the sum of the binned poisson Chi2.
+
+        Reference: https://doi.org/10.1016/0167-5087(84)90016-4
         While the absolute likelihood is a poor GOF measure
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
     """
@@ -28,6 +35,8 @@ class binned_poisson_chi2_gof(test_statistics):
 
         In this case the bin-edges don't matter, so we bypass the usual init
         """
+        assert (data.shape == expectations.shape), \
+            "Shape of binned data does not match shape of expectations!"
         self = cls(None, None, None, None)
         test_statistics.__init__(self=self,
                                  data=data,
@@ -56,7 +65,7 @@ class binned_poisson_chi2_gof(test_statistics):
 
     @classmethod
     def calculate_binned_gof(cls, binned_data, binned_expectations):
-        """Get Chi2 GoF from binned data & expectations
+        """Get binned poisson chi2 GoF from binned data & expectations
         """
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_expectations).logpmf(binned_data)
@@ -64,7 +73,7 @@ class binned_poisson_chi2_gof(test_statistics):
 
     def calculate_gof(self):
         """
-            Get Chi2 GoF using current class attributes
+            Get binned poisson chi2 GoF using current class attributes
         """
         gof = binned_poisson_chi2_gof.calculate_binned_gof(
             self.binned_data,
@@ -105,8 +114,74 @@ class binned_poisson_chi2_gof(test_statistics):
 
 
 class binned_chi2_gof(test_statistics):
-    # TODO Implement!
-    pass
+    """Compoutes the binned chi2 GoF based on Pearson's chi2.
+
+    Input (unbinned data):
+    - data: array of unbinned data
+    - pdf: normalized histogram of binned expectations
+    - bin_edges: bin-edges of the pdf
+    - nevents_expected: expectation, can be mean of expectation pdf
+
+    Input (binned data):
+    initialise with binned_chi2_gof.from_binned(...)
+        - data: array of binned data
+        - expectations: array of binned expectations
+
+    Output:
+    - Pearson's Chi2
+
+    Reference: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
+    """
+    @classmethod
+    def from_binned(cls, data, expectations):
+        """Initialize with already binned data + expectations
+
+        In this case the bin-edges don't matter, so we bypass the usual init
+        """
+        assert (data.shape == expectations.shape), \
+            "Shape of binned data does not match shape of expectations!"
+        self = cls(None, None, None, None)
+        test_statistics.__init__(self=self,
+                                 data=data,
+                                 pdf=expectations / np.sum(expectations),
+                                 nevents_expected=np.sum(expectations))
+        self._name = self.__class__.__name__
+        self.binned_data = data
+
+        return self
+
+    def __init__(self, data, pdf, bin_edges, nevents_expected):
+        """Initialize with unbinned data and a normalized pdf
+        """
+        if data is None:
+            # bypass init, using binned data
+            return
+        # initialise with the common call signature
+        test_statistics.__init__(self=self,
+                                 data=data,
+                                 pdf=pdf,
+                                 nevents_expected=nevents_expected)
+        self._name = self.__class__.__name__
+
+        self.bin_edges = bin_edges
+        self.bin_data(bin_edges=bin_edges)
+        return
+
+    @classmethod
+    def calculate_binned_gof(cls, binned_data, binned_expectations):
+        """Get Chi2 GoF from binned data & expectations
+        """
+        gof = sps.chisquare(binned_data,
+                            binned_expectations, axis=None)[0]
+        return gof
+
+    def calculate_gof(self):
+        """
+            Get Chi2 GoF using current class attributes
+        """
+        gof = binned_chi2_gof.calculate_binned_gof(
+            self.binned_data, self.pdf * self.nevents_expected)
+        return gof
 
 
 class point_to_point_gof(test_statistics_sample):

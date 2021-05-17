@@ -34,6 +34,9 @@ class test_statistics(test_statistics_core):
         else:
             self.binned_data, _ = np.histogramdd(self.data, bins=bin_edges)
 
+        assert (self.binned_data.shape == self.pdf.shape), \
+            "Shape of binned data doesn not match shape of pdf!"
+
 
 class test_statistics_sample(test_statistics_core):
     def __init__(self, data, reference_sample):
