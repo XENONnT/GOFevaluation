@@ -69,12 +69,18 @@ class test_statistics(test_statistics_core):
         hist = np.concatenate([[0], hist])
         cumulative_density = (1.0 - np.cumsum(hist) / np.sum(hist))[:-1]
         index_pvalue = np.digitize(self.gof, bin_edges) - 1
-        try:
-            pvalue = cumulative_density[index_pvalue]
-        except IndexError:
+
+        if index_pvalue == (len(hist) - 1):
             raise ValueError(
                 f'Index {index_pvalue} is out of bounds. '
                 + 'Not enough MC\'s run!')
+        elif index_pvalue == -1:
+            raise ValueError(
+                f'Index {index_pvalue} is out of bounds. '
+                + 'Not enough MC\'s run!')
+        else:
+            pvalue = cumulative_density[index_pvalue]
+
         return pvalue
 
 
@@ -125,10 +131,16 @@ class test_statistics_sample(test_statistics_core):
         cumulative_density = (1.0 - np.cumsum(hist) / np.sum(hist))[:-1]
 
         index_pvalue = np.digitize(self.gof, bin_edges) - 1
-        try:
-            pvalue = cumulative_density[index_pvalue]
-        except IndexError:
+
+        if index_pvalue == (len(hist) - 1):
             raise ValueError(
                 f'Index {index_pvalue} is out of bounds. '
                 + 'Not enough permutations run!')
+        elif index_pvalue == -1:
+            raise ValueError(
+                f'Index {index_pvalue} is out of bounds. '
+                + 'Not enough permutations run!')
+        else:
+            pvalue = cumulative_density[index_pvalue]
+
         return pvalue
