@@ -202,9 +202,9 @@ class Test_binned_chi2_gof(unittest.TestCase):
 class Test_pvalue(unittest.TestCase):
     def test_dimension_two_sample(self):
         """Test if p-value for two identical samples is 1
-        for different dimensional samples."""
+        for higher dimensional samples."""
         d_min = .00001
-        for nD in [1, 2, 3]:
+        for nD in [2, 3, 4]:
             # Fixed Standard Normal distributed data
             data = np.array([-0.80719796,  0.39138662,  0.12886947, -0.4383365,
                              0.88404481, 0.98167819,  1.22302837,  0.1138414,
@@ -224,6 +224,31 @@ class Test_pvalue(unittest.TestCase):
                 except ValueError:
                     p_value = -1
                     n_perm += n_perm_step
+            self.assertEqual(p_value, 1)
+
+    def test_value(self):
+        """Test for 1D if binned_data = expectations gives p-value of one."""
+        n_bins = 3
+        n_events_per_bin = 5
+
+        data = np.ones(n_bins) * n_events_per_bin
+
+        gof_objects = [binned_chi2_gof.from_binned(data, data),
+                       binned_poisson_chi2_gof.from_binned(data, data)]
+
+        # For efficiency reasons, try first with few permutations
+        # and only increase number if p-value is outside of bounds.
+        n_mc_step = 200
+        n_mc_max = 1000
+        for gof_object in gof_objects:
+            n_mc = 200
+            while n_mc <= n_mc_max:
+                try:
+                    p_value = gof_object.get_pvalue(n_mc=n_mc)
+                    break
+                except ValueError:
+                    p_value = -1
+                    n_mc += n_mc_step
             self.assertEqual(p_value, 1)
 
 
