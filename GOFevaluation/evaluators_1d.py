@@ -31,8 +31,8 @@ class adtest_two_sample_gof(test_statistics_sample):
 
         self._name = self.__class__.__name__
 
-    @classmethod
-    def calculate_gof(cls, data, reference_sample):
+    @staticmethod
+    def calculate_gof(data, reference_sample):
         # mute specific warnings from sps p-value calculation
         # as this value is not used here anyways:
         warnings.filterwarnings(
@@ -43,8 +43,7 @@ class adtest_two_sample_gof(test_statistics_sample):
         return gof
 
     def get_gof(self):
-        gof = adtest_two_sample_gof.calculate_gof(
-            self.data, self.reference_sample)
+        gof = self.calculate_gof(self.data, self.reference_sample)
         self.gof = gof
         return gof
 
@@ -76,8 +75,8 @@ class kstest_gof(test_statistics):
         self.bin_edges = bin_edges
         self.bin_centers = bin_centers
 
-    @classmethod
-    def calculate_gof(cls, data, cdf):
+    @staticmethod
+    def calculate_gof(data, cdf):
         gof = sps.kstest(data, cdf=cdf)[0]
         return gof
 
@@ -89,12 +88,13 @@ class kstest_gof(test_statistics):
         interp_cdf = interp1d(self.bin_centers,
                               np.cumsum(self.pdf),
                               kind='cubic')
-        gof = kstest_gof.calculate_gof(self.data, interp_cdf)
+        gof = self.calculate_gof(self.data, interp_cdf)
         self.gof = gof
         return gof
 
     def get_pvalue(self, n_mc=1000):
-        # This method is not implemented yet. We are working on adding it in the near future.
+        # This method is not implemented yet. We are working on adding it in
+        # the near future.
         raise NotImplementedError("p-value computation not yet implemented!")
 
 
@@ -116,8 +116,8 @@ class kstest_two_sample_gof(test_statistics_sample):
         )
         self._name = self.__class__.__name__
 
-    @classmethod
-    def calculate_gof(cls, data, reference_sample):
+    @staticmethod
+    def calculate_gof(data, reference_sample):
         gof = sps.ks_2samp(data, reference_sample)[0]
         return gof
 
@@ -126,8 +126,7 @@ class kstest_two_sample_gof(test_statistics_sample):
         calculate supremum of the absolute value of the difference
         of both ECDF via scipy.stats.kstest
         """
-        gof = kstest_two_sample_gof.calculate_gof(
-            self.data, self.reference_sample)
+        gof = self.calculate_gof(self.data, self.reference_sample)
         self.gof = gof
         return gof
 

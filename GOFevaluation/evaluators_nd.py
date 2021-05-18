@@ -63,8 +63,8 @@ class binned_poisson_chi2_gof(test_statistics):
         self.bin_data(bin_edges=bin_edges)
         return
 
-    @classmethod
-    def calculate_gof(cls, binned_data, binned_expectations):
+    @staticmethod
+    def calculate_gof(binned_data, binned_expectations):
         """Get binned poisson chi2 GoF from binned data & expectations
         """
         ret = sps.poisson(binned_data).logpmf(binned_data)
@@ -75,7 +75,7 @@ class binned_poisson_chi2_gof(test_statistics):
         """
             Get binned poisson chi2 GoF using current class attributes
         """
-        gof = binned_poisson_chi2_gof.calculate_gof(
+        gof = self.calculate_gof(
             self.binned_data,
             self.pdf * self.nevents_expected
         )
@@ -137,8 +137,8 @@ class binned_chi2_gof(test_statistics):
         self.bin_data(bin_edges=bin_edges)
         return
 
-    @classmethod
-    def calculate_gof(cls, binned_data, binned_expectations):
+    @staticmethod
+    def calculate_gof(binned_data, binned_expectations):
         """Get Chi2 GoF from binned data & expectations
         """
         gof = sps.chisquare(binned_data,
@@ -149,8 +149,8 @@ class binned_chi2_gof(test_statistics):
         """
             Get Chi2 GoF using current class attributes
         """
-        gof = binned_chi2_gof.calculate_gof(
-            self.binned_data, self.pdf * self.nevents_expected)
+        gof = self.calculate_gof(self.binned_data,
+                                 self.pdf * self.nevents_expected)
         self.gof = gof
         return gof
 
@@ -175,8 +175,8 @@ class point_to_point_gof(test_statistics_sample):
         )
         self._name = self.__class__.__name__
 
-    @classmethod
-    def get_distances(cls, data, reference_sample):
+    @staticmethod
+    def get_distances(data, reference_sample):
         """get distances of data-data, reference-reference
         and data-reference"""
         # For 1D input, arrays need to be transformed in
@@ -200,8 +200,8 @@ class point_to_point_gof(test_statistics_sample):
 
         return d_data_data, d_ref_ref, d_data_ref
 
-    @classmethod
-    def get_d_min(cls, d_ref_ref):
+    @staticmethod
+    def get_d_min(d_ref_ref):
         """find d_min as the average distance of reference_simulation
         points in the region of highest density"""
         # For now a very simple approach is chosen as the paper states that
@@ -210,14 +210,13 @@ class point_to_point_gof(test_statistics_sample):
         d_min = np.quantile(d_ref_ref, 0.001)
         return d_min
 
-    @classmethod
-    def weighting_function(cls, d, d_min):
+    @staticmethod
+    def weighting_function(d, d_min):
         """Weigh distances d according to log profile. Pole at d = 0
         is omitted by introducing d_min that replaces the distance for
         d < d_min
         """
         d[d <= d_min] = d_min
-
         return -np.log(d)
 
     @classmethod
@@ -245,8 +244,6 @@ class point_to_point_gof(test_statistics_sample):
 
     def get_gof(self, d_min=None):
         # self.get_distances()
-        gof = point_to_point_gof.calculate_gof(self.data,
-                                               self.reference_sample,
-                                               d_min)
+        gof = self.calculate_gof(self.data, self.reference_sample, d_min)
         self.gof = gof
         return gof

@@ -8,8 +8,8 @@ class test_statistics_core(object):
         self.nevents = len(data)
         self._name = None
 
-    @classmethod
-    def calculate_gof(cls):
+    @staticmethod
+    def calculate_gof():
         raise NotImplementedError("calculate_gof must be implemented!")
 
     def get_gof(self):
