@@ -94,7 +94,7 @@ class kstest_gof(test_statistics):
         return gof
 
     def get_pvalue(self, n_mc=1000):
-        raise NotImplementedError("P-value comutation not yet implemented!")
+        raise NotImplementedError("p-value computation not yet implemented!")
 
 
 class kstest_two_sample_gof(test_statistics_sample):
