@@ -94,6 +94,7 @@ class kstest_gof(test_statistics):
         return gof
 
     def get_pvalue(self, n_mc=1000):
+        # This method is not implemented yet. We are working on adding it in the near future.
         raise NotImplementedError("p-value computation not yet implemented!")
 
 
