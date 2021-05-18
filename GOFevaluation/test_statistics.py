@@ -10,7 +10,7 @@ class test_statistics_core(object):
 
     @classmethod
     def calculate_gof(cls):
-        raise NotImplementedError("calculate_gof mus be implemented!")
+        raise NotImplementedError("calculate_gof must be implemented!")
 
     def get_gof(self):
         raise NotImplementedError("Your goodnes of fit computation goes here!")
