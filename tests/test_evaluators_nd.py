@@ -29,7 +29,7 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
 
             gofclass = binned_poisson_chi2_gof(
                 data, mus, bins, signal_expectation)
-            gof = gofclass.calculate_gof()
+            gof = gofclass.get_gof()
 
             self.assertLess(abs(gof_flat - gof), 1e-8)
 
@@ -54,13 +54,13 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
             # calculate gof with both inits
             gofclass = binned_poisson_chi2_gof.from_binned(
                 data=binned_data, expectations=expected_events)
-            gof_from_binned = gofclass.calculate_gof()
+            gof_from_binned = gofclass.get_gof()
 
             gofclass = binned_poisson_chi2_gof(data=data_points,
                                                pdf=normed_pdf,
                                                bin_edges=bin_edges,
                                                nevents_expected=n_events)
-            gof = gofclass.calculate_gof()
+            gof = gofclass.get_gof()
 
             self.assertEqual(gof, gof_from_binned)
 
@@ -73,15 +73,20 @@ class Test_point_to_point_gof(unittest.TestCase):
         for nD in [1, 2, 3, 5]:
             data = np.vstack([xs for i in range(nD)]).T
             reference = np.vstack([xs_ref for i in range(nD)]).T
-            gofclass = point_to_point_gof(data, reference)
-            gofclass.get_distances()
 
-            self.assertEqual(len(gofclass.d_data_data), gofclass.nevents_data *
-                             (gofclass.nevents_data-1) / 2)
-            self.assertEqual(len(gofclass.d_ref_ref), gofclass.nevents_ref *
-                             (gofclass.nevents_ref-1) / 2)
-            self.assertEqual(len(gofclass.d_data_ref), gofclass.nevents_ref *
-                             gofclass.nevents_data)
+            nevents_data = len(data)
+            nevents_ref = len(reference)
+
+            gofclass = point_to_point_gof(data, reference)
+            d_data_data, d_ref_ref, d_data_ref = gofclass.get_distances(
+                data, reference)
+
+            self.assertEqual(len(d_data_data), nevents_data *
+                             (nevents_data-1) / 2)
+            self.assertEqual(len(d_ref_ref), nevents_ref *
+                             (nevents_ref-1) / 2)
+            self.assertEqual(len(d_data_ref), nevents_ref *
+                             nevents_data)
 
     def test_symmetry(self):
         # the pointwise energy test is symmetrical in reference and
@@ -89,15 +94,11 @@ class Test_point_to_point_gof(unittest.TestCase):
         xs_a = sps.uniform().rvs(50)[:, None]
         xs_b = sps.uniform().rvs(50)[:, None]
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        # set explicitly to avoid asymmetry in setting d_min
-        gofclass_ab.d_min = 0.01
-        gofclass_ab.get_distances()
-        gof_ab = gofclass_ab.calculate_gof()
+        # set d_min explicitly to avoid asymmetry in setting d_min
+        gof_ab = gofclass_ab.get_gof(d_min=0.01)
         gofclass_ba = point_to_point_gof(xs_b, xs_a)
-        # set explicitly to avoid asymmetry in setting d_min
-        gofclass_ba.d_min = 0.01
-        gofclass_ba.get_distances()
-        gof_ba = gofclass_ba.calculate_gof()
+        # set d_min explicitly to avoid asymmetry in setting d_min
+        gof_ba = gofclass_ba.get_gof(d_min=0.01)
 
         # it seems precision is a bit low in this case
         self.assertAlmostEqual(gof_ab, gof_ba, places=6)
@@ -109,10 +110,8 @@ class Test_point_to_point_gof(unittest.TestCase):
 
         e_data_ref = np.log(2)/2
         gofclass_ab = point_to_point_gof(xs_a, xs_b)
-        # set explicitly to avoid asymmetry in setting d_min
-        gofclass_ab.d_min = 0.01
-        gofclass_ab.get_distances()
-        gof_ab = gofclass_ab.calculate_gof()
+        # set d_min explicitly to avoid asymmetry in setting d_min
+        gof_ab = gofclass_ab.get_gof(d_min=0.01)
         # it seems precision is a bit low in this case
         self.assertAlmostEqual(gof_ab, e_data_ref, places=6)
 
@@ -148,7 +147,7 @@ class Test_binned_chi2_gof(unittest.TestCase):
 
                 gofclass = binned_chi2_gof.from_binned(
                     data=binned_data, expectations=expected_events)
-                chi2_val = gofclass.calculate_gof()
+                chi2_val = gofclass.get_gof()
                 chi2_vals.append(chi2_val)
 
             ndof = n_bins_per_dim**nD - 1
@@ -189,15 +188,68 @@ class Test_binned_chi2_gof(unittest.TestCase):
             # calculate gof with both inits
             gofclass = binned_chi2_gof.from_binned(
                 data=binned_data, expectations=expected_events)
-            gof_from_binned = gofclass.calculate_gof()
+            gof_from_binned = gofclass.get_gof()
 
             gofclass = binned_chi2_gof(data=data_points,
                                        pdf=normed_pdf,
                                        bin_edges=bin_edges,
                                        nevents_expected=n_events)
-            gof = gofclass.calculate_gof()
+            gof = gofclass.get_gof()
 
             self.assertEqual(gof, gof_from_binned)
+
+
+class Test_pvalue(unittest.TestCase):
+    def test_dimension_two_sample(self):
+        """Test if p-value for two identical samples is 1
+        for higher dimensional samples."""
+        d_min = .00001
+        for nD in [2, 3, 4]:
+            # Fixed Standard Normal distributed data
+            data = np.array([-0.80719796,  0.39138662,  0.12886947, -0.4383365,
+                             0.88404481, 0.98167819,  1.22302837,  0.1138414,
+                             0.45974904,  0.48926863])
+            data = np.vstack([data for i in range(nD)]).T
+            gof_object = point_to_point_gof(data, data)
+
+            # For efficiency reasons, try first with few permutations
+            # and only increase number if p-value is outside of bounds.
+            n_perm_step = 100
+            n_perm_max = 1000
+            n_perm = 100
+            while n_perm <= n_perm_max:
+                try:
+                    p_value = gof_object.get_pvalue(n_perm=n_perm, d_min=d_min)
+                    break
+                except ValueError:
+                    p_value = -1
+                    n_perm += n_perm_step
+            self.assertEqual(p_value, 1)
+
+    def test_value(self):
+        """Test for 1D if binned_data = expectations gives p-value of one."""
+        n_bins = 3
+        n_events_per_bin = 5
+
+        data = np.ones(n_bins) * n_events_per_bin
+
+        gof_objects = [binned_chi2_gof.from_binned(data, data),
+                       binned_poisson_chi2_gof.from_binned(data, data)]
+
+        # For efficiency reasons, try first with few permutations
+        # and only increase number if p-value is outside of bounds.
+        n_mc_step = 200
+        n_mc_max = 1000
+        for gof_object in gof_objects:
+            n_mc = 200
+            while n_mc <= n_mc_max:
+                try:
+                    p_value = gof_object.get_pvalue(n_mc=n_mc)
+                    break
+                except ValueError:
+                    p_value = -1
+                    n_mc += n_mc_step
+            self.assertEqual(p_value, 1)
 
 
 if __name__ == "__main__":
