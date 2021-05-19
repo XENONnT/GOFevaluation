@@ -4,7 +4,7 @@ Evaluate the Goodness-of-Fit (GoF) for binned or unbinned data.
 
 This GoF suite comprises the possibility to calculate different 1D / nD, binned / two-sample (unbinned) GoF measures and the corresponding p-value. A list of implemented measures is given below. 
 
-
+ 
 ## Implemented GoF measures
 | GoF measure                   | Class                     |    data input   | reference input | dim |
 |-------------------------------|---------------------------|:---------------:|:---------------:|:---:|
@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 Then install the package:
 ```
-python setup.py develop --user
+python setup.py --user
 ```
 You are now good to go!
 
@@ -60,6 +60,3 @@ p_value = gof_object.get_pvalue()
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
