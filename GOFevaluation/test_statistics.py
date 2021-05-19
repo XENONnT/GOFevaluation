@@ -13,12 +13,12 @@ class test_statistics_core(object):
         raise NotImplementedError("calculate_gof must be implemented!")
 
     def get_gof(self):
-        raise NotImplementedError("Your goodnes of fit computation goes here!")
+        raise NotImplementedError("Your goodness of fit computation goes here!")
 
     def get_result_as_dict(self):
         assert self._name is not None, (str(self.__class__.__name__)
                                         + ": You need to define self._name "
-                                        + "for your goodnes of fit measure!")
+                                        + "for your goodness of fit measure!")
         value = self.get_gof()
         return {self._name: value}
 
