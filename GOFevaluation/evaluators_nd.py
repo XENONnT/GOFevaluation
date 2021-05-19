@@ -59,7 +59,6 @@ class binned_poisson_chi2_gof(test_statistics):
                                  nevents_expected=nevents_expected)
         self._name = self.__class__.__name__
 
-        self.bin_edges = bin_edges
         self.bin_data(bin_edges=bin_edges)
         return
 
@@ -133,7 +132,6 @@ class binned_chi2_gof(test_statistics):
                                  nevents_expected=nevents_expected)
         self._name = self.__class__.__name__
 
-        self.bin_edges = bin_edges
         self.bin_data(bin_edges=bin_edges)
         return
 
