@@ -39,25 +39,27 @@ You are now good to go!
 Depending on your data and reference input you can initialise a `gof_object` in one of the following ways:
 ```python
 import GOFevaluation as ge
-```
-#### Data Sample + Binned PDF
-```python
+
+# Data Sample + Binned PDF
 gof_object = ge.binned_poisson_chi2_gof(data, pdf, bin_edges, nevents_expected)
-```
 
-#### Binned Data + Binned PDF
-```python
+# Binned Data + Binned PDF
 gof_object = ge.binned_poisson_chi2_gof.from_binned(data, expectations)
-```
 
-#### Data Sample + Reference Sample
-```python
+# Data Sample + Reference Sample
 gof_object = ge.point_to_point_gof(data, reference_sample)
 ```
 
-#### Calculate GoF and p-value for any gof object
 With any `gof_object` you can calculate the GoF and the corresponding p-value as follows:
 ```python
 gof = gof_object.get_gof()
 p_value = gof_object.get_pvalue()
 ```
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
