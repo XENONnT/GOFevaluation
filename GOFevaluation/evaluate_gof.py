@@ -1,15 +1,12 @@
-# from GOFevaluation import evaluators_1d
 from GOFevaluation import adtest_two_sample_gof
 from GOFevaluation import kstest_gof
 from GOFevaluation import kstest_two_sample_gof
 from GOFevaluation import binned_poisson_chi2_gof
 from GOFevaluation import binned_chi2_gof
 from GOFevaluation import point_to_point_gof
-# from GOFevaluation import evaluators_nd
-# from GOFevaluation import test_statistics
 
 
-class evaluation_wrapper(object):
+class evaluate_gof(object):
     """This wrapper class is meant to streamline the creation of commonly used
     function calls of the package"""
 
