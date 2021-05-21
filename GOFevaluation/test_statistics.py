@@ -5,15 +5,14 @@ import scipy.stats as sps
 class test_statistics_core(object):
     def __init__(self, data):
         self.data = data
-        self.nevents = len(data)
         self._name = None
 
     @staticmethod
     def calculate_gof():
-        raise NotImplementedError("calculate_gof must be implemented!")
+        raise NotImplementedError("calculate_gof is not implemented yet!")
 
     def get_gof(self):
-        raise NotImplementedError("Your goodness of fit computation goes here!")
+        raise NotImplementedError("get_gof is not implemented yet!")
 
     def get_result_as_dict(self):
         assert self._name is not None, (str(self.__class__.__name__)
@@ -24,13 +23,12 @@ class test_statistics_core(object):
 
 
 class test_statistics(test_statistics_core):
+    """Test statistics class for binned expectations reference input."""
+
     def __init__(self, data, pdf, nevents_expected):
-        test_statistics_core.__init__(self=self,
-                                      data=data)
+        super().__init__(data=data)
         self.pdf = pdf
-        if nevents_expected is not None:
-            self.nevents_expected = nevents_expected
-            self.expected_events = self.pdf * self.nevents_expected
+        self.expected_events = self.pdf * nevents_expected
 
     def bin_data(self, bin_edges):
         # function to bin nD data:
@@ -51,7 +49,7 @@ class test_statistics(test_statistics_core):
         for i in range(n_mc):
             samples = sps.poisson(self.expected_events).rvs()
             fake_gofs[i] = self.calculate_gof(
-                samples, self.pdf * self.nevents_expected)
+                samples, self.expected_events)
         return fake_gofs
 
     def get_pvalue(self, n_mc=1000):
@@ -84,10 +82,20 @@ class test_statistics(test_statistics_core):
         return pvalue
 
 
+class test_statistics_pdf(test_statistics_core):
+    def __init__(self, data, pdf):
+        super().__init__(data=data)
+        self.pdf = pdf
+
+    def get_pvalue(self):
+        # This method is not implemented yet. We are working on adding it in
+        # the near future.
+        raise NotImplementedError("p-value computation not yet implemented!")
+
+
 class test_statistics_sample(test_statistics_core):
     def __init__(self, data, reference_sample):
-        test_statistics_core.__init__(self=self,
-                                      data=data)
+        super().__init__(data=data)
         self.reference_sample = reference_sample
 
     def permutation_gofs(self, n_perm=1000, d_min=None):

@@ -32,35 +32,25 @@ class binned_poisson_chi2_gof(test_statistics):
     @classmethod
     def from_binned(cls, data, expectations):
         """Initialize with already binned data + expectations
-
-        In this case the bin-edges don't matter, so we bypass the usual init
         """
-        assert (data.shape == expectations.shape), \
-            "Shape of binned data does not match shape of expectations!"
-        self = cls(None, None, None, None)
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=expectations / np.sum(expectations),
-                                 nevents_expected=np.sum(expectations))
-        self._name = self.__class__.__name__
-        self.binned_data = data
-        return self
+        # bin_edges=None will set binned_data=data
+        return cls(data=data,
+                   pdf=expectations / np.sum(expectations),
+                   bin_edges=None,
+                   nevents_expected=np.sum(expectations))
 
     def __init__(self, data, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        if data is None:
-            # bypass init, using binned data
-            return
-        # initialise with the common call signature
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=pdf,
-                                 nevents_expected=nevents_expected)
+        super().__init__(data=data, pdf=pdf, nevents_expected=nevents_expected)
         self._name = self.__class__.__name__
 
-        self.bin_edges = bin_edges
-        self.bin_data(bin_edges=bin_edges)
+        if bin_edges is None:
+            assert (data.shape == pdf.shape), \
+                "Shape of binned data does not match shape of the pdf!"
+            self.binned_data = data
+        else:
+            self.bin_data(bin_edges=bin_edges)
         return
 
     @staticmethod
@@ -75,10 +65,7 @@ class binned_poisson_chi2_gof(test_statistics):
         """
             Get binned poisson chi2 GoF using current class attributes
         """
-        gof = self.calculate_gof(
-            self.binned_data,
-            self.pdf * self.nevents_expected
-        )
+        gof = self.calculate_gof(self.binned_data, self.expected_events)
         self.gof = gof
         return gof
 
@@ -105,36 +92,25 @@ class binned_chi2_gof(test_statistics):
     @classmethod
     def from_binned(cls, data, expectations):
         """Initialize with already binned data + expectations
-
-        In this case the bin-edges don't matter, so we bypass the usual init
         """
-        assert (data.shape == expectations.shape), \
-            "Shape of binned data does not match shape of expectations!"
-        self = cls(None, None, None, None)
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=expectations / np.sum(expectations),
-                                 nevents_expected=np.sum(expectations))
-        self._name = self.__class__.__name__
-        self.binned_data = data
-
-        return self
+        # bin_edges=None will set binned_data=data
+        return cls(data=data,
+                   pdf=expectations / np.sum(expectations),
+                   bin_edges=None,
+                   nevents_expected=np.sum(expectations))
 
     def __init__(self, data, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        if data is None:
-            # bypass init, using binned data
-            return
-        # initialise with the common call signature
-        test_statistics.__init__(self=self,
-                                 data=data,
-                                 pdf=pdf,
-                                 nevents_expected=nevents_expected)
+        super().__init__(data=data, pdf=pdf, nevents_expected=nevents_expected)
         self._name = self.__class__.__name__
 
-        self.bin_edges = bin_edges
-        self.bin_data(bin_edges=bin_edges)
+        if bin_edges is None:
+            assert (data.shape == pdf.shape), \
+                "Shape of binned data does not match shape of the pdf!"
+            self.binned_data = data
+        else:
+            self.bin_data(bin_edges=bin_edges)
         return
 
     @staticmethod
@@ -149,8 +125,7 @@ class binned_chi2_gof(test_statistics):
         """
             Get Chi2 GoF using current class attributes
         """
-        gof = self.calculate_gof(self.binned_data,
-                                 self.pdf * self.nevents_expected)
+        gof = self.calculate_gof(self.binned_data, self.expected_events)
         self.gof = gof
         return gof
 
@@ -170,9 +145,7 @@ class point_to_point_gof(test_statistics_sample):
     dimension."""
 
     def __init__(self, data, reference_sample):
-        test_statistics_sample.__init__(
-            self=self, data=data, reference_sample=reference_sample
-        )
+        super().__init__(data=data, reference_sample=reference_sample)
         self._name = self.__class__.__name__
 
     @staticmethod

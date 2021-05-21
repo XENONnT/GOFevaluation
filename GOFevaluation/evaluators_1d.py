@@ -3,7 +3,7 @@ import numpy as np
 import warnings
 from collections import OrderedDict
 from scipy.interpolate import interp1d
-from GOFevaluation import test_statistics
+from GOFevaluation import test_statistics_pdf
 from GOFevaluation import test_statistics_sample
 from GOFevaluation import binned_chi2_gof
 
@@ -26,8 +26,7 @@ class adtest_two_sample_gof(test_statistics_sample):
     - gof: gof statistic calculated with scipy.stats.anderson_ksamp"""
 
     def __init__(self, data, reference_sample):
-        test_statistics_sample.__init__(
-            self=self, data=data, reference_sample=reference_sample)
+        super().__init__(data=data, reference_sample=reference_sample)
 
         self._name = self.__class__.__name__
 
@@ -48,7 +47,7 @@ class adtest_two_sample_gof(test_statistics_sample):
         return gof
 
 
-class kstest_gof(test_statistics):
+class kstest_gof(test_statistics_pdf):
     """Goodness of Fit based on the Kolmogorov-Smirnov Test.
     Test if data sample comes from given pdf.
 
@@ -67,12 +66,8 @@ class kstest_gof(test_statistics):
                 & (max(data) <= max(bin_centers))), (
             "Data point(s) outside of pdf bins. Can't compute GoF.")
 
-        test_statistics.__init__(self,
-                                 data=data,
-                                 pdf=pdf,
-                                 nevents_expected=None)
+        super().__init__(data=data, pdf=pdf)
         self._name = self.__class__.__name__
-        self.bin_edges = bin_edges
         self.bin_centers = bin_centers
 
     @staticmethod
@@ -92,11 +87,6 @@ class kstest_gof(test_statistics):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_mc=1000):
-        # This method is not implemented yet. We are working on adding it in
-        # the near future.
-        raise NotImplementedError("p-value computation not yet implemented!")
-
 
 class kstest_two_sample_gof(test_statistics_sample):
     """Goodness of Fit based on the Kolmogorov-Smirnov Test for two samples.
@@ -111,9 +101,7 @@ class kstest_two_sample_gof(test_statistics_sample):
     """
 
     def __init__(self, data, reference_sample):
-        test_statistics_sample.__init__(
-            self=self, data=data, reference_sample=reference_sample
-        )
+        super().__init__(data=data, reference_sample=reference_sample)
         self._name = self.__class__.__name__
 
     @staticmethod

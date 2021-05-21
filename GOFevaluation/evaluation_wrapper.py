@@ -1,10 +1,12 @@
-from GOFevaluation import evaluators_1d
+# from GOFevaluation import evaluators_1d
 from GOFevaluation import evaluators_nd
 from GOFevaluation import test_statistics
 
 
 class evaluation_wrapper(test_statistics):
-    """This wrapper class is meant to streamline the creation of commonly used function calls of the package"""
+    """This wrapper class is meant to streamline the creation of commonly used
+    function calls of the package"""
+
     def __init__(self, data, pdf, bin_edges, nevents_expected):
         self.gofs = dict()
         self.gofs["binned_chi2_gof"] = evaluators_nd.binned_chi2_gof(
