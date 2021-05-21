@@ -52,15 +52,15 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
             expected_events = normed_pdf * np.sum(binned_data)
 
             # calculate gof with both inits
-            gofclass_from_init = binned_poisson_chi2_gof.from_binned(
+            gofclass_from_classmethod = binned_poisson_chi2_gof.from_binned(
                 data=binned_data, expectations=expected_events)
-            gof_from_binned = gofclass_from_init.get_gof()
+            gof_from_binned = gofclass_from_classmethod.get_gof()
 
-            gofclass_from_classmethod = binned_poisson_chi2_gof(data=data_points,
+            gofclass_from_init = binned_poisson_chi2_gof(data=data_points,
                                                pdf=normed_pdf,
                                                bin_edges=bin_edges,
                                                nevents_expected=n_events)
-            gof = gofclass_from_classmethod.get_gof()
+            gof = gofclass_from_init.get_gof()
 
             self.assertEqual(gof, gof_from_binned)
             # ensure that no matter what you use for creating the object keys are the same
