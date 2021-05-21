@@ -3,6 +3,8 @@ import scipy.stats as sps
 
 
 class test_statistics_core(object):
+    """Parent class for all test statistic classes"""
+
     def __init__(self, data):
         self.data = data
         self._name = self.__class__.__name__
@@ -98,6 +100,8 @@ class test_statistics(test_statistics_core):
 
 
 class test_statistics_pdf(test_statistics_core):
+    """Test statistics class for sample data, binned pdf reference input."""
+
     def __init__(self, data, pdf):
         super().__init__(data=data)
         self.pdf = pdf
@@ -109,6 +113,8 @@ class test_statistics_pdf(test_statistics_core):
 
 
 class test_statistics_sample(test_statistics_core):
+    """Test statistics class for sample data and reference input."""
+
     def __init__(self, data, reference_sample):
         super().__init__(data=data)
         self.reference_sample = reference_sample
