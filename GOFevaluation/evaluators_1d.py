@@ -25,8 +25,8 @@ class adtest_two_sample_gof(test_statistics_sample):
     Output:
     - gof: gof statistic calculated with scipy.stats.anderson_ksamp"""
 
-    def __init__(self, data, reference_sample, **_):
-        super().__init__(data=data, reference_sample=reference_sample, **_)
+    def __init__(self, data, reference_sample):
+        super().__init__(data=data, reference_sample=reference_sample)
 
     @staticmethod
     def calculate_gof(data, reference_sample):
@@ -44,6 +44,10 @@ class adtest_two_sample_gof(test_statistics_sample):
         self.gof = gof
         return gof
 
+    def get_pvalue(self, n_perm=1000):
+        pvalue = super().get_pvalue(n_perm)
+        return pvalue
+
 
 class kstest_gof(test_statistics_pdf):
     """Goodness of Fit based on the Kolmogorov-Smirnov Test.
@@ -58,13 +62,13 @@ class kstest_gof(test_statistics_pdf):
     - gof: supremum of the absolute value of the difference of CDF and ECDF
     """
 
-    def __init__(self, data, pdf, bin_edges, **_):
+    def __init__(self, data, pdf, bin_edges):
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         assert ((min(data) >= min(bin_centers))
                 & (max(data) <= max(bin_centers))), (
             "Data point(s) outside of pdf bins. Can't compute GoF.")
 
-        super().__init__(data=data, pdf=pdf, **_)
+        super().__init__(data=data, pdf=pdf)
         self.bin_centers = bin_centers
 
     @staticmethod
@@ -84,6 +88,10 @@ class kstest_gof(test_statistics_pdf):
         self.gof = gof
         return gof
 
+    def get_pvalue(self):
+        pvalue = super().get_pvalue()
+        return pvalue
+
 
 class kstest_two_sample_gof(test_statistics_sample):
     """Goodness of Fit based on the Kolmogorov-Smirnov Test for two samples.
@@ -97,8 +105,8 @@ class kstest_two_sample_gof(test_statistics_sample):
     - gof: supremum of the absolute value of the difference of both ECDF
     """
 
-    def __init__(self, data, reference_sample, **_):
-        super().__init__(data=data, reference_sample=reference_sample, **_)
+    def __init__(self, data, reference_sample):
+        super().__init__(data=data, reference_sample=reference_sample)
 
     @staticmethod
     def calculate_gof(data, reference_sample):
@@ -113,6 +121,10 @@ class kstest_two_sample_gof(test_statistics_sample):
         gof = self.calculate_gof(self.data, self.reference_sample)
         self.gof = gof
         return gof
+
+    def get_pvalue(self, n_perm=1000):
+        pvalue = super().get_pvalue(n_perm)
+        return pvalue
 
 
 class evaluators_1d(object):

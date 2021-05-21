@@ -30,10 +30,10 @@ class binned_poisson_chi2_gof(test_statistics):
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
     """
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected, **_):
+    def __init__(self, data, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data, pdf, bin_edges, nevents_expected, **_)
+        super().__init__(data, pdf, bin_edges, nevents_expected)
 
     @staticmethod
     def calculate_gof(binned_data, binned_expectations):
@@ -50,6 +50,10 @@ class binned_poisson_chi2_gof(test_statistics):
         gof = self.calculate_gof(self.binned_data, self.expected_events)
         self.gof = gof
         return gof
+
+    def get_pvalue(self, n_mc=1000):
+        pvalue = super().get_pvalue(n_mc)
+        return pvalue
 
 
 class binned_chi2_gof(test_statistics):
@@ -72,10 +76,10 @@ class binned_chi2_gof(test_statistics):
     Reference: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
     """
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected, **_):
+    def __init__(self, data, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data, pdf, bin_edges, nevents_expected, **_)
+        super().__init__(data, pdf, bin_edges, nevents_expected)
 
     @staticmethod
     def calculate_gof(binned_data, binned_expectations):
@@ -93,6 +97,10 @@ class binned_chi2_gof(test_statistics):
         self.gof = gof
         return gof
 
+    def get_pvalue(self, n_mc=1000):
+        pvalue = super().get_pvalue(n_mc)
+        return pvalue
+
 
 class point_to_point_gof(test_statistics_sample):
     """computes point-to-point gof as described in
@@ -108,8 +116,8 @@ class point_to_point_gof(test_statistics_sample):
     Samples should be pre-processed to have similar scale in each analysis
     dimension."""
 
-    def __init__(self, data, reference_sample, **_):
-        super().__init__(data=data, reference_sample=reference_sample, **_)
+    def __init__(self, data, reference_sample):
+        super().__init__(data=data, reference_sample=reference_sample)
 
     @staticmethod
     def get_distances(data, reference_sample):
@@ -178,8 +186,12 @@ class point_to_point_gof(test_statistics_sample):
         gof = ret_data_data + ret_ref_ref + ret_data_ref
         return gof
 
-    def get_gof(self, d_min=None, **_):
+    def get_gof(self, d_min=None):
         # self.get_distances()
         gof = self.calculate_gof(self.data, self.reference_sample, d_min)
         self.gof = gof
         return gof
+
+    def get_pvalue(self, n_perm=1000, d_min=None):
+        pvalue = super().get_pvalue(n_perm, d_min)
+        return pvalue

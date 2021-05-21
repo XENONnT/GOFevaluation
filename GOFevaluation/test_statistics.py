@@ -5,7 +5,7 @@ import scipy.stats as sps
 class test_statistics_core(object):
     """Parent class for all test statistic classes"""
 
-    def __init__(self, data, **_):
+    def __init__(self, data):
         self.data = data
         self._name = self.__class__.__name__
 
@@ -24,8 +24,8 @@ class test_statistics_core(object):
 class test_statistics(test_statistics_core):
     """Test statistics class for binned expectations reference input."""
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected, **_):
-        super().__init__(data=data, **_)
+    def __init__(self, data, pdf, bin_edges, nevents_expected):
+        super().__init__(data=data)
         self.pdf = pdf
         self.expected_events = self.pdf * nevents_expected
 
@@ -69,7 +69,7 @@ class test_statistics(test_statistics_core):
                 samples, self.expected_events)
         return fake_gofs
 
-    def get_pvalue(self, n_mc=1000, **_):
+    def get_pvalue(self, n_mc=1000):
         """Get the p-value of the data under the null hypothesis
 
         Gets the distribution of the GoF statistic, and compares it to the
@@ -102,11 +102,11 @@ class test_statistics(test_statistics_core):
 class test_statistics_pdf(test_statistics_core):
     """Test statistics class for sample data, binned pdf reference input."""
 
-    def __init__(self, data, pdf, **_):
-        super().__init__(data=data, **_)
+    def __init__(self, data, pdf):
+        super().__init__(data=data)
         self.pdf = pdf
 
-    def get_pvalue(self, **_):
+    def get_pvalue(self):
         # This method is not implemented yet. We are working on adding it in
         # the near future.
         raise NotImplementedError("p-value computation not yet implemented!")
@@ -115,8 +115,8 @@ class test_statistics_pdf(test_statistics_core):
 class test_statistics_sample(test_statistics_core):
     """Test statistics class for sample data and reference input."""
 
-    def __init__(self, data, reference_sample, **_):
-        super().__init__(data=data, **_)
+    def __init__(self, data, reference_sample):
+        super().__init__(data=data)
         self.reference_sample = reference_sample
 
     def permutation_gofs(self, n_perm=1000, d_min=None):
@@ -141,7 +141,7 @@ class test_statistics_sample(test_statistics_core):
                     data=data_perm, reference_sample=reference_perm)
         return fake_gofs
 
-    def get_pvalue(self, n_perm=1000, d_min=None, **_):
+    def get_pvalue(self, n_perm=1000, d_min=None):
         """Get the p-value of the data under the null hypothesis
 
         Computes the p-value by means of a permutation test of data sample

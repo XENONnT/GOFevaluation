@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from inspect import signature
 from GOFevaluation import adtest_two_sample_gof
 from GOFevaluation import kstest_gof
 from GOFevaluation import kstest_two_sample_gof
@@ -17,6 +18,10 @@ class evaluate_gof(object):
 
     - kwargs: All parameters of evaluators_nd and evaluators_1d are viable
     kwargs
+
+    CAUTION:
+    So far, evaluate_gof does not check if a given keyword argument is not
+    used!
     """
 
     gof_measure_dict = {
@@ -38,10 +43,27 @@ class evaluate_gof(object):
         self.pvalues = None
         for key in self.gof_list:
             try:
-                self.gof_objects[key] = self.gof_measure_dict[key](**kwargs)
+                func = self.gof_measure_dict[key]
             except KeyError:
-                print(
+                raise KeyError(
                     f'Key "{key}" is not defined in {self.__class__.__name__}')
+
+            specific_kwargs = self._get_specific_kwargs(func, kwargs)
+            self.gof_objects[key] = func(**specific_kwargs)
+
+    @staticmethod
+    def _get_specific_kwargs(func, kwargs):
+        """Extract only the kwargs that are required for the function
+            to ommit passing not used parameters:"""
+        specific_kwargs = OrderedDict()
+        params = signature(func).parameters.keys()
+        for key in kwargs:
+            if key in params:
+                specific_kwargs[key] = kwargs[key]
+        # Check if all required arguments are passed
+        _ = signature(func).bind(**specific_kwargs)
+
+        return specific_kwargs
 
     def __repr__(self):
         return f'{self.__class__.__module__}, {self.__dict__}'
@@ -60,13 +82,17 @@ class evaluate_gof(object):
     def get_gofs(self, **kwargs):
         self.gofs = OrderedDict()
         for key in self.gof_objects:
-            gof = self.gof_objects[key].get_gof(**kwargs)
+            func = self.gof_objects[key].get_gof
+            specific_kwargs = self._get_specific_kwargs(func, kwargs)
+            gof = func(**specific_kwargs)
             self.gofs[key] = gof
         return self.gofs
 
     def get_pvalues(self, **kwargs):
         self.pvalues = OrderedDict()
         for key in self.gof_objects:
-            pvalue = self.gof_objects[key].get_pvalue(**kwargs)
+            func = self.gof_objects[key].get_pvalue
+            specific_kwargs = self._get_specific_kwargs(func, kwargs)
+            pvalue = func(**specific_kwargs)
             self.pvalues[key] = pvalue
         return self.pvalues
