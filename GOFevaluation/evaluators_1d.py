@@ -28,8 +28,6 @@ class adtest_two_sample_gof(test_statistics_sample):
     def __init__(self, data, reference_sample):
         super().__init__(data=data, reference_sample=reference_sample)
 
-        self._name = self.__class__.__name__
-
     @staticmethod
     def calculate_gof(data, reference_sample):
         # mute specific warnings from sps p-value calculation
@@ -67,7 +65,6 @@ class kstest_gof(test_statistics_pdf):
             "Data point(s) outside of pdf bins. Can't compute GoF.")
 
         super().__init__(data=data, pdf=pdf)
-        self._name = self.__class__.__name__
         self.bin_centers = bin_centers
 
     @staticmethod
@@ -102,7 +99,6 @@ class kstest_two_sample_gof(test_statistics_sample):
 
     def __init__(self, data, reference_sample):
         super().__init__(data=data, reference_sample=reference_sample)
-        self._name = self.__class__.__name__
 
     @staticmethod
     def calculate_gof(data, reference_sample):

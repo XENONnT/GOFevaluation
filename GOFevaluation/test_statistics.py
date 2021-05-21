@@ -5,7 +5,7 @@ import scipy.stats as sps
 class test_statistics_core(object):
     def __init__(self, data):
         self.data = data
-        self._name = None
+        self._name = self.__class__.__name__
 
     @staticmethod
     def calculate_gof():
@@ -15,9 +15,6 @@ class test_statistics_core(object):
         raise NotImplementedError("get_gof is not implemented yet!")
 
     def get_result_as_dict(self):
-        assert self._name is not None, (str(self.__class__.__name__)
-                                        + ": You need to define self._name "
-                                        + "for your goodness of fit measure!")
         value = self.get_gof()
         return {self._name: value}
 
@@ -25,10 +22,28 @@ class test_statistics_core(object):
 class test_statistics(test_statistics_core):
     """Test statistics class for binned expectations reference input."""
 
-    def __init__(self, data, pdf, nevents_expected):
+    def __init__(self, data, pdf, bin_edges, nevents_expected):
         super().__init__(data=data)
         self.pdf = pdf
         self.expected_events = self.pdf * nevents_expected
+
+        if bin_edges is None:
+            assert (data.shape == pdf.shape), \
+                "Shape of binned data does not match shape of the pdf!"
+            self.binned_data = data
+        else:
+            self.bin_data(bin_edges=bin_edges)
+        return
+
+    @classmethod
+    def from_binned(cls, data, expectations):
+        """Initialize with already binned data + expectations
+        """
+        # bin_edges=None will set binned_data=data
+        return cls(data=data,
+                   pdf=expectations / np.sum(expectations),
+                   bin_edges=None,
+                   nevents_expected=np.sum(expectations))
 
     def bin_data(self, bin_edges):
         # function to bin nD data:

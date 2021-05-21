@@ -29,29 +29,11 @@ class binned_poisson_chi2_gof(test_statistics):
         While the absolute likelihood is a poor GOF measure
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
     """
-    @classmethod
-    def from_binned(cls, data, expectations):
-        """Initialize with already binned data + expectations
-        """
-        # bin_edges=None will set binned_data=data
-        return cls(data=data,
-                   pdf=expectations / np.sum(expectations),
-                   bin_edges=None,
-                   nevents_expected=np.sum(expectations))
 
     def __init__(self, data, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data=data, pdf=pdf, nevents_expected=nevents_expected)
-        self._name = self.__class__.__name__
-
-        if bin_edges is None:
-            assert (data.shape == pdf.shape), \
-                "Shape of binned data does not match shape of the pdf!"
-            self.binned_data = data
-        else:
-            self.bin_data(bin_edges=bin_edges)
-        return
+        super().__init__(data, pdf, bin_edges, nevents_expected)
 
     @staticmethod
     def calculate_gof(binned_data, binned_expectations):
@@ -89,29 +71,11 @@ class binned_chi2_gof(test_statistics):
 
     Reference: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
     """
-    @classmethod
-    def from_binned(cls, data, expectations):
-        """Initialize with already binned data + expectations
-        """
-        # bin_edges=None will set binned_data=data
-        return cls(data=data,
-                   pdf=expectations / np.sum(expectations),
-                   bin_edges=None,
-                   nevents_expected=np.sum(expectations))
 
     def __init__(self, data, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data=data, pdf=pdf, nevents_expected=nevents_expected)
-        self._name = self.__class__.__name__
-
-        if bin_edges is None:
-            assert (data.shape == pdf.shape), \
-                "Shape of binned data does not match shape of the pdf!"
-            self.binned_data = data
-        else:
-            self.bin_data(bin_edges=bin_edges)
-        return
+        super().__init__(data, pdf, bin_edges, nevents_expected)
 
     @staticmethod
     def calculate_gof(binned_data, binned_expectations):
@@ -146,7 +110,6 @@ class point_to_point_gof(test_statistics_sample):
 
     def __init__(self, data, reference_sample):
         super().__init__(data=data, reference_sample=reference_sample)
-        self._name = self.__class__.__name__
 
     @staticmethod
     def get_distances(data, reference_sample):
