@@ -13,7 +13,7 @@ class test_statistics_core(object):
     def calculate_gof():
         raise NotImplementedError("calculate_gof is not implemented yet!")
 
-    def get_gof(self):
+    def get_gof(self,  **_):
         raise NotImplementedError("get_gof is not implemented yet!")
 
     def get_result_as_dict(self):
@@ -69,7 +69,7 @@ class test_statistics(test_statistics_core):
                 samples, self.expected_events)
         return fake_gofs
 
-    def get_pvalue(self, n_mc=1000):
+    def get_pvalue(self, n_mc=1000, **_):
         """Get the p-value of the data under the null hypothesis
 
         Gets the distribution of the GoF statistic, and compares it to the
@@ -106,7 +106,7 @@ class test_statistics_pdf(test_statistics_core):
         super().__init__(data=data, **_)
         self.pdf = pdf
 
-    def get_pvalue(self):
+    def get_pvalue(self, **_):
         # This method is not implemented yet. We are working on adding it in
         # the near future.
         raise NotImplementedError("p-value computation not yet implemented!")
@@ -141,7 +141,7 @@ class test_statistics_sample(test_statistics_core):
                     data=data_perm, reference_sample=reference_perm)
         return fake_gofs
 
-    def get_pvalue(self, n_perm=1000, d_min=None):
+    def get_pvalue(self, n_perm=1000, d_min=None, **_):
         """Get the p-value of the data under the null hypothesis
 
         Computes the p-value by means of a permutation test of data sample

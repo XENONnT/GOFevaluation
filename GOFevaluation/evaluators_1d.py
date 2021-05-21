@@ -39,7 +39,7 @@ class adtest_two_sample_gof(test_statistics_sample):
         gof = sps.anderson_ksamp([data, reference_sample])[0]
         return gof
 
-    def get_gof(self):
+    def get_gof(self,  **_):
         gof = self.calculate_gof(self.data, self.reference_sample)
         self.gof = gof
         return gof
@@ -72,7 +72,7 @@ class kstest_gof(test_statistics_pdf):
         gof = sps.kstest(data, cdf=cdf)[0]
         return gof
 
-    def get_gof(self):
+    def get_gof(self,  **_):
         """
         Interpolate CDF from binned pdf and calculate supremum of the
         absolute value of the difference of CDF and ECDF via scipy.stats.kstest
@@ -105,7 +105,7 @@ class kstest_two_sample_gof(test_statistics_sample):
         gof = sps.ks_2samp(data, reference_sample)[0]
         return gof
 
-    def get_gof(self):
+    def get_gof(self,  **_):
         """
         calculate supremum of the absolute value of the difference
         of both ECDF via scipy.stats.kstest
