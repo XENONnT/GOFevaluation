@@ -5,7 +5,7 @@ import scipy.stats as sps
 class test_statistics_core(object):
     """Parent class for all test statistic classes"""
 
-    def __init__(self, data):
+    def __init__(self, data, **_):
         self.data = data
         self._name = self.__class__.__name__
 
@@ -24,8 +24,8 @@ class test_statistics_core(object):
 class test_statistics(test_statistics_core):
     """Test statistics class for binned expectations reference input."""
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
-        super().__init__(data=data)
+    def __init__(self, data, pdf, bin_edges, nevents_expected, **_):
+        super().__init__(data=data, **_)
         self.pdf = pdf
         self.expected_events = self.pdf * nevents_expected
 
@@ -102,8 +102,8 @@ class test_statistics(test_statistics_core):
 class test_statistics_pdf(test_statistics_core):
     """Test statistics class for sample data, binned pdf reference input."""
 
-    def __init__(self, data, pdf):
-        super().__init__(data=data)
+    def __init__(self, data, pdf, **_):
+        super().__init__(data=data, **_)
         self.pdf = pdf
 
     def get_pvalue(self):
@@ -115,8 +115,8 @@ class test_statistics_pdf(test_statistics_core):
 class test_statistics_sample(test_statistics_core):
     """Test statistics class for sample data and reference input."""
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data)
+    def __init__(self, data, reference_sample, **_):
+        super().__init__(data=data, **_)
         self.reference_sample = reference_sample
 
     def permutation_gofs(self, n_perm=1000, d_min=None):

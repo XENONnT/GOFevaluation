@@ -25,8 +25,8 @@ class adtest_two_sample_gof(test_statistics_sample):
     Output:
     - gof: gof statistic calculated with scipy.stats.anderson_ksamp"""
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data, reference_sample=reference_sample)
+    def __init__(self, data, reference_sample, **_):
+        super().__init__(data=data, reference_sample=reference_sample, **_)
 
     @staticmethod
     def calculate_gof(data, reference_sample):
@@ -58,13 +58,13 @@ class kstest_gof(test_statistics_pdf):
     - gof: supremum of the absolute value of the difference of CDF and ECDF
     """
 
-    def __init__(self, data, pdf, bin_edges):
+    def __init__(self, data, pdf, bin_edges, **_):
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         assert ((min(data) >= min(bin_centers))
                 & (max(data) <= max(bin_centers))), (
             "Data point(s) outside of pdf bins. Can't compute GoF.")
 
-        super().__init__(data=data, pdf=pdf)
+        super().__init__(data=data, pdf=pdf, **_)
         self.bin_centers = bin_centers
 
     @staticmethod
@@ -97,8 +97,8 @@ class kstest_two_sample_gof(test_statistics_sample):
     - gof: supremum of the absolute value of the difference of both ECDF
     """
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data, reference_sample=reference_sample)
+    def __init__(self, data, reference_sample, **_):
+        super().__init__(data=data, reference_sample=reference_sample, **_)
 
     @staticmethod
     def calculate_gof(data, reference_sample):

@@ -30,10 +30,10 @@ class binned_poisson_chi2_gof(test_statistics):
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
     """
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
+    def __init__(self, data, pdf, bin_edges, nevents_expected, **_):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data, pdf, bin_edges, nevents_expected)
+        super().__init__(data, pdf, bin_edges, nevents_expected, **_)
 
     @staticmethod
     def calculate_gof(binned_data, binned_expectations):
@@ -72,10 +72,10 @@ class binned_chi2_gof(test_statistics):
     Reference: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
     """
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
+    def __init__(self, data, pdf, bin_edges, nevents_expected, **_):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data, pdf, bin_edges, nevents_expected)
+        super().__init__(data, pdf, bin_edges, nevents_expected, **_)
 
     @staticmethod
     def calculate_gof(binned_data, binned_expectations):
@@ -108,8 +108,8 @@ class point_to_point_gof(test_statistics_sample):
     Samples should be pre-processed to have similar scale in each analysis
     dimension."""
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data, reference_sample=reference_sample)
+    def __init__(self, data, reference_sample, **_):
+        super().__init__(data=data, reference_sample=reference_sample, **_)
 
     @staticmethod
     def get_distances(data, reference_sample):
