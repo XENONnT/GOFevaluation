@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as sps
 
 
-class test_statistics_core(object):
+class TestStatisticsCore(object):
     """Parent class for all test statistic classes"""
 
     def __init__(self):
@@ -19,7 +19,7 @@ class test_statistics_core(object):
         raise NotImplementedError("get_pvalue is not implemented yet!")
 
 
-class test_statistics_binned(test_statistics_core):
+class TestStatisticsBinned(TestStatisticsCore):
     """Test statistics class for binned expectations reference input."""
 
     def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
@@ -101,7 +101,7 @@ class test_statistics_binned(test_statistics_core):
         return pvalue
 
 
-class test_statistics_pdf(test_statistics_core):
+class TestStatisticsPdf(TestStatisticsCore):
     """Test statistics class for sample data, binned pdf reference input."""
 
     def __init__(self, data_sample, pdf):
@@ -115,7 +115,7 @@ class test_statistics_pdf(test_statistics_core):
         raise NotImplementedError("p-value computation not yet implemented!")
 
 
-class test_statistics_sample(test_statistics_core):
+class TestStatisticsSample(TestStatisticsCore):
     """Test statistics class for sample data and reference input."""
 
     def __init__(self, data_sample, reference_sample):

@@ -1,15 +1,14 @@
 from collections import OrderedDict
 from inspect import signature
 import warnings
-from GOFevaluation import adtest_two_sample_gof
-# from GOFevaluation import kstest_gof
-from GOFevaluation import kstest_two_sample_gof
-from GOFevaluation import binned_poisson_chi2_gof
-from GOFevaluation import binned_chi2_gof
-from GOFevaluation import point_to_point_gof
+from GOFevaluation import ADTestTwoSampleGOF
+from GOFevaluation import KSTestTwoSampleGOF
+from GOFevaluation import BinnedPoissonChi2GOF
+from GOFevaluation import BinnedChi2GOF
+from GOFevaluation import PointToPointGOF
 
 
-class evaluate_gof(object):
+class GOFTest(object):
     """This wrapper class is meant to streamline the creation of commonly used
     function calls of the package
 
@@ -21,26 +20,25 @@ class evaluate_gof(object):
     kwargs
 
     Possible entries in gof_list:
-    'adtest_two_sample_gof',
-    'kstest_two_sample_gof',
-    'binned_poisson_chi2_gof',
-    'binned_poisson_chi2_gof.from_binned',
-    'binned_chi2_gof',
-    'binned_chi2_gof.from_binned',
-    'point_to_point_gof'
+    'ADTestTwoSampleGOF',
+    'KSTestTwoSampleGOF',
+    'BinnedPoissonChi2GOF',
+    'BinnedPoissonChi2GOF.from_binned',
+    'BinnedChi2GOF',
+    'BinnedChi2GOF.from_binned',
+    'PointToPointGOF'
 
     A user warning is issued if unused keyword arguments are passed.
     """
 
     allowed_gof_str = [
-        'adtest_two_sample_gof',
-        # 'kstest_gof',
-        'kstest_two_sample_gof',
-        'binned_poisson_chi2_gof',
-        'binned_poisson_chi2_gof.from_binned',
-        'binned_chi2_gof',
-        'binned_chi2_gof.from_binned',
-        'point_to_point_gof'
+        'ADTestTwoSampleGOF',
+        'KSTestTwoSampleGOF',
+        'BinnedPoissonChi2GOF',
+        'BinnedPoissonChi2GOF.from_binned',
+        'BinnedChi2GOF',
+        'BinnedChi2GOF.from_binned',
+        'PointToPointGOF'
     ]
 
     def __init__(self, gof_list, **kwargs):

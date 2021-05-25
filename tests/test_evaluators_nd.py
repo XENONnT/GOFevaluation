@@ -2,12 +2,12 @@ import scipy.stats as sps
 import numpy as np
 import unittest
 
-from GOFevaluation import binned_poisson_chi2_gof
-from GOFevaluation import point_to_point_gof
-from GOFevaluation import binned_chi2_gof
+from GOFevaluation import BinnedPoissonChi2GOF
+from GOFevaluation import PointToPointGOF
+from GOFevaluation import BinnedChi2GOF
 
 
-class Test_binned_poisson_chi2_gof(unittest.TestCase):
+class TestBinnedPoissonChi2GOF(unittest.TestCase):
     def test_dimensions(self):
         # test nD binned GOF in different dimensions:
         signal_expectation = 100
@@ -27,7 +27,7 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
                 sps.poisson(ns_flat).logpmf(ns_flat) -
                 sps.poisson(mus_flat * signal_expectation).logpmf(ns_flat))
 
-            gofclass = binned_poisson_chi2_gof(
+            gofclass = BinnedPoissonChi2GOF(
                 data, mus, bins, signal_expectation)
             gof = gofclass.get_gof()
 
@@ -52,11 +52,11 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
             binned_reference = normed_pdf * np.sum(binned_data)
 
             # calculate gof with both inits
-            gofclass_from_classmethod = binned_poisson_chi2_gof.from_binned(
+            gofclass_from_classmethod = BinnedPoissonChi2GOF.from_binned(
                 binned_data=binned_data, binned_reference=binned_reference)
             gof_from_binned = gofclass_from_classmethod.get_gof()
 
-            gofclass_from_init = binned_poisson_chi2_gof(
+            gofclass_from_init = BinnedPoissonChi2GOF(
                 data_sample=data_points,
                 pdf=normed_pdf,
                 bin_edges=bin_edges,
@@ -70,7 +70,7 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
                              sorted(gofclass_from_init.__dict__.keys()))
 
 
-class Test_point_to_point_gof(unittest.TestCase):
+class TestPointToPointGOF(unittest.TestCase):
     def test_distances(self):
         # test if number of distance values is correct
         xs = np.linspace(0, 1, 100)
@@ -82,7 +82,7 @@ class Test_point_to_point_gof(unittest.TestCase):
             nevents_data = len(data)
             nevents_ref = len(reference)
 
-            gofclass = point_to_point_gof(data, reference)
+            gofclass = PointToPointGOF(data, reference)
             d_data_data, d_ref_ref, d_data_ref = gofclass.get_distances(
                 data, reference)
 
@@ -98,10 +98,10 @@ class Test_point_to_point_gof(unittest.TestCase):
         # science sample:
         xs_a = sps.uniform().rvs(50)[:, None]
         xs_b = sps.uniform().rvs(50)[:, None]
-        gofclass_ab = point_to_point_gof(xs_a, xs_b)
+        gofclass_ab = PointToPointGOF(xs_a, xs_b)
         # set d_min explicitly to avoid asymmetry in setting d_min
         gof_ab = gofclass_ab.get_gof(d_min=0.01)
-        gofclass_ba = point_to_point_gof(xs_b, xs_a)
+        gofclass_ba = PointToPointGOF(xs_b, xs_a)
         # set d_min explicitly to avoid asymmetry in setting d_min
         gof_ba = gofclass_ba.get_gof(d_min=0.01)
 
@@ -114,14 +114,14 @@ class Test_point_to_point_gof(unittest.TestCase):
         xs_b = np.array([1, 2])[:, None]
 
         e_data_ref = np.log(2)/2
-        gofclass_ab = point_to_point_gof(xs_a, xs_b)
+        gofclass_ab = PointToPointGOF(xs_a, xs_b)
         # set d_min explicitly to avoid asymmetry in setting d_min
         gof_ab = gofclass_ab.get_gof(d_min=0.01)
         # it seems precision is a bit low in this case
         self.assertAlmostEqual(gof_ab, e_data_ref, places=6)
 
 
-class Test_binned_chi2_gof(unittest.TestCase):
+class TestBinnedChi2GOF(unittest.TestCase):
     def test_chi2_distribution(self):
         """check, if binned data follows chi2-distribution with
         ndof = n_bins - 1 as one would expect. Test for 1-5 dimensions."""
@@ -150,7 +150,7 @@ class Test_binned_chi2_gof(unittest.TestCase):
                 normed_pdf /= np.sum(normed_pdf)
                 binned_reference = normed_pdf * np.sum(binned_data)
 
-                gofclass = binned_chi2_gof.from_binned(
+                gofclass = BinnedChi2GOF.from_binned(
                     binned_data=binned_data, binned_reference=binned_reference)
                 chi2_val = gofclass.get_gof()
                 chi2_vals.append(chi2_val)
@@ -191,14 +191,14 @@ class Test_binned_chi2_gof(unittest.TestCase):
             binned_reference = normed_pdf * np.sum(binned_data)
 
             # calculate gof with both inits
-            gofclass_from_classmethod = binned_chi2_gof.from_binned(
+            gofclass_from_classmethod = BinnedChi2GOF.from_binned(
                 binned_data=binned_data, binned_reference=binned_reference)
             gof_from_binned = gofclass_from_classmethod.get_gof()
 
-            gofclass_from_init = binned_chi2_gof(data_sample=data_points,
-                                                 pdf=normed_pdf,
-                                                 bin_edges=bin_edges,
-                                                 nevents_expected=n_events)
+            gofclass_from_init = BinnedChi2GOF(data_sample=data_points,
+                                               pdf=normed_pdf,
+                                               bin_edges=bin_edges,
+                                               nevents_expected=n_events)
             gof = gofclass_from_init.get_gof()
 
             self.assertEqual(gof, gof_from_binned)
@@ -209,7 +209,7 @@ class Test_binned_chi2_gof(unittest.TestCase):
                              sorted(gofclass_from_init.__dict__.keys()))
 
 
-class Test_pvalue(unittest.TestCase):
+class TestPvalue(unittest.TestCase):
     def test_dimension_two_sample(self):
         """Test if p-value for two identical samples is 1
         for higher dimensional samples."""
@@ -220,7 +220,7 @@ class Test_pvalue(unittest.TestCase):
                              0.88404481, 0.98167819,  1.22302837,  0.1138414,
                              0.45974904,  0.48926863])
             data = np.vstack([data for i in range(nD)]).T
-            gof_object = point_to_point_gof(data, data)
+            gof_object = PointToPointGOF(data, data)
 
             # For efficiency reasons, try first with few permutations
             # and only increase number if p-value is outside of bounds.
@@ -244,8 +244,8 @@ class Test_pvalue(unittest.TestCase):
 
         data = np.ones(n_bins) * n_events_per_bin
 
-        gof_objects = [binned_chi2_gof.from_binned(data, data),
-                       binned_poisson_chi2_gof.from_binned(data, data)]
+        gof_objects = [BinnedChi2GOF.from_binned(data, data),
+                       BinnedPoissonChi2GOF.from_binned(data, data)]
 
         # For efficiency reasons, try first with few permutations
         # and only increase number if p-value is outside of bounds.

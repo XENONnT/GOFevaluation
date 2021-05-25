@@ -3,16 +3,15 @@ import numpy as np
 import unittest
 from collections import OrderedDict
 
-from GOFevaluation import adtest_two_sample_gof
-# from GOFevaluation import kstest_gof
-from GOFevaluation import kstest_two_sample_gof
-from GOFevaluation import binned_poisson_chi2_gof
-from GOFevaluation import binned_chi2_gof
-from GOFevaluation import point_to_point_gof
-from GOFevaluation import evaluate_gof
+from GOFevaluation import ADTestTwoSampleGOF
+from GOFevaluation import KSTestTwoSampleGOF
+from GOFevaluation import BinnedPoissonChi2GOF
+from GOFevaluation import BinnedChi2GOF
+from GOFevaluation import PointToPointGOF
+from GOFevaluation import GOFTest
 
 
-class Test_evaluate_gof(unittest.TestCase):
+class TestGOFTest(unittest.TestCase):
 
     def test_gof(self):
         """Check if gof values of wrapper object is the same as
@@ -34,17 +33,17 @@ class Test_evaluate_gof(unittest.TestCase):
         d_min = 0.01  # define this manually
 
         # Calculate GoF with wrapper:
-        gof_list = evaluate_gof.allowed_gof_str
+        gof_list = GOFTest.allowed_gof_str
 
-        gof_object = evaluate_gof(gof_list=gof_list,
-                                  data_sample=data_sample,
-                                  reference_sample=reference_sample,
-                                  binned_data=binned_data,
-                                  binned_reference=binned_reference,
-                                  pdf=pdf,
-                                  nevents_expected=nevents_expected,
-                                  bin_edges=bin_edges
-                                  )
+        gof_object = GOFTest(gof_list=gof_list,
+                             data_sample=data_sample,
+                             reference_sample=reference_sample,
+                             binned_data=binned_data,
+                             binned_reference=binned_reference,
+                             pdf=pdf,
+                             nevents_expected=nevents_expected,
+                             bin_edges=bin_edges
+                             )
 
         gofs_wrapper = gof_object.get_gofs(d_min=d_min)
 
@@ -52,41 +51,41 @@ class Test_evaluate_gof(unittest.TestCase):
         gofs_individual = OrderedDict()
 
         gof_measure_dict_individual = {
-            'adtest_two_sample_gof': adtest_two_sample_gof(
+            'ADTestTwoSampleGOF': ADTestTwoSampleGOF(
                 data_sample=data_sample,
                 reference_sample=reference_sample),
             # 'kstest_gof': kstest_gof(
             #     data_sample=data_sample,
             #     pdf=pdf,
             #     bin_edges=bin_edges),
-            'kstest_two_sample_gof': kstest_two_sample_gof(
+            'KSTestTwoSampleGOF': KSTestTwoSampleGOF(
                 data_sample=data_sample,
                 reference_sample=reference_sample),
-            'binned_poisson_chi2_gof': binned_poisson_chi2_gof(
+            'BinnedPoissonChi2GOF': BinnedPoissonChi2GOF(
                 data_sample=data_sample,
                 pdf=pdf,
                 bin_edges=bin_edges,
                 nevents_expected=nevents_expected),
-            'binned_poisson_chi2_gof.from_binned':
-                binned_poisson_chi2_gof.from_binned(
+            'BinnedPoissonChi2GOF.from_binned':
+                BinnedPoissonChi2GOF.from_binned(
                 binned_data=binned_data,
                 binned_reference=binned_reference),
-            'binned_chi2_gof': binned_chi2_gof(
+            'BinnedChi2GOF': BinnedChi2GOF(
                 data_sample=data_sample,
                 pdf=pdf,
                 bin_edges=bin_edges,
                 nevents_expected=nevents_expected),
-            'binned_chi2_gof.from_binned':
-                binned_chi2_gof.from_binned(
+            'BinnedChi2GOF.from_binned':
+                BinnedChi2GOF.from_binned(
                 binned_data=binned_data,
                 binned_reference=binned_reference),
-            'point_to_point_gof': point_to_point_gof(
+            'PointToPointGOF': PointToPointGOF(
                 data_sample=data_sample,
                 reference_sample=reference_sample)
         }
 
         for key in gof_measure_dict_individual:
-            if key == 'point_to_point_gof':
+            if key == 'PointToPointGOF':
                 gof = gof_measure_dict_individual[key].get_gof(d_min=d_min)
             else:
                 gof = gof_measure_dict_individual[key].get_gof()

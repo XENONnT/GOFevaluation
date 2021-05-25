@@ -3,13 +3,13 @@ import numpy as np
 from scipy.interpolate import interp1d
 import unittest
 
-from GOFevaluation import kstest_gof
-from GOFevaluation import kstest_two_sample_gof
-from GOFevaluation import adtest_two_sample_gof
-from GOFevaluation import point_to_point_gof
+from GOFevaluation import KSTestGOF
+from GOFevaluation import KSTestTwoSampleGOF
+from GOFevaluation import ADTestTwoSampleGOF
+from GOFevaluation import PointToPointGOF
 
 
-class Test_kstest_gof(unittest.TestCase):
+class TestKSTestGOF(unittest.TestCase):
     def test_value(self):
         """compare result of method to manually calculated gof"""
 
@@ -31,15 +31,15 @@ class Test_kstest_gof(unittest.TestCase):
         dn = np.abs(interp_cdf(np.sort(data)) - ecdf[:-1])
 
         # Calculate GoF
-        gofclass = kstest_gof(data_sample=data,
-                              pdf=normed_gauss_pdf,
-                              bin_edges=bin_edges)
+        gofclass = KSTestGOF(data_sample=data,
+                             pdf=normed_gauss_pdf,
+                             bin_edges=bin_edges)
         gof = gofclass.get_gof()
 
         self.assertEqual(max(dn), gof)
 
 
-class Test_kstest_two_sample_gof(unittest.TestCase):
+class TestKSTestTwoSampleGOF(unittest.TestCase):
     def get_ecdf(self, values, data_sample):
         """Calculate ecdf by hand"""
         n_data = len(data_sample)
@@ -66,7 +66,7 @@ class Test_kstest_two_sample_gof(unittest.TestCase):
         dn = np.abs(ecdf_data - ecdf_reference)
 
         # Calculate GoF
-        gofclass = kstest_two_sample_gof(
+        gofclass = KSTestTwoSampleGOF(
             data_sample=data, reference_sample=reference)
         gof = gofclass.get_gof()
 
@@ -76,28 +76,28 @@ class Test_kstest_two_sample_gof(unittest.TestCase):
         xs_a = sps.norm().rvs(50)
         xs_b = sps.norm().rvs(50)
 
-        gofclass_ab = kstest_two_sample_gof(xs_a, xs_b)
+        gofclass_ab = KSTestTwoSampleGOF(xs_a, xs_b)
         gof_ab = gofclass_ab.get_gof()
-        gofclass_ba = kstest_two_sample_gof(xs_b, xs_a)
+        gofclass_ba = KSTestTwoSampleGOF(xs_b, xs_a)
         gof_ba = gofclass_ba.get_gof()
 
         self.assertEqual(gof_ab, gof_ba)
 
 
-class Test_adtest_two_sample_gof(unittest.TestCase):
+class TestADTestTwoSampleGOF(unittest.TestCase):
     def test_symmetry(self):
         xs_a = sps.norm().rvs(50)
         xs_b = sps.norm().rvs(50)
 
-        gofclass_ab = adtest_two_sample_gof(xs_a, xs_b)
+        gofclass_ab = ADTestTwoSampleGOF(xs_a, xs_b)
         gof_ab = gofclass_ab.get_gof()
-        gofclass_ba = adtest_two_sample_gof(xs_b, xs_a)
+        gofclass_ba = ADTestTwoSampleGOF(xs_b, xs_a)
         gof_ba = gofclass_ba.get_gof()
 
         self.assertEqual(gof_ab, gof_ba)
 
 
-class Test_pvalues(unittest.TestCase):
+class TestPvalues(unittest.TestCase):
     def test_two_sample_value(self):
         """Test if p-value for two identical samples is 1."""
         # Fixed Standard Normal distributed data
@@ -105,9 +105,9 @@ class Test_pvalues(unittest.TestCase):
                          0.88404481, 0.98167819,  1.22302837,  0.1138414,
                          0.45974904,  0.48926863])
 
-        gof_objects = [adtest_two_sample_gof(data, data),
-                       kstest_two_sample_gof(data, data),
-                       point_to_point_gof(data, data)]
+        gof_objects = [ADTestTwoSampleGOF(data, data),
+                       KSTestTwoSampleGOF(data, data),
+                       PointToPointGOF(data, data)]
         d_mins = [None, None, .00001]
 
         # For efficiency reasons, try first with few permutations
