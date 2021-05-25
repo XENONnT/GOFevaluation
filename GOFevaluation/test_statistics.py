@@ -32,8 +32,7 @@ class test_statistics_binned(test_statistics_core):
                 "Shape of binned data does not match shape of the pdf!"
             self.binned_data = data_sample
         else:
-            self.data_sample = data_sample
-            self.bin_data(bin_edges=bin_edges)
+            self.bin_data(data_sample=data_sample, bin_edges=bin_edges)
         return
 
     @classmethod
@@ -47,13 +46,13 @@ class test_statistics_binned(test_statistics_core):
                    bin_edges=None,
                    nevents_expected=np.sum(binned_reference))
 
-    def bin_data(self, bin_edges):
+    def bin_data(self, data_sample, bin_edges):
         # function to bin nD data:
-        if len(self.data_sample.shape) == 1:
-            self.binned_data, _ = np.histogram(self.data_sample,
+        if len(data_sample.shape) == 1:
+            self.binned_data, _ = np.histogram(data_sample,
                                                bins=bin_edges)
         else:
-            self.binned_data, _ = np.histogramdd(self.data_sample,
+            self.binned_data, _ = np.histogramdd(data_sample,
                                                  bins=bin_edges)
 
         assert (self.binned_data.shape == self.pdf.shape), \

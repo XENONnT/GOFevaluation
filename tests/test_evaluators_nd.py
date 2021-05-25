@@ -66,8 +66,8 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
             self.assertEqual(gof, gof_from_binned)
             # ensure that no matter what you use for creating the object keys
             # are the same
-            # self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
-            #                  sorted(gofclass_from_init.__dict__.keys()))
+            self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
+                             sorted(gofclass_from_init.__dict__.keys()))
 
 
 class Test_point_to_point_gof(unittest.TestCase):
@@ -205,8 +205,8 @@ class Test_binned_chi2_gof(unittest.TestCase):
 
             # ensure that no matter what you use for creating the object keys
             # are the same
-            # self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
-            #                  sorted(gofclass_from_init.__dict__.keys()))
+            self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
+                             sorted(gofclass_from_init.__dict__.keys()))
 
 
 class Test_pvalue(unittest.TestCase):
