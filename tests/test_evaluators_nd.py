@@ -56,14 +56,16 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
                 binned_data=binned_data, binned_reference=binned_reference)
             gof_from_binned = gofclass_from_classmethod.get_gof()
 
-            gofclass_from_init = binned_poisson_chi2_gof(data_sample=data_points,
-                                               pdf=normed_pdf,
-                                               bin_edges=bin_edges,
-                                               nevents_expected=n_events)
+            gofclass_from_init = binned_poisson_chi2_gof(
+                data_sample=data_points,
+                pdf=normed_pdf,
+                bin_edges=bin_edges,
+                nevents_expected=n_events)
             gof = gofclass_from_init.get_gof()
 
             self.assertEqual(gof, gof_from_binned)
-            # ensure that no matter what you use for creating the object keys are the same
+            # ensure that no matter what you use for creating the object keys
+            # are the same
             self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
                              sorted(gofclass_from_init.__dict__.keys()))
 
@@ -193,7 +195,7 @@ class Test_binned_chi2_gof(unittest.TestCase):
                 binned_data=binned_data, binned_reference=binned_reference)
             gof_from_binned = gofclass_from_classmethod.get_gof()
 
-            gofclass_from_init = binned_chi2_gof(data_sample=data_points
+            gofclass_from_init = binned_chi2_gof(data_sample=data_points,
                                                  pdf=normed_pdf,
                                                  bin_edges=bin_edges,
                                                  nevents_expected=n_events)
@@ -201,9 +203,11 @@ class Test_binned_chi2_gof(unittest.TestCase):
 
             self.assertEqual(gof, gof_from_binned)
 
-            # ensure that no matter what you use for creating the object keys are the same
+            # ensure that no matter what you use for creating the object keys
+            # are the same
             self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
                              sorted(gofclass_from_init.__dict__.keys()))
+
 
 class Test_pvalue(unittest.TestCase):
     def test_dimension_two_sample(self):
