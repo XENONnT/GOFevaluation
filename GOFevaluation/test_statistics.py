@@ -13,12 +13,8 @@ class test_statistics_core(object):
     def calculate_gof():
         raise NotImplementedError("calculate_gof is not implemented yet!")
 
-    def get_gof(self,  **_):
+    def get_gof(self):
         raise NotImplementedError("get_gof is not implemented yet!")
-
-    def get_result_as_dict(self):
-        value = self.get_gof()
-        return {self._name: value}
 
 
 class test_statistics(test_statistics_core):

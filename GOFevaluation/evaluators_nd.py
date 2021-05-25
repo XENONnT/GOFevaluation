@@ -43,7 +43,7 @@ class binned_poisson_chi2_gof(test_statistics):
         ret -= sps.poisson(binned_expectations).logpmf(binned_data)
         return 2 * np.sum(ret)
 
-    def get_gof(self,  **_):
+    def get_gof(self):
         """
             Get binned poisson chi2 GoF using current class attributes
         """
@@ -89,7 +89,7 @@ class binned_chi2_gof(test_statistics):
                             binned_expectations, axis=None)[0]
         return gof
 
-    def get_gof(self,  **_):
+    def get_gof(self):
         """
             Get Chi2 GoF using current class attributes
         """

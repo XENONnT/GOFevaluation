@@ -1,11 +1,9 @@
 import scipy.stats as sps
 import numpy as np
 import warnings
-from collections import OrderedDict
 from scipy.interpolate import interp1d
 from GOFevaluation import test_statistics_pdf
 from GOFevaluation import test_statistics_sample
-from GOFevaluation import binned_chi2_gof
 
 
 class adtest_two_sample_gof(test_statistics_sample):
@@ -39,7 +37,7 @@ class adtest_two_sample_gof(test_statistics_sample):
         gof = sps.anderson_ksamp([data, reference_sample])[0]
         return gof
 
-    def get_gof(self,  **_):
+    def get_gof(self):
         gof = self.calculate_gof(self.data, self.reference_sample)
         self.gof = gof
         return gof
@@ -76,7 +74,7 @@ class kstest_gof(test_statistics_pdf):
         gof = sps.kstest(data, cdf=cdf)[0]
         return gof
 
-    def get_gof(self,  **_):
+    def get_gof(self):
         """
         Interpolate CDF from binned pdf and calculate supremum of the
         absolute value of the difference of CDF and ECDF via scipy.stats.kstest
@@ -113,7 +111,7 @@ class kstest_two_sample_gof(test_statistics_sample):
         gof = sps.ks_2samp(data, reference_sample)[0]
         return gof
 
-    def get_gof(self,  **_):
+    def get_gof(self):
         """
         calculate supremum of the absolute value of the difference
         of both ECDF via scipy.stats.kstest
@@ -125,28 +123,3 @@ class kstest_two_sample_gof(test_statistics_sample):
     def get_pvalue(self, n_perm=1000):
         pvalue = super().get_pvalue(n_perm)
         return pvalue
-
-
-class evaluators_1d(object):
-    """Evaluation class for goodnes of fit measures in Xenon"""
-
-    def __init__(self, data, pdf, nevents_expected, bin_edges):
-        self.pdf = pdf
-        self.data = data
-
-        self.l_measures_to_calculate = [
-            binned_chi2_gof(data=data,
-                            pdf=pdf,
-                            nevents_expected=nevents_expected,
-                            bin_edges=bin_edges),
-            kstest_gof(data=data,
-                       pdf=pdf,
-                       bin_edges=bin_edges)
-        ]
-
-    def calculate_gof_values(self):
-        d_results = OrderedDict()
-        for measure in self.l_measures_to_calculate:
-            res = measure.get_result_as_dict()
-            d_results.update(dict(res))
-        return d_results
