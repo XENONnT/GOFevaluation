@@ -2,7 +2,7 @@ from collections import OrderedDict
 from inspect import signature
 import warnings
 from GOFevaluation import adtest_two_sample_gof
-from GOFevaluation import kstest_gof
+# from GOFevaluation import kstest_gof
 from GOFevaluation import kstest_two_sample_gof
 from GOFevaluation import binned_poisson_chi2_gof
 from GOFevaluation import binned_chi2_gof
@@ -22,7 +22,6 @@ class evaluate_gof(object):
 
     Possible entries in gof_list:
     'adtest_two_sample_gof'
-    'kstest_gof'
     'kstest_two_sample_gof'
     'binned_poisson_chi2_gof':
     'binned_poisson_chi2_gof_from_binned'
@@ -35,7 +34,7 @@ class evaluate_gof(object):
 
     gof_measure_dict = {
         'adtest_two_sample_gof': adtest_two_sample_gof,
-        'kstest_gof': kstest_gof,
+        # 'kstest_gof': kstest_gof,
         'kstest_two_sample_gof': kstest_two_sample_gof,
         'binned_poisson_chi2_gof': binned_poisson_chi2_gof,
         'binned_poisson_chi2_gof_from_binned':
