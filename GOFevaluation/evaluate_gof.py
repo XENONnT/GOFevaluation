@@ -21,28 +21,27 @@ class evaluate_gof(object):
     kwargs
 
     Possible entries in gof_list:
-    'adtest_two_sample_gof'
-    'kstest_two_sample_gof'
-    'binned_poisson_chi2_gof':
-    'binned_poisson_chi2_gof_from_binned'
-    'binned_chi2_gof'
-    'binned_chi2_gof_from_binned'
+    'adtest_two_sample_gof',
+    'kstest_two_sample_gof',
+    'binned_poisson_chi2_gof',
+    'binned_poisson_chi2_gof.from_binned',
+    'binned_chi2_gof',
+    'binned_chi2_gof.from_binned',
     'point_to_point_gof'
 
     A user warning is issued if unused keyword arguments are passed.
     """
 
-    gof_measure_dict = {
-        'adtest_two_sample_gof': adtest_two_sample_gof,
-        # 'kstest_gof': kstest_gof,
-        'kstest_two_sample_gof': kstest_two_sample_gof,
-        'binned_poisson_chi2_gof': binned_poisson_chi2_gof,
-        'binned_poisson_chi2_gof_from_binned':
-            binned_poisson_chi2_gof.from_binned,
-        'binned_chi2_gof': binned_chi2_gof,
-        'binned_chi2_gof_from_binned': binned_chi2_gof.from_binned,
-        'point_to_point_gof': point_to_point_gof
-    }
+    allowed_gof_str = [
+        'adtest_two_sample_gof',
+        # 'kstest_gof',
+        'kstest_two_sample_gof',
+        'binned_poisson_chi2_gof',
+        'binned_poisson_chi2_gof.from_binned',
+        'binned_chi2_gof',
+        'binned_chi2_gof.from_binned',
+        'point_to_point_gof'
+    ]
 
     def __init__(self, gof_list, **kwargs):
         self.gof_objects = OrderedDict()
@@ -50,15 +49,18 @@ class evaluate_gof(object):
         self.gofs = None
         self.pvalues = None
         kwargs_used = []  # check if all kwargs were used
-        for key in self.gof_list:
-            try:
-                func = self.gof_measure_dict[key]
-            except KeyError:
-                raise KeyError(
-                    f'Key "{key}" is not defined in {self.__class__.__name__}')
+        for gof_str in self.gof_list:
+            if gof_str in self.allowed_gof_str:
+                func = eval(gof_str)
+            else:
+                allowed_str = ", ".join(
+                    ['"'+str(p)+'"' for p in self.allowed_gof_str])
+                raise ValueError(f'"{gof_str}" is not an allowed value '
+                                 f'for gof_list. Possible values are '
+                                 f'{allowed_str}')
 
             specific_kwargs = self._get_specific_kwargs(func, kwargs)
-            self.gof_objects[key] = func(**specific_kwargs)
+            self.gof_objects[gof_str] = func(**specific_kwargs)
             kwargs_used += specific_kwargs.keys()
         self._check_kwargs_used(kwargs_used, kwargs)
 

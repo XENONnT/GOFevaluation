@@ -34,8 +34,7 @@ class Test_evaluate_gof(unittest.TestCase):
         d_min = 0.01  # define this manually
 
         # Calculate GoF with wrapper:
-        gof_measure_dict = evaluate_gof.gof_measure_dict
-        gof_list = gof_measure_dict.keys()
+        gof_list = evaluate_gof.allowed_gof_str
 
         gof_object = evaluate_gof(gof_list=gof_list,
                                   data_sample=data_sample,
@@ -68,7 +67,7 @@ class Test_evaluate_gof(unittest.TestCase):
                 pdf=pdf,
                 bin_edges=bin_edges,
                 nevents_expected=nevents_expected),
-            'binned_poisson_chi2_gof_from_binned':
+            'binned_poisson_chi2_gof.from_binned':
                 binned_poisson_chi2_gof.from_binned(
                 binned_data=binned_data,
                 binned_reference=binned_reference),
@@ -77,7 +76,7 @@ class Test_evaluate_gof(unittest.TestCase):
                 pdf=pdf,
                 bin_edges=bin_edges,
                 nevents_expected=nevents_expected),
-            'binned_chi2_gof_from_binned':
+            'binned_chi2_gof.from_binned':
                 binned_chi2_gof.from_binned(
                 binned_data=binned_data,
                 binned_reference=binned_reference),
