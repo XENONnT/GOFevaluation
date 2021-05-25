@@ -49,14 +49,14 @@ class Test_binned_poisson_chi2_gof(unittest.TestCase):
             # generate binned pdf
             normed_pdf = np.ones(binned_data.shape)
             normed_pdf /= np.sum(normed_pdf)
-            expected_events = normed_pdf * np.sum(binned_data)
+            binned_reference = normed_pdf * np.sum(binned_data)
 
             # calculate gof with both inits
             gofclass = binned_poisson_chi2_gof.from_binned(
-                data=binned_data, expectations=expected_events)
+                binned_data=binned_data, binned_reference=binned_reference)
             gof_from_binned = gofclass.get_gof()
 
-            gofclass = binned_poisson_chi2_gof(data=data_points,
+            gofclass = binned_poisson_chi2_gof(data_sample=data_points,
                                                pdf=normed_pdf,
                                                bin_edges=bin_edges,
                                                nevents_expected=n_events)
@@ -143,10 +143,10 @@ class Test_binned_chi2_gof(unittest.TestCase):
 
                 normed_pdf = np.ones(binned_data.shape)
                 normed_pdf /= np.sum(normed_pdf)
-                expected_events = normed_pdf * np.sum(binned_data)
+                binned_reference = normed_pdf * np.sum(binned_data)
 
                 gofclass = binned_chi2_gof.from_binned(
-                    data=binned_data, expectations=expected_events)
+                    binned_data=binned_data, binned_reference=binned_reference)
                 chi2_val = gofclass.get_gof()
                 chi2_vals.append(chi2_val)
 
@@ -183,14 +183,14 @@ class Test_binned_chi2_gof(unittest.TestCase):
             # generate binned pdf
             normed_pdf = np.ones(binned_data.shape)
             normed_pdf /= np.sum(normed_pdf)
-            expected_events = normed_pdf * np.sum(binned_data)
+            binned_reference = normed_pdf * np.sum(binned_data)
 
             # calculate gof with both inits
             gofclass = binned_chi2_gof.from_binned(
-                data=binned_data, expectations=expected_events)
+                binned_data=binned_data, binned_reference=binned_reference)
             gof_from_binned = gofclass.get_gof()
 
-            gofclass = binned_chi2_gof(data=data_points,
+            gofclass = binned_chi2_gof(data_sample=data_points,
                                        pdf=normed_pdf,
                                        bin_edges=bin_edges,
                                        nevents_expected=n_events)
@@ -227,7 +227,8 @@ class Test_pvalue(unittest.TestCase):
             self.assertEqual(p_value, 1)
 
     def test_value(self):
-        """Test for 1D if binned_data = expectations gives p-value of one."""
+        """Test for 1D if binned_data = binned_reference gives p-value
+        of one."""
         n_bins = 3
         n_events_per_bin = 5
 

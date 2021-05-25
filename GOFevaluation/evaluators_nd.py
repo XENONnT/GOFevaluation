@@ -1,11 +1,11 @@
 import scipy.stats as sps
 import numpy as np
 from sklearn.neighbors import DistanceMetric
-from GOFevaluation import test_statistics
+from GOFevaluation import test_statistics_binned
 from GOFevaluation import test_statistics_sample
 
 
-class binned_poisson_chi2_gof(test_statistics):
+class binned_poisson_chi2_gof(test_statistics_binned):
     """
         Computes the binned poisson modified Chi2 from Baker+Cousins
         In the limit of large bin counts (10+) this is Chi2 distributed.
@@ -30,33 +30,32 @@ class binned_poisson_chi2_gof(test_statistics):
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
     """
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
+    def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data, pdf, bin_edges, nevents_expected)
+        super().__init__(data_sample, pdf, bin_edges, nevents_expected)
 
     @staticmethod
-    def calculate_gof(binned_data, binned_expectations):
+    def calculate_gof(binned_data, binned_reference):
         """Get binned poisson chi2 GoF from binned data & expectations
         """
         ret = sps.poisson(binned_data).logpmf(binned_data)
-        ret -= sps.poisson(binned_expectations).logpmf(binned_data)
+        ret -= sps.poisson(binned_reference).logpmf(binned_data)
         return 2 * np.sum(ret)
 
     def get_gof(self):
         """
             Get binned poisson chi2 GoF using current class attributes
         """
-        gof = self.calculate_gof(self.binned_data, self.expected_events)
+        gof = self.calculate_gof(self.binned_data, self.binned_reference)
         self.gof = gof
         return gof
 
     def get_pvalue(self, n_mc=1000):
-        pvalue = super().get_pvalue(n_mc)
-        return pvalue
+        return super().get_pvalue(n_mc)
 
 
-class binned_chi2_gof(test_statistics):
+class binned_chi2_gof(test_statistics_binned):
     """Compoutes the binned chi2 GoF based on Pearson's chi2.
 
     Input (unbinned data):
@@ -76,30 +75,29 @@ class binned_chi2_gof(test_statistics):
     Reference: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
     """
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
+    def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
         """Initialize with unbinned data and a normalized pdf
         """
-        super().__init__(data, pdf, bin_edges, nevents_expected)
+        super().__init__(data_sample, pdf, bin_edges, nevents_expected)
 
     @staticmethod
-    def calculate_gof(binned_data, binned_expectations):
+    def calculate_gof(binned_data, binned_reference):
         """Get Chi2 GoF from binned data & expectations
         """
         gof = sps.chisquare(binned_data,
-                            binned_expectations, axis=None)[0]
+                            binned_reference, axis=None)[0]
         return gof
 
     def get_gof(self):
         """
             Get Chi2 GoF using current class attributes
         """
-        gof = self.calculate_gof(self.binned_data, self.expected_events)
+        gof = self.calculate_gof(self.binned_data, self.binned_reference)
         self.gof = gof
         return gof
 
     def get_pvalue(self, n_mc=1000):
-        pvalue = super().get_pvalue(n_mc)
-        return pvalue
+        return super().get_pvalue(n_mc)
 
 
 class point_to_point_gof(test_statistics_sample):
@@ -116,23 +114,24 @@ class point_to_point_gof(test_statistics_sample):
     Samples should be pre-processed to have similar scale in each analysis
     dimension."""
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data, reference_sample=reference_sample)
+    def __init__(self, data_sample, reference_sample):
+        super().__init__(data_sample=data_sample,
+                         reference_sample=reference_sample)
 
     @staticmethod
-    def get_distances(data, reference_sample):
+    def get_distances(data_sample, reference_sample):
         """get distances of data-data, reference-reference
         and data-reference"""
         # For 1D input, arrays need to be transformed in
         # order for the distance measure method to work
-        if data.ndim == 1:
-            data = np.vstack(data)
+        if data_sample.ndim == 1:
+            data_sample = np.vstack(data_sample)
         if reference_sample.ndim == 1:
             reference_sample = np.vstack(reference_sample)
 
         dist = DistanceMetric.get_metric("euclidean")
 
-        d_data_data = np.triu(dist.pairwise(data))
+        d_data_data = np.triu(dist.pairwise(data_sample))
         d_data_data.reshape(-1)
         d_data_data = d_data_data[d_data_data > 0]
 
@@ -140,7 +139,7 @@ class point_to_point_gof(test_statistics_sample):
         d_ref_ref.reshape(-1)
         d_ref_ref = d_ref_ref[d_ref_ref > 0]
 
-        d_data_ref = dist.pairwise(data, reference_sample).reshape(-1)
+        d_data_ref = dist.pairwise(data_sample, reference_sample).reshape(-1)
 
         return d_data_data, d_ref_ref, d_data_ref
 
@@ -164,16 +163,16 @@ class point_to_point_gof(test_statistics_sample):
         return -np.log(d)
 
     @classmethod
-    def calculate_gof(cls, data, reference_sample, d_min=None):
+    def calculate_gof(cls, data_sample, reference_sample, d_min=None):
         """Calculate point-to-point GoF.
         If d_min=None, d_min is calculated according to a typical distance
         of the reference sample."""
 
-        nevents_data = np.shape(data)[0]
+        nevents_data = np.shape(data_sample)[0]
         nevents_ref = np.shape(reference_sample)[0]
 
         d_data_data, d_ref_ref, d_data_ref = cls.get_distances(
-            data, reference_sample)
+            data_sample, reference_sample)
         if d_min is None:
             d_min = cls.get_d_min(d_ref_ref)
 
@@ -188,10 +187,10 @@ class point_to_point_gof(test_statistics_sample):
 
     def get_gof(self, d_min=None):
         # self.get_distances()
-        gof = self.calculate_gof(self.data, self.reference_sample, d_min)
+        gof = self.calculate_gof(
+            self.data_sample, self.reference_sample, d_min)
         self.gof = gof
         return gof
 
     def get_pvalue(self, n_perm=1000, d_min=None):
-        pvalue = super().get_pvalue(n_perm, d_min)
-        return pvalue
+        return super().get_pvalue(n_perm, d_min)

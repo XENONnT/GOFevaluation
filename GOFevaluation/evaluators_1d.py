@@ -17,28 +17,29 @@ class adtest_two_sample_gof(test_statistics_sample):
 
 
     Input:
-    - data: sample of unbinned data
+    - data_sample: sample of unbinned data_sample
     - reference_sample: sample of unbinned reference
 
     Output:
     - gof: gof statistic calculated with scipy.stats.anderson_ksamp"""
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data, reference_sample=reference_sample)
+    def __init__(self, data_sample, reference_sample):
+        super().__init__(data_sample=data_sample,
+                         reference_sample=reference_sample)
 
     @staticmethod
-    def calculate_gof(data, reference_sample):
+    def calculate_gof(data_sample, reference_sample):
         # mute specific warnings from sps p-value calculation
         # as this value is not used here anyways:
         warnings.filterwarnings(
             "ignore", message="p-value floored: true value smaller than 0.001")
         warnings.filterwarnings(
             "ignore", message="p-value capped: true value larger than 0.25")
-        gof = sps.anderson_ksamp([data, reference_sample])[0]
+        gof = sps.anderson_ksamp([data_sample, reference_sample])[0]
         return gof
 
     def get_gof(self):
-        gof = self.calculate_gof(self.data, self.reference_sample)
+        gof = self.calculate_gof(self.data_sample, self.reference_sample)
         self.gof = gof
         return gof
 
@@ -49,10 +50,10 @@ class adtest_two_sample_gof(test_statistics_sample):
 
 class kstest_gof(test_statistics_pdf):
     """Goodness of Fit based on the Kolmogorov-Smirnov Test.
-    Test if data sample comes from given pdf.
+    Test if data_sample comes from given pdf.
 
     Input:
-    - data: sample of unbinned data
+    - data_sample: sample of unbinned data
     - pdf: binned pdf to be tested
     - bin_edges: binning of the pdf
 
@@ -60,18 +61,18 @@ class kstest_gof(test_statistics_pdf):
     - gof: supremum of the absolute value of the difference of CDF and ECDF
     """
 
-    def __init__(self, data, pdf, bin_edges):
+    def __init__(self, data_sample, pdf, bin_edges):
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-        assert ((min(data) >= min(bin_centers))
-                & (max(data) <= max(bin_centers))), (
+        assert ((min(data_sample) >= min(bin_centers))
+                & (max(data_sample) <= max(bin_centers))), (
             "Data point(s) outside of pdf bins. Can't compute GoF.")
 
-        super().__init__(data=data, pdf=pdf)
+        super().__init__(data_sample=data_sample, pdf=pdf)
         self.bin_centers = bin_centers
 
     @staticmethod
-    def calculate_gof(data, cdf):
-        gof = sps.kstest(data, cdf=cdf)[0]
+    def calculate_gof(data_sample, cdf):
+        gof = sps.kstest(data_sample, cdf=cdf)[0]
         return gof
 
     def get_gof(self):
@@ -82,12 +83,13 @@ class kstest_gof(test_statistics_pdf):
         interp_cdf = interp1d(self.bin_centers,
                               np.cumsum(self.pdf),
                               kind='cubic')
-        gof = self.calculate_gof(self.data, interp_cdf)
+        gof = self.calculate_gof(self.data_sample, interp_cdf)
         self.gof = gof
         return gof
 
     def get_pvalue(self):
         pvalue = super().get_pvalue()
+        self.pvalue = pvalue
         return pvalue
 
 
@@ -103,12 +105,13 @@ class kstest_two_sample_gof(test_statistics_sample):
     - gof: supremum of the absolute value of the difference of both ECDF
     """
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data, reference_sample=reference_sample)
+    def __init__(self, data_sample, reference_sample):
+        super().__init__(data_sample=data_sample,
+                         reference_sample=reference_sample)
 
     @staticmethod
-    def calculate_gof(data, reference_sample):
-        gof = sps.ks_2samp(data, reference_sample)[0]
+    def calculate_gof(data_sample, reference_sample):
+        gof = sps.ks_2samp(data_sample, reference_sample)[0]
         return gof
 
     def get_gof(self):
@@ -116,7 +119,7 @@ class kstest_two_sample_gof(test_statistics_sample):
         calculate supremum of the absolute value of the difference
         of both ECDF via scipy.stats.kstest
         """
-        gof = self.calculate_gof(self.data, self.reference_sample)
+        gof = self.calculate_gof(self.data_sample, self.reference_sample)
         self.gof = gof
         return gof
 

@@ -30,10 +30,7 @@ class evaluate_gof(object):
     'binned_chi2_gof_from_binned'
     'point_to_point_gof'
 
-
-    CAUTION:
-    So far, evaluate_gof does not check if a given keyword argument is not
-    used!
+    A user warning is issued if unused keyword arguments are passed.
     """
 
     gof_measure_dict = {

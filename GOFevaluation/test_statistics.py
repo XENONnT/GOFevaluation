@@ -5,8 +5,7 @@ import scipy.stats as sps
 class test_statistics_core(object):
     """Parent class for all test statistic classes"""
 
-    def __init__(self, data):
-        self.data = data
+    def __init__(self):
         self._name = self.__class__.__name__
 
     @staticmethod
@@ -16,39 +15,46 @@ class test_statistics_core(object):
     def get_gof(self):
         raise NotImplementedError("get_gof is not implemented yet!")
 
+    def get_pvalue(self):
+        raise NotImplementedError("get_pvalue is not implemented yet!")
 
-class test_statistics(test_statistics_core):
+
+class test_statistics_binned(test_statistics_core):
     """Test statistics class for binned expectations reference input."""
 
-    def __init__(self, data, pdf, bin_edges, nevents_expected):
-        super().__init__(data=data)
+    def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
+        super().__init__()
         self.pdf = pdf
-        self.expected_events = self.pdf * nevents_expected
+        self.binned_reference = self.pdf * nevents_expected
 
         if bin_edges is None:
-            assert (data.shape == pdf.shape), \
+            assert (data_sample.shape == pdf.shape), \
                 "Shape of binned data does not match shape of the pdf!"
-            self.binned_data = data
+            self.binned_data = data_sample
         else:
+            self.data_sample = data_sample
             self.bin_data(bin_edges=bin_edges)
         return
 
     @classmethod
-    def from_binned(cls, data, expectations):
+    def from_binned(cls, binned_data, binned_reference):
         """Initialize with already binned data + expectations
         """
-        # bin_edges=None will set binned_data=data
-        return cls(data=data,
-                   pdf=expectations / np.sum(expectations),
+        # bin_edges=None will set self.binned_data=binned_data
+        # in the init
+        return cls(data_sample=binned_data,
+                   pdf=binned_reference / np.sum(binned_reference),
                    bin_edges=None,
-                   nevents_expected=np.sum(expectations))
+                   nevents_expected=np.sum(binned_reference))
 
     def bin_data(self, bin_edges):
         # function to bin nD data:
-        if len(self.data.shape) == 1:
-            self.binned_data, _ = np.histogram(self.data, bins=bin_edges)
+        if len(self.data_sample.shape) == 1:
+            self.binned_data, _ = np.histogram(self.data_sample,
+                                               bins=bin_edges)
         else:
-            self.binned_data, _ = np.histogramdd(self.data, bins=bin_edges)
+            self.binned_data, _ = np.histogramdd(self.data_sample,
+                                                 bins=bin_edges)
 
         assert (self.binned_data.shape == self.pdf.shape), \
             "Shape of binned data doesn not match shape of pdf!"
@@ -60,9 +66,9 @@ class test_statistics(test_statistics_core):
         """
         fake_gofs = np.zeros(n_mc)
         for i in range(n_mc):
-            samples = sps.poisson(self.expected_events).rvs()
+            samples = sps.poisson(self.binned_reference).rvs()
             fake_gofs[i] = self.calculate_gof(
-                samples, self.expected_events)
+                samples, self.binned_reference)
         return fake_gofs
 
     def get_pvalue(self, n_mc=1000):
@@ -92,14 +98,16 @@ class test_statistics(test_statistics_core):
         else:
             pvalue = cumulative_density[index_pvalue]
 
+        self.pvalue = pvalue
         return pvalue
 
 
 class test_statistics_pdf(test_statistics_core):
     """Test statistics class for sample data, binned pdf reference input."""
 
-    def __init__(self, data, pdf):
-        super().__init__(data=data)
+    def __init__(self, data_sample, pdf):
+        super().__init__()
+        self.data_sample = data_sample
         self.pdf = pdf
 
     def get_pvalue(self):
@@ -111,15 +119,17 @@ class test_statistics_pdf(test_statistics_core):
 class test_statistics_sample(test_statistics_core):
     """Test statistics class for sample data and reference input."""
 
-    def __init__(self, data, reference_sample):
-        super().__init__(data=data)
+    def __init__(self, data_sample, reference_sample):
+        super().__init__()
+        self.data_sample = data_sample
         self.reference_sample = reference_sample
 
     def permutation_gofs(self, n_perm=1000, d_min=None):
         """Get n_perm GoF's by randomly permutating data and reference sample
         """
-        n_data = len(self.data)
-        mixed_sample = np.concatenate([self.data, self.reference_sample],
+        n_data = len(self.data_sample)
+        mixed_sample = np.concatenate([self.data_sample,
+                                       self.reference_sample],
                                       axis=0)
         fake_gofs = np.zeros(n_perm)
         for i in range(n_perm):
@@ -130,11 +140,11 @@ class test_statistics_sample(test_statistics_core):
             reference_perm = mixed_sample[n_data:]
             if d_min is not None:
                 fake_gofs[i] = self.calculate_gof(
-                    data=data_perm, reference_sample=reference_perm,
+                    data_sample=data_perm, reference_sample=reference_perm,
                     d_min=d_min)
             else:
                 fake_gofs[i] = self.calculate_gof(
-                    data=data_perm, reference_sample=reference_perm)
+                    data_sample=data_perm, reference_sample=reference_perm)
         return fake_gofs
 
     def get_pvalue(self, n_perm=1000, d_min=None):

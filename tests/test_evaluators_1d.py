@@ -31,7 +31,7 @@ class Test_kstest_gof(unittest.TestCase):
         dn = np.abs(interp_cdf(np.sort(data)) - ecdf[:-1])
 
         # Calculate GoF
-        gofclass = kstest_gof(data=data,
+        gofclass = kstest_gof(data_sample=data,
                               pdf=normed_gauss_pdf,
                               bin_edges=bin_edges)
         gof = gofclass.get_gof()
@@ -40,12 +40,12 @@ class Test_kstest_gof(unittest.TestCase):
 
 
 class Test_kstest_two_sample_gof(unittest.TestCase):
-    def get_ecdf(self, values, data):
+    def get_ecdf(self, values, data_sample):
         """Calculate ecdf by hand"""
-        n_data = len(data)
+        n_data = len(data_sample)
         cdf = []
         for value in values:
-            cdf.append(len(data[data <= value]))
+            cdf.append(len(data_sample[data_sample <= value]))
         cdf = np.array(cdf) / n_data
         return cdf
 
@@ -67,7 +67,7 @@ class Test_kstest_two_sample_gof(unittest.TestCase):
 
         # Calculate GoF
         gofclass = kstest_two_sample_gof(
-            data=data, reference_sample=reference)
+            data_sample=data, reference_sample=reference)
         gof = gofclass.get_gof()
 
         self.assertAlmostEqual(max(dn), gof, places=6)
@@ -118,7 +118,11 @@ class Test_pvalues(unittest.TestCase):
             n_perm = 100
             while n_perm <= n_perm_max:
                 try:
-                    p_value = gof_object.get_pvalue(n_perm=n_perm, d_min=d_min)
+                    if d_min is not None:
+                        p_value = gof_object.get_pvalue(n_perm=n_perm,
+                                                        d_min=d_min)
+                    else:
+                        p_value = gof_object.get_pvalue(n_perm=n_perm)
                     break
                 except ValueError:
                     p_value = -1
