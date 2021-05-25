@@ -80,6 +80,7 @@ class binned_chi2_gof(test_statistics_binned):
         """
         super().__init__(data_sample, pdf, bin_edges, nevents_expected)
 
+
     @staticmethod
     def calculate_gof(binned_data, binned_reference):
         """Get Chi2 GoF from binned data & expectations
