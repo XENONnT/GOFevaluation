@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from inspect import signature
+import warnings
 from GOFevaluation import adtest_two_sample_gof
 from GOFevaluation import kstest_gof
 from GOFevaluation import kstest_two_sample_gof
@@ -18,6 +19,17 @@ class evaluate_gof(object):
 
     - kwargs: All parameters of evaluators_nd and evaluators_1d are viable
     kwargs
+
+    Possible entries in gof_list:
+    'adtest_two_sample_gof'
+    'kstest_gof'
+    'kstest_two_sample_gof'
+    'binned_poisson_chi2_gof':
+    'binned_poisson_chi2_gof_from_binned'
+    'binned_chi2_gof'
+    'binned_chi2_gof_from_binned'
+    'point_to_point_gof'
+
 
     CAUTION:
     So far, evaluate_gof does not check if a given keyword argument is not
@@ -41,6 +53,7 @@ class evaluate_gof(object):
         self.gof_list = gof_list
         self.gofs = None
         self.pvalues = None
+        kwargs_used = []  # check if all kwargs were used
         for key in self.gof_list:
             try:
                 func = self.gof_measure_dict[key]
@@ -50,6 +63,8 @@ class evaluate_gof(object):
 
             specific_kwargs = self._get_specific_kwargs(func, kwargs)
             self.gof_objects[key] = func(**specific_kwargs)
+            kwargs_used += specific_kwargs.keys()
+        self._check_kwargs_used(kwargs_used, kwargs)
 
     @staticmethod
     def _get_specific_kwargs(func, kwargs):
@@ -64,6 +79,12 @@ class evaluate_gof(object):
         _ = signature(func).bind(**specific_kwargs)
 
         return specific_kwargs
+
+    @staticmethod
+    def _check_kwargs_used(kwargs_used, kwargs):
+        for kwarg in kwargs:
+            if kwarg not in kwargs_used:
+                warnings.warn(f'Keyword argument {kwarg} was not used!')
 
     def __repr__(self):
         return f'{self.__class__.__module__}, {self.__dict__}'
@@ -80,19 +101,25 @@ class evaluate_gof(object):
         return f'{self.__class__.__module__}\n{args_str}'
 
     def get_gofs(self, **kwargs):
+        kwargs_used = []  # check if all kwargs were used
         self.gofs = OrderedDict()
         for key in self.gof_objects:
             func = self.gof_objects[key].get_gof
             specific_kwargs = self._get_specific_kwargs(func, kwargs)
             gof = func(**specific_kwargs)
             self.gofs[key] = gof
+            kwargs_used += specific_kwargs.keys()
+        self._check_kwargs_used(kwargs_used, kwargs)
         return self.gofs
 
     def get_pvalues(self, **kwargs):
+        kwargs_used = []  # check if all kwargs were used
         self.pvalues = OrderedDict()
         for key in self.gof_objects:
             func = self.gof_objects[key].get_pvalue
             specific_kwargs = self._get_specific_kwargs(func, kwargs)
             pvalue = func(**specific_kwargs)
             self.pvalues[key] = pvalue
+            kwargs_used += specific_kwargs.keys()
+        self._check_kwargs_used(kwargs_used, kwargs)
         return self.pvalues
