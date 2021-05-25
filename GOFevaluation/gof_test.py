@@ -44,8 +44,8 @@ class GOFTest(object):
     def __init__(self, gof_list, **kwargs):
         self.gof_objects = OrderedDict()
         self.gof_list = gof_list
-        self.gofs = None
-        self.pvalues = None
+        self.gofs = OrderedDict()
+        self.pvalues = OrderedDict()
         kwargs_used = []  # check if all kwargs were used
         for gof_str in self.gof_list:
             if gof_str in self.allowed_gof_str:
@@ -79,7 +79,7 @@ class GOFTest(object):
     @staticmethod
     def _check_kwargs_used(kwargs_used, kwargs):
         for kwarg in kwargs:
-            if kwarg not in kwargs_used:
+            if (kwarg not in kwargs_used) and (kwarg != 'gof_list'):
                 warnings.warn(f'Keyword argument {kwarg} was not used!')
 
     def __repr__(self):
@@ -97,9 +97,15 @@ class GOFTest(object):
         return f'{self.__class__.__module__}\n{args_str}'
 
     def get_gofs(self, **kwargs):
+        """Calculate GoF values for individual GoF measures.
+
+        kwargs:
+        - All parameters from a get_gof method are viable kwargs
+        - gof_list: A list of gof_measures for which GoF should be
+        calculated. If none is given, the GoF value is calculated for all
+        GoF measures defined at initialisation."""
         kwargs_used = []  # check if all kwargs were used
-        self.gofs = OrderedDict()
-        for key in self.gof_objects:
+        for key in kwargs.get('gof_list', self.gof_objects):
             func = self.gof_objects[key].get_gof
             specific_kwargs = self._get_specific_kwargs(func, kwargs)
             gof = func(**specific_kwargs)
@@ -109,9 +115,15 @@ class GOFTest(object):
         return self.gofs
 
     def get_pvalues(self, **kwargs):
+        """Calculate p-values for individual GoF measures.
+
+        kwargs:
+        - All parameters from a get_pvalue method are viable kwargs
+        - gof_list: A list of gof_measures for which p-value should be
+        calculated. If none is given, the p-value is calculated for all
+        GoF measures defined at initialisation."""
         kwargs_used = []  # check if all kwargs were used
-        self.pvalues = OrderedDict()
-        for key in self.gof_objects:
+        for key in kwargs.get('gof_list', self.gof_objects):
             func = self.gof_objects[key].get_pvalue
             specific_kwargs = self._get_specific_kwargs(func, kwargs)
             pvalue = func(**specific_kwargs)
