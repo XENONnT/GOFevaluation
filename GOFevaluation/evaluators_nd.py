@@ -1,11 +1,12 @@
 import scipy.stats as sps
 import numpy as np
 from sklearn.neighbors import DistanceMetric
-from GOFevaluation import TestStatisticsBinned
-from GOFevaluation import TestStatisticsSample
+
+from GOFevaluation import EvaluatorBaseBinned
+from GOFevaluation import EvaluatorBaseSample
 
 
-class BinnedPoissonChi2GOF(TestStatisticsBinned):
+class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
     """
         Computes the binned poisson modified Chi2 from Baker+Cousins
         In the limit of large bin counts (10+) this is Chi2 distributed.
@@ -55,7 +56,7 @@ class BinnedPoissonChi2GOF(TestStatisticsBinned):
         return super().get_pvalue(n_mc)
 
 
-class BinnedChi2GOF(TestStatisticsBinned):
+class BinnedChi2GOF(EvaluatorBaseBinned):
     """Compoutes the binned chi2 GoF based on Pearson's chi2.
 
     Input (unbinned data):
@@ -100,7 +101,7 @@ class BinnedChi2GOF(TestStatisticsBinned):
         return super().get_pvalue(n_mc)
 
 
-class PointToPointGOF(TestStatisticsSample):
+class PointToPointGOF(EvaluatorBaseSample):
     """computes point-to-point gof as described in
     https://arxiv.org/abs/hep-ex/0203010.
 

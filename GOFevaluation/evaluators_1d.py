@@ -2,11 +2,12 @@ import scipy.stats as sps
 import numpy as np
 import warnings
 from scipy.interpolate import interp1d
-from GOFevaluation import TestStatisticsPdf
-from GOFevaluation import TestStatisticsSample
+
+from GOFevaluation import EvaluatorBasePdf
+from GOFevaluation import EvaluatorBaseSample
 
 
-class ADTestTwoSampleGOF(TestStatisticsSample):
+class ADTestTwoSampleGOF(EvaluatorBaseSample):
     """Goodness of Fit based on the two-sample Anderson-Darling test
     as described in https://www.doi.org/10.1214/aoms/1177706788
     and https://www.doi.org/10.2307/2288805.
@@ -48,7 +49,7 @@ class ADTestTwoSampleGOF(TestStatisticsSample):
         return pvalue
 
 
-class KSTestGOF(TestStatisticsPdf):
+class KSTestGOF(EvaluatorBasePdf):
     """Goodness of Fit based on the Kolmogorov-Smirnov Test.
     Test if data_sample comes from given pdf.
 
@@ -93,7 +94,7 @@ class KSTestGOF(TestStatisticsPdf):
         return pvalue
 
 
-class KSTestTwoSampleGOF(TestStatisticsSample):
+class KSTestTwoSampleGOF(EvaluatorBaseSample):
     """Goodness of Fit based on the Kolmogorov-Smirnov Test for two samples.
     Test if two samples come from the same pdf.
 

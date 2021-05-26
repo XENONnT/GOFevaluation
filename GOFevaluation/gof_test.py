@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from inspect import signature
 import warnings
+
 from GOFevaluation import ADTestTwoSampleGOF
 from GOFevaluation import KSTestTwoSampleGOF
 from GOFevaluation import BinnedPoissonChi2GOF
