@@ -1,6 +1,8 @@
 import scipy.stats as sps
 import numpy as np
 from sklearn.neighbors import DistanceMetric
+import warnings
+# import inspect
 
 from GOFevaluation import EvaluatorBaseBinned
 from GOFevaluation import EvaluatorBaseSample
@@ -40,6 +42,15 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
     def calculate_gof(binned_data, binned_reference):
         """Get binned poisson chi2 GoF from binned data & expectations
         """
+        critical_bin_count = 10
+        if (binned_data < critical_bin_count).any():
+            warnings.warn(f'Binned data contains bin count(s) below '
+                          f'{critical_bin_count}. GoF not well defined!',
+                          stacklevel=2)
+        if (binned_reference < critical_bin_count).any():
+            warnings.warn(f'Binned reference contains bin count(s) below '
+                          f'{critical_bin_count}. GoF not well defined!',
+                          stacklevel=2)
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_reference).logpmf(binned_data)
         return 2 * np.sum(ret)
@@ -85,6 +96,15 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
     def calculate_gof(binned_data, binned_reference):
         """Get Chi2 GoF from binned data & expectations
         """
+        critical_bin_count = 5
+        if (binned_data < critical_bin_count).any():
+            warnings.warn(f'Binned data contains bin count(s) below '
+                          f'{critical_bin_count}. GoF not well defined!',
+                          stacklevel=2)
+        if (binned_reference < critical_bin_count).any():
+            warnings.warn(f'Binned reference contains bin count(s) below '
+                          f'{critical_bin_count} (found {min(binned_reference)}). GoF not well defined!',
+                          stacklevel=2)
         gof = sps.chisquare(binned_data,
                             binned_reference, axis=None)[0]
         return gof
