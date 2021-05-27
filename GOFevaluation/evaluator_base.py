@@ -12,7 +12,9 @@ class EvaluatorBase(object):
         self.pvalue = None
 
     def __repr__(self):
-        return f'{self.__class__.__module__}, {self.__dict__}'
+        # return f'{self.__class__.__module__}, {self.__dict__}'
+        return f'{self.__class__.__module__}.{self.__class__.__qualname__}'\
+            f'({self.__dict__.keys()})'
 
     def __str__(self):
         args = [self._name]
