@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats as sps
+import warnings
 
 
 class EvaluatorBase(object):
@@ -87,13 +88,17 @@ class EvaluatorBaseBinned(EvaluatorBase):
         index_pvalue = np.digitize(self.gof, bin_edges) - 1
 
         if index_pvalue == (len(hist) - 1):
-            raise ValueError(
-                f'Index {index_pvalue} is out of bounds. '
-                + 'Not enough MC\'s run!')
+            pvalue = 0
+            warnings.warn(f'p-value is set to 0. Observed GoF '
+                          f'{self.gof:.2e} is higher than all simulated GoFs '
+                          f'(maximum: {max(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_mc!', stacklevel=2)
         elif index_pvalue == -1:
-            raise ValueError(
-                f'Index {index_pvalue} is out of bounds. '
-                + 'Not enough MC\'s run!')
+            pvalue = 1
+            warnings.warn(f'p-value is set to 1. Observed GoF '
+                          f'{self.gof:.2e} is lower than all simulated GoFs '
+                          f'(minimum: {min(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_mc!', stacklevel=2)
         else:
             pvalue = cumulative_density[index_pvalue]
 
@@ -170,13 +175,17 @@ class EvaluatorBaseSample(EvaluatorBase):
         index_pvalue = np.digitize(self.gof, bin_edges) - 1
 
         if index_pvalue == (len(hist) - 1):
-            raise ValueError(
-                f'Index {index_pvalue} is out of bounds. '
-                + 'Not enough permutations run!')
+            pvalue = 0
+            warnings.warn(f'p-value is set to 0. Observed GoF '
+                          f'{self.gof:.2e} is higher than all permutated GoFs '
+                          f'(maximum: {max(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_perm!', stacklevel=2)
         elif index_pvalue == -1:
-            raise ValueError(
-                f'Index {index_pvalue} is out of bounds. '
-                + 'Not enough permutations run!')
+            pvalue = 1
+            warnings.warn(f'p-value is set to 1. Observed GoF '
+                          f'{self.gof:.2e} is lower than all permutated GoFs '
+                          f'(minimum: {min(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_perm!', stacklevel=2)
         else:
             pvalue = cumulative_density[index_pvalue]
 
