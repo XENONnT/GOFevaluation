@@ -103,7 +103,7 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
                           stacklevel=2)
         if (binned_reference < critical_bin_count).any():
             warnings.warn(f'Binned reference contains bin count(s) below '
-                          f'{critical_bin_count} (found {min(binned_reference)}). GoF not well defined!',
+                          f'{critical_bin_count}. GoF not well defined!',
                           stacklevel=2)
         gof = sps.chisquare(binned_data,
                             binned_reference, axis=None)[0]
