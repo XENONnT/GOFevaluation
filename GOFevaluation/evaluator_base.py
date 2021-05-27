@@ -73,7 +73,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
                    nevents_expected=np.sum(binned_reference))
 
     def bin_data(self, data_sample, bin_edges):
-        # function to bin nD data:
+        """function to bin nD data sample"""
         if len(data_sample.shape) == 1:
             self.binned_data, _ = np.histogram(data_sample,
                                                bins=bin_edges)
@@ -85,9 +85,12 @@ class EvaluatorBaseBinned(EvaluatorBase):
             "Shape of binned data doesn not match shape of pdf!"
 
     def sample_gofs(self, n_mc=1000):
-        """Sample n_mc random GoF's
+        """Generate fake GoFs for toy data sampled from binned reference
 
-        Simulates random data from the PDF and calculates its GoF n_mc times
+        :param n_mc: Number of fake-gofs calculated, defaults to 1000
+        :type n_mc: int, optional
+        :return: Array of fake GoFs
+        :rtype: array_like
         """
         fake_gofs = np.zeros(n_mc)
         for i in range(n_mc):
@@ -97,10 +100,16 @@ class EvaluatorBaseBinned(EvaluatorBase):
         return fake_gofs
 
     def get_pvalue(self, n_mc=1000):
-        """Get the p-value of the data under the null hypothesis
+        """p-value is calculated
 
-        Gets the distribution of the GoF statistic, and compares it to the
-        GoF of the data given the expectations.
+        Computes the p-value by means of generating toyMCs and calculating
+        their GoF. The p-value can then be obtained from the distribution of
+        these fake-gofs.
+
+        :param n_mc: Number of fake-gofs calculated, defaults to 1000
+        :type n_mc: int, optional
+        :return: p-value
+        :rtype: float
         """
         if self.gof is None:
             _ = self.get_gof()
@@ -146,7 +155,7 @@ class EvaluatorBasePdf(EvaluatorBase):
 
 
 class EvaluatorBaseSample(EvaluatorBase):
-    """Test statistics class for sample data and reference input."""
+    """Evaluator base class for sample data and reference input."""
 
     def __init__(self, data_sample, reference_sample):
         super().__init__()
@@ -154,7 +163,14 @@ class EvaluatorBaseSample(EvaluatorBase):
         self.reference_sample = reference_sample
 
     def permutation_gofs(self, n_perm=1000, d_min=None):
-        """Get n_perm GoF's by randomly permutating data and reference sample
+        """Generate fake GoFs by re-sampling data and reference sample
+
+        :param n_perm: Number of fake-gofs calculated, defaults to 1000
+        :type n_perm: int, optional
+        :param d_min: Only for PointToPointGOF, defaults to None
+        :type d_min: float, optional
+        :return: Array of fake GoFs
+        :rtype: array_like
         """
         n_data = len(self.data_sample)
         mixed_sample = np.concatenate([self.data_sample,
@@ -177,20 +193,24 @@ class EvaluatorBaseSample(EvaluatorBase):
         return fake_gofs
 
     def get_pvalue(self, n_perm=1000, d_min=None):
-        """Get the p-value of the data under the null hypothesis
+        """p-value is calculated
 
-        Computes the p-value by means of a permutation test of data sample
-        and reference sample.
+        Computes the p-value by means of re-sampling data sample
+        and reference sample. For each re-sampling, the gof is calculated.
+        The p-value can then be obtained from the distribution of these
+        fake-gofs.
+
+        :param n_perm: Number of fake-gofs calculated, defaults to 1000
+        :type n_perm: int, optional
+        :return: p-value
+        :rtype: float
         """
         if self.gof is None:
             if d_min is not None:
                 _ = self.get_gof(d_min=d_min)
             else:
                 _ = self.get_gof()
-        if d_min is not None:
-            fake_gofs = self.permutation_gofs(n_perm=n_perm, d_min=d_min)
-        else:
-            fake_gofs = self.permutation_gofs(n_perm=n_perm)
+        fake_gofs = self.permutation_gofs(n_perm=n_perm, d_min=d_min)
         hist, bin_edges = np.histogram(fake_gofs, bins=1000)
         # add 0 bin to the front and truncate cumulative_density
         # at the end to get pvalue[0] = 1

@@ -8,21 +8,19 @@ from GOFevaluation import EvaluatorBaseSample
 
 
 class ADTestTwoSampleGOF(EvaluatorBaseSample):
-    """Goodness of Fit based on the two-sample Anderson-Darling test
-    as described in https://www.doi.org/10.1214/aoms/1177706788
-    and https://www.doi.org/10.2307/2288805.
-    Test if two samples come from the same pdf.
+    """Goodness of Fit based on the two-sample Anderson-Darling Test
 
-    Similar to kstest_two_sample_gof but more weight is given on tail
-    differences due to a different weighting function.
+    The test is described in https://www.doi.org/10.1214/aoms/1177706788
+    and https://www.doi.org/10.2307/2288805. It test if two samples
+    come from the same pdf. Similar to :class:`KSTestTwoSampleGOF` but more
+    weight is given on tail differences due to a different weighting function.
 
 
-    Input:
-    - data_sample: sample of unbinned data_sample
-    - reference_sample: sample of unbinned reference
-
-    Output:
-    - gof: gof statistic calculated with scipy.stats.anderson_ksamp"""
+    :param data_sample: sample of unbinned data
+    :type data_sample: array_like, 1-Dimensional
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, 1-Dimensional
+    """
 
     def __init__(self, data_sample, reference_sample):
         super().__init__(data_sample=data_sample,
@@ -30,6 +28,8 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
 
     @staticmethod
     def calculate_gof(data_sample, reference_sample):
+        """Internal function to calculate gof for :func:`get_gof`
+        and :func:`get_pvalue`"""
         # mute specific warnings from sps p-value calculation
         # as this value is not used here anyways:
         warnings.filterwarnings(
@@ -40,6 +40,12 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
         return gof
 
     def get_gof(self):
+        """gof is calculated using current class attributes
+
+        This method uses `sps.anderson_ksamp`.
+        :return: Goodness of Fit
+        :rtype: float
+        """
         gof = self.calculate_gof(self.data_sample, self.reference_sample)
         self.gof = gof
         return gof
@@ -50,16 +56,16 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
 
 
 class KSTestGOF(EvaluatorBasePdf):
-    """Goodness of Fit based on the Kolmogorov-Smirnov Test.
+    """Goodness of Fit based on the Kolmogorov-Smirnov Test
+
     Test if data_sample comes from given pdf.
 
-    Input:
-    - data_sample: sample of unbinned data
-    - pdf: binned pdf to be tested
-    - bin_edges: binning of the pdf
-
-    Output:
-    - gof: supremum of the absolute value of the difference of CDF and ECDF
+    :param data_sample: sample of unbinned data
+    :type data_sample: array_like, 1-Dimensional
+    :param pdf: binned pdf to be tested
+    :type pdf: array_like, 1-Dimensional
+    :param bin_edges: binning of the pdf
+    :type bin_edges: array_like, 1-Dimensional
     """
 
     def __init__(self, data_sample, pdf, bin_edges):
@@ -73,13 +79,19 @@ class KSTestGOF(EvaluatorBasePdf):
 
     @staticmethod
     def calculate_gof(data_sample, cdf):
+        """Internal function to calculate gof for :func:`get_gof`
+        and :func:`get_pvalue`"""
         gof = sps.kstest(data_sample, cdf=cdf)[0]
         return gof
 
     def get_gof(self):
-        """
-        Interpolate CDF from binned pdf and calculate supremum of the
-        absolute value of the difference of CDF and ECDF via scipy.stats.kstest
+        """gof is calculated using current class attributes
+
+        The CDF is interpolated from pdf and binning. The gof is then
+        calculated by `sps.kstest`
+
+        :return: Goodness of Fit
+        :rtype: float
         """
         interp_cdf = interp1d(self.bin_centers,
                               np.cumsum(self.pdf),
@@ -95,15 +107,14 @@ class KSTestGOF(EvaluatorBasePdf):
 
 
 class KSTestTwoSampleGOF(EvaluatorBaseSample):
-    """Goodness of Fit based on the Kolmogorov-Smirnov Test for two samples.
+    """Goodness of Fit based on the Kolmogorov-Smirnov Test for two samples
+
     Test if two samples come from the same pdf.
 
-    Input:
-    - data: sample of unbinned data
-    - reference_sample: sample of unbinned reference
-
-    Output:
-    - gof: supremum of the absolute value of the difference of both ECDF
+    :param data_sample: sample of unbinned data
+    :type data_sample: array_like, 1-Dimensional
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, 1-Dimensional
     """
 
     def __init__(self, data_sample, reference_sample):
@@ -112,13 +123,17 @@ class KSTestTwoSampleGOF(EvaluatorBaseSample):
 
     @staticmethod
     def calculate_gof(data_sample, reference_sample):
+        """Internal function to calculate gof for :func:`get_gof`
+        and :func:`get_pvalue`"""
         gof = sps.ks_2samp(data_sample, reference_sample)[0]
         return gof
 
     def get_gof(self):
-        """
-        calculate supremum of the absolute value of the difference
-        of both ECDF via scipy.stats.kstest
+        """gof is calculated using current class attributes
+
+        This method uses `scipy.stats.kstest`.
+        :return: Goodness of Fit
+        :rtype: float
         """
         gof = self.calculate_gof(self.data_sample, self.reference_sample)
         self.gof = gof
