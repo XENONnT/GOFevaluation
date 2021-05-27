@@ -29,9 +29,18 @@ class EvaluatorBaseBinned(EvaluatorBase):
         self.binned_reference = self.pdf * nevents_expected
 
         if bin_edges is None:
+            # In this case data_sample is binned data!
             assert (data_sample.shape == pdf.shape), \
                 "Shape of binned data does not match shape of the pdf!"
-            self.binned_data = data_sample
+
+            # Convert to int. Make sure the deviation is purely from
+            # dtype conversion, i.e. the values provided are actually
+            # bin counts and not float values.
+            binned_data_int = np.abs(data_sample.round(0).astype(int))
+            assert (np.sum(np.abs(data_sample - binned_data_int)) < 1e-10), \
+                'Deviation encounterd when converting dtype of binned_data to'\
+                'int. Make sure binned_data contains natural numbers!'
+            self.binned_data = binned_data_int
         else:
             self.bin_data(data_sample=data_sample, bin_edges=bin_edges)
         return
