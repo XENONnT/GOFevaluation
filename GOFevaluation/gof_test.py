@@ -84,7 +84,7 @@ class GOFTest(object):
                 warnings.warn(f'Keyword argument {kwarg} was not used!')
 
     def __repr__(self):
-        return f'{self.__class__.__module__}, {self.__dict__}'
+        return f'{self.__class__.__module__}:\n{self.__dict__}'
 
     def __str__(self):
         args = ['GoF measures: '+", ".join(self.gof_list)]

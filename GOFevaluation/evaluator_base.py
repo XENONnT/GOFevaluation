@@ -8,6 +8,20 @@ class EvaluatorBase(object):
 
     def __init__(self):
         self._name = self.__class__.__name__
+        self.gof = None
+        self.pvalue = None
+
+    def __repr__(self):
+        return f'{self.__class__.__module__}, {self.__dict__}'
+
+    def __str__(self):
+        args = [self._name]
+        if self.gof:
+            args.append(f'gof = {self.gof}')
+        if self.pvalue:
+            args.append(f'p-value = {self.pvalue}')
+        args_str = "\n".join(args)
+        return f'{self.__class__.__module__}\n{args_str}'
 
     @staticmethod
     def calculate_gof():
@@ -86,7 +100,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
         Gets the distribution of the GoF statistic, and compares it to the
         GoF of the data given the expectations.
         """
-        if not hasattr(self, 'gof'):
+        if self.gof is None:
             _ = self.get_gof()
         fake_gofs = self.sample_gofs(n_mc=n_mc)
         hist, bin_edges = np.histogram(fake_gofs, bins=1000)
@@ -166,7 +180,7 @@ class EvaluatorBaseSample(EvaluatorBase):
         Computes the p-value by means of a permutation test of data sample
         and reference sample.
         """
-        if not hasattr(self, 'gof'):
+        if self.gof is None:
             if d_min is not None:
                 _ = self.get_gof(d_min=d_min)
             else:
