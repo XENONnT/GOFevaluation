@@ -20,7 +20,7 @@ class TestGOFTest(unittest.TestCase):
         # Generate data and reference (as sample and binned) to use
         # to calculate all GoFs at once
         model = sps.uniform
-        nevents_expected = 100
+        nevents_expected = 200
         data_sample = model.rvs(size=nevents_expected)
         reference_sample = model.rvs(size=nevents_expected*3)
         bin_edges = np.linspace(0, 1, 11)

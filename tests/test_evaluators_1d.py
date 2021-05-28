@@ -2,6 +2,7 @@ import scipy.stats as sps
 import numpy as np
 from scipy.interpolate import interp1d
 import unittest
+import warnings
 
 from GOFevaluation import KSTestGOF
 from GOFevaluation import KSTestTwoSampleGOF
@@ -110,23 +111,15 @@ class TestPvalues(unittest.TestCase):
                        PointToPointGOF(data, data)]
         d_mins = [None, None, .00001]
 
-        # For efficiency reasons, try first with few permutations
-        # and only increase number if p-value is outside of bounds.
-        n_perm_step = 100
-        n_perm_max = 1000
+        # Ignore warning here since this is what we want to test
+        warnings.filterwarnings("ignore", message="p-value is set to 1.*")
+        n_perm = 300
         for gof_object, d_min in zip(gof_objects, d_mins):
-            n_perm = 100
-            while n_perm <= n_perm_max:
-                try:
-                    if d_min is not None:
-                        p_value = gof_object.get_pvalue(n_perm=n_perm,
-                                                        d_min=d_min)
-                    else:
-                        p_value = gof_object.get_pvalue(n_perm=n_perm)
-                    break
-                except ValueError:
-                    p_value = -1
-                    n_perm += n_perm_step
+            if d_min is not None:
+                p_value = gof_object.get_pvalue(n_perm=n_perm,
+                                                d_min=d_min)
+            else:
+                p_value = gof_object.get_pvalue(n_perm=n_perm)
             self.assertEqual(p_value, 1)
 
 

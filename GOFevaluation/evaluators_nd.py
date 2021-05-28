@@ -48,6 +48,8 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
         """Get binned poisson chi2 GoF from binned data & reference
         """
         critical_bin_count = 10
+        print('-'*20)
+        print(binned_data, binned_reference)
         if (binned_data < critical_bin_count).any():
             warnings.warn(f'Binned data contains bin count(s) below '
                           f'{critical_bin_count}. GoF not well defined!',

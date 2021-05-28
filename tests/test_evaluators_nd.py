@@ -1,6 +1,7 @@
 import scipy.stats as sps
 import numpy as np
 import unittest
+import warnings
 
 from GOFevaluation import BinnedPoissonChi2GOF
 from GOFevaluation import PointToPointGOF
@@ -36,8 +37,8 @@ class TestBinnedPoissonChi2GOF(unittest.TestCase):
     def test_from_binned(self):
         """Test if regular init and from_binned init give same result"""
         for nD in range(1, 5+1):
-            # generate uniformly distributed data points and bibn data
-            n_events_per_bin = 5
+            # generate uniformly distributed data points and bin data
+            n_events_per_bin = 30
             n_bins_per_dim = int(32**(1/nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
@@ -176,7 +177,7 @@ class TestBinnedChi2GOF(unittest.TestCase):
         """Test if regular init and from_binned init give same result"""
         for nD in range(1, 5+1):
             # generate uniformly distributed data points and bibn data
-            n_events_per_bin = 5
+            n_events_per_bin = 15
             n_bins_per_dim = int(32**(1/nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
@@ -222,44 +223,30 @@ class TestPvalue(unittest.TestCase):
             data = np.vstack([data for i in range(nD)]).T
             gof_object = PointToPointGOF(data, data)
 
-            # For efficiency reasons, try first with few permutations
-            # and only increase number if p-value is outside of bounds.
-            n_perm_step = 100
-            n_perm_max = 1000
-            n_perm = 100
-            while n_perm <= n_perm_max:
-                try:
-                    p_value = gof_object.get_pvalue(n_perm=n_perm, d_min=d_min)
-                    break
-                except ValueError:
-                    p_value = -1
-                    n_perm += n_perm_step
+            # Ignore warning here since this is what we want to test
+            warnings.filterwarnings("ignore", message="p-value is set to 1.*")
+            n_perm = 300
+            p_value = gof_object.get_pvalue(n_perm=n_perm,
+                                            d_min=d_min)
+
             self.assertEqual(p_value, 1)
 
     def test_value(self):
         """Test for 1D if binned_data = binned_reference gives p-value
         of one."""
         n_bins = 3
-        n_events_per_bin = 5
+        n_events_per_bin = 30
 
         data = np.ones(n_bins) * n_events_per_bin
 
         gof_objects = [BinnedChi2GOF.from_binned(data, data),
                        BinnedPoissonChi2GOF.from_binned(data, data)]
 
-        # For efficiency reasons, try first with few permutations
-        # and only increase number if p-value is outside of bounds.
-        n_mc_step = 200
-        n_mc_max = 1000
+        # Ignore warning here since this is what we want to test
+        warnings.filterwarnings("ignore", message="p-value is set to 1.*")
+        n_mc = 400
         for gof_object in gof_objects:
-            n_mc = 200
-            while n_mc <= n_mc_max:
-                try:
-                    p_value = gof_object.get_pvalue(n_mc=n_mc)
-                    break
-                except ValueError:
-                    p_value = -1
-                    n_mc += n_mc_step
+            p_value = gof_object.get_pvalue(n_mc=n_mc)
             self.assertEqual(p_value, 1)
 
 
