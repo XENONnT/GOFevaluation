@@ -112,7 +112,7 @@ class TestPvalues(unittest.TestCase):
         d_mins = [None, None, .00001]
 
         # Ignore warning here since this is what we want to test
-        warnings.filterwarnings("ignore", message="p-value is set to 1.*")
+        warnings.filterwarnings("ignore", message="p-value is 1.*")
         n_perm = 300
         for gof_object, d_min in zip(gof_objects, d_mins):
             if d_min is not None:
@@ -120,7 +120,7 @@ class TestPvalues(unittest.TestCase):
                                                 d_min=d_min)
             else:
                 p_value = gof_object.get_pvalue(n_perm=n_perm)
-            self.assertEqual(p_value, 1)
+            self.assertTrue(p_value > .97)
 
 
 if __name__ == "__main__":

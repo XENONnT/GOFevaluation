@@ -262,12 +262,12 @@ class TestPvalue(unittest.TestCase):
             gof_object = PointToPointGOF(data, data)
 
             # Ignore warning here since this is what we want to test
-            warnings.filterwarnings("ignore", message="p-value is set to 1.*")
+            warnings.filterwarnings("ignore", message="p-value is 1.*")
             n_perm = 300
             p_value = gof_object.get_pvalue(n_perm=n_perm,
                                             d_min=d_min)
 
-            self.assertEqual(p_value, 1)
+            self.assertTrue(p_value > .97)
 
     def test_value(self):
         """Test for 1D if binned_data = binned_reference gives p-value
@@ -281,7 +281,7 @@ class TestPvalue(unittest.TestCase):
                        BinnedPoissonChi2GOF.from_binned(data, data)]
 
         # Ignore warning here since this is what we want to test
-        warnings.filterwarnings("ignore", message="p-value is set to 1.*")
+        warnings.filterwarnings("ignore", message="p-value is 1.*")
         n_mc = 400
         for gof_object in gof_objects:
             p_value = gof_object.get_pvalue(n_mc=n_mc)

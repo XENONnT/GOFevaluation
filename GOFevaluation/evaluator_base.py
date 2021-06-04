@@ -114,27 +114,19 @@ class EvaluatorBaseBinned(EvaluatorBase):
         if self.gof is None:
             _ = self.get_gof()
         fake_gofs = self.sample_gofs(n_mc=n_mc)
-        hist, bin_edges = np.histogram(fake_gofs, bins=1000)
-        # add 0 bin to the front and truncate cumulative_density
-        # at the end to get pvalue[0] = 1
-        hist = np.concatenate([[0], hist])
-        cumulative_density = (1.0 - np.cumsum(hist) / np.sum(hist))[:-1]
-        index_pvalue = np.digitize(self.gof, bin_edges) - 1
+        percentile = sps.percentileofscore(fake_gofs, self.gof, kind='strict')
+        pvalue = 1 - percentile / 100
 
-        if index_pvalue == (len(hist) - 1):
-            pvalue = 0
-            warnings.warn(f'p-value is set to 0. Observed GoF '
-                          f'{self.gof:.2e} is higher than all simulated GoFs '
-                          f'(maximum: {max(fake_gofs):.2e}). For a more '
+        if pvalue == 0:
+            warnings.warn(f'p-value is 0.0. (Observed GoF: '
+                          f'{self.gof:.2e}, maximum of simulated GoFs: '
+                          f'{max(fake_gofs):.2e}). For a more '
                           f'precise result, increase n_mc!', stacklevel=2)
-        elif index_pvalue == -1:
-            pvalue = 1
-            warnings.warn(f'p-value is set to 1. Observed GoF '
-                          f'{self.gof:.2e} is lower than all simulated GoFs '
-                          f'(minimum: {min(fake_gofs):.2e}). For a more '
+        elif pvalue == 1:
+            warnings.warn(f'p-value is 1.0. (Observed GoF '
+                          f'{self.gof:.2e}, minimum of simulated GoFs: '
+                          f'{min(fake_gofs):.2e}). For a more '
                           f'precise result, increase n_mc!', stacklevel=2)
-        else:
-            pvalue = cumulative_density[index_pvalue]
 
         self.pvalue = pvalue
         return pvalue
@@ -211,27 +203,19 @@ class EvaluatorBaseSample(EvaluatorBase):
             else:
                 _ = self.get_gof()
         fake_gofs = self.permutation_gofs(n_perm=n_perm, d_min=d_min)
-        hist, bin_edges = np.histogram(fake_gofs, bins=1000)
-        # add 0 bin to the front and truncate cumulative_density
-        # at the end to get pvalue[0] = 1
-        hist = np.concatenate([[0], hist])
-        cumulative_density = (1.0 - np.cumsum(hist) / np.sum(hist))[:-1]
 
-        index_pvalue = np.digitize(self.gof, bin_edges) - 1
+        percentile = sps.percentileofscore(fake_gofs, self.gof, kind='strict')
+        pvalue = 1 - percentile / 100
 
-        if index_pvalue == (len(hist) - 1):
-            pvalue = 0
-            warnings.warn(f'p-value is set to 0. Observed GoF '
-                          f'{self.gof:.2e} is higher than all permutated GoFs '
-                          f'(maximum: {max(fake_gofs):.2e}). For a more '
-                          f'precise result, increase n_perm!', stacklevel=2)
-        elif index_pvalue == -1:
-            pvalue = 1
-            warnings.warn(f'p-value is set to 1. Observed GoF '
-                          f'{self.gof:.2e} is lower than all permutated GoFs '
-                          f'(minimum: {min(fake_gofs):.2e}). For a more '
-                          f'precise result, increase n_perm!', stacklevel=2)
-        else:
-            pvalue = cumulative_density[index_pvalue]
-
+        if pvalue == 0:
+            warnings.warn(f'p-value is 0.0. (Observed GoF: '
+                          f'{self.gof:.2e}, maximum of simulated GoFs: '
+                          f'{max(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_mc!', stacklevel=2)
+        elif pvalue == 1:
+            warnings.warn(f'p-value is 1.0. (Observed GoF '
+                          f'{self.gof:.2e}, minimum of simulated GoFs: '
+                          f'{min(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_mc!', stacklevel=2)
+        self.pvalue = pvalue
         return pvalue

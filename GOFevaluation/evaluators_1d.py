@@ -102,7 +102,6 @@ class KSTestGOF(EvaluatorBasePdf):
 
     def get_pvalue(self):
         pvalue = super().get_pvalue()
-        self.pvalue = pvalue
         return pvalue
 
 
