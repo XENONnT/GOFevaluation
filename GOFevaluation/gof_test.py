@@ -22,13 +22,13 @@ class GOFTest(object):
 
     .. note::
         * Possible entries in gof_list:
-            *'ADTestTwoSampleGOF',
-            *'KSTestTwoSampleGOF',
-            *'BinnedPoissonChi2GOF',
-            *'BinnedPoissonChi2GOF.from_binned',
-            *'BinnedChi2GOF',
-            *'BinnedChi2GOF.from_binned',
-            *'PointToPointGOF'
+            * 'ADTestTwoSampleGOF',
+            * 'KSTestTwoSampleGOF',
+            * 'BinnedPoissonChi2GOF',
+            * 'BinnedPoissonChi2GOF.from_binned',
+            * 'BinnedChi2GOF',
+            * 'BinnedChi2GOF.from_binned',
+            * 'PointToPointGOF'
         * A user warning is issued if unused keyword arguments are passed.
     """
 

@@ -147,9 +147,9 @@ class PointToPointGOF(EvaluatorBaseSample):
 
     .. note::
         * Samples should be pre-processed to have similar scale in each
-        analysis dimension.
+          analysis dimension.
         * Reference:
-        https://arxiv.org/abs/hep-ex/0203010
+          https://arxiv.org/abs/hep-ex/0203010
     """
 
     def __init__(self, data_sample, reference_sample):
@@ -241,8 +241,8 @@ class PointToPointGOF(EvaluatorBaseSample):
         :rtype: float
 
         .. note::
-        d_min should be a typical distance of the reference_sample in
-        the region of highest density
+            d_min should be a typical distance of the reference_sample in
+            the region of highest density
         """
 
         gof = self.calculate_gof(
