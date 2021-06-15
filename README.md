@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 Then install the package:
 ```
-python setup.py --user
+python setup.py install --user
 ```
 You are now good to go!
 

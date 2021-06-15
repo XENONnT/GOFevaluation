@@ -13,23 +13,23 @@ class GOFTest(object):
     """This wrapper class is meant to streamline the creation of commonly used
     function calls of the package
 
-    Input:
-    - gof_list: list of strings referring to the gof measures from
-    evaluators_nd and evaluators_1d
+    :param gof_list: list of strings referring to the gof measures from
+        evaluators_nd and evaluators_1d
+    :param gof_list: list
+    :param kwargs: All parameters of evaluators_nd and evaluators_1d are viable
+        kwargs
+    :raises ValueError: If gof_list contains not allowed strings (see below)
 
-    - kwargs: All parameters of evaluators_nd and evaluators_1d are viable
-    kwargs
-
-    Possible entries in gof_list:
-    'ADTestTwoSampleGOF',
-    'KSTestTwoSampleGOF',
-    'BinnedPoissonChi2GOF',
-    'BinnedPoissonChi2GOF.from_binned',
-    'BinnedChi2GOF',
-    'BinnedChi2GOF.from_binned',
-    'PointToPointGOF'
-
-    A user warning is issued if unused keyword arguments are passed.
+    .. note::
+        * Possible entries in gof_list:
+            * 'ADTestTwoSampleGOF',
+            * 'KSTestTwoSampleGOF',
+            * 'BinnedPoissonChi2GOF',
+            * 'BinnedPoissonChi2GOF.from_binned',
+            * 'BinnedChi2GOF',
+            * 'BinnedChi2GOF.from_binned',
+            * 'PointToPointGOF'
+        * A user warning is issued if unused keyword arguments are passed.
     """
 
     allowed_gof_str = [
@@ -63,6 +63,20 @@ class GOFTest(object):
             kwargs_used += specific_kwargs.keys()
         self._check_kwargs_used(kwargs_used, kwargs)
 
+    def __repr__(self):
+        return f'{self.__class__.__module__}:\n{self.__dict__}'
+
+    def __str__(self):
+        args = ['GoF measures: '+", ".join(self.gof_list)]
+        if self.gofs:
+            gofs_str = ", ".join([str(g) for g in self.gofs.values()])
+            args.append('gofs = ' + gofs_str)
+        if self.pvalues:
+            pvalues_str = ", ".join([str(p) for p in self.pvalues.values()])
+            args.append('p-values = ' + pvalues_str)
+        args_str = "\n".join(args)
+        return f'{self.__class__.__module__}\n{args_str}'
+
     @staticmethod
     def _get_specific_kwargs(func, kwargs):
         """Extract only the kwargs that are required for the function
@@ -79,32 +93,19 @@ class GOFTest(object):
 
     @staticmethod
     def _check_kwargs_used(kwargs_used, kwargs):
+        """Check if all kwargs were used, issue a warning if not."""
         for kwarg in kwargs:
             if (kwarg not in kwargs_used) and (kwarg != 'gof_list'):
                 warnings.warn(f'Keyword argument {kwarg} was not used!')
 
-    def __repr__(self):
-        return f'{self.__class__.__module__}, {self.__dict__}'
-
-    def __str__(self):
-        args = ['GoF measures: '+", ".join(self.gof_list)]
-        if self.gofs:
-            gofs_str = ", ".join([str(g) for g in self.gofs.values()])
-            args.append('gofs = ' + gofs_str)
-        if self.pvalues:
-            pvalues_str = ", ".join([str(p) for p in self.pvalues.values()])
-            args.append('p-values = ' + pvalues_str)
-        args_str = "\n".join(args)
-        return f'{self.__class__.__module__}\n{args_str}'
-
     def get_gofs(self, **kwargs):
         """Calculate GoF values for individual GoF measures.
 
-        kwargs:
-        - All parameters from a get_gof method are viable kwargs
-        - gof_list: A list of gof_measures for which GoF should be
-        calculated. If none is given, the GoF value is calculated for all
-        GoF measures defined at initialisation."""
+        :param kwargs: All parameters from a get_gof method are viable kwargs.
+            gof_list: A list of gof_measures for which GoF should be
+            calculated. If none is given, the GoF value is calculated for all
+            GoF measures defined at initialisation.
+        """
         kwargs_used = []  # check if all kwargs were used
         for key in kwargs.get('gof_list', self.gof_objects):
             func = self.gof_objects[key].get_gof
@@ -118,11 +119,11 @@ class GOFTest(object):
     def get_pvalues(self, **kwargs):
         """Calculate p-values for individual GoF measures.
 
-        kwargs:
-        - All parameters from a get_pvalue method are viable kwargs
-        - gof_list: A list of gof_measures for which p-value should be
-        calculated. If none is given, the p-value is calculated for all
-        GoF measures defined at initialisation."""
+        :param kwargs: All parameters from a get_pvalue method are viable kwargs.
+            gof_list: A list of gof_measures for which p-value should be
+            calculated. If none is given, the p-value is calculated for all
+            GoF measures defined at initialisation.
+        """
         kwargs_used = []  # check if all kwargs were used
         for key in kwargs.get('gof_list', self.gof_objects):
             func = self.gof_objects[key].get_pvalue

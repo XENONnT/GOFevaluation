@@ -1,6 +1,7 @@
 import scipy.stats as sps
 import numpy as np
 import unittest
+import warnings
 
 from GOFevaluation import BinnedPoissonChi2GOF
 from GOFevaluation import PointToPointGOF
@@ -10,34 +11,40 @@ from GOFevaluation import BinnedChi2GOF
 class TestBinnedPoissonChi2GOF(unittest.TestCase):
     def test_dimensions(self):
         # test nD binned GOF in different dimensions:
-        signal_expectation = 100
-        xs = np.linspace(0, 1, 100)
-        for nD in [1, 2, 3, 5]:
-            data = np.vstack([xs for i in range(nD)]).T
-            bins = [np.linspace(0, 1, 3) for i in range(nD)]
-            mus = np.ones([2 for i in range(nD)])
-            mus /= np.sum(mus)
+        for nD in range(2, 5+1):
+            # generate uniformly distributed data points and bin data
+            n_events_per_bin = 30
+            n_bins_per_dim = int(32**(1/nD))
+            n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
-            nbins = 2**nD
-            ns_flat = np.zeros(nbins)
-            ns_flat[0:2] = 50
-            mus_flat = np.ones(nbins)
-            mus_flat /= np.sum(mus_flat)
-            gof_flat = 2 * np.sum(
-                sps.poisson(ns_flat).logpmf(ns_flat) -
-                sps.poisson(mus_flat * signal_expectation).logpmf(ns_flat))
+            data_points = sps.uniform().rvs(size=[n_events, nD])
+            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.array([bin_edges for i in range(nD)])
+            binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
+            binned_data_flat = binned_data.reshape(-1)
 
-            gofclass = BinnedPoissonChi2GOF(
-                data, mus, bins, signal_expectation)
+            # generate binned pdf
+            normed_pdf = np.ones(binned_data.shape)
+            normed_pdf /= np.sum(normed_pdf)
+            binned_reference = normed_pdf * np.sum(binned_data)
+            binned_reference_flat = binned_reference.reshape(-1)
+
+            # calculate gof for nD and flat:
+            gofclass = BinnedPoissonChi2GOF.from_binned(binned_data,
+                                                        binned_reference)
             gof = gofclass.get_gof()
 
-            self.assertLess(abs(gof_flat - gof), 1e-8)
+            gofclass_flat = BinnedPoissonChi2GOF.from_binned(
+                binned_data_flat, binned_reference_flat)
+            gof_flat = gofclass_flat.get_gof()
+
+            self.assertEqual(gof_flat, gof)
 
     def test_from_binned(self):
         """Test if regular init and from_binned init give same result"""
         for nD in range(1, 5+1):
-            # generate uniformly distributed data points and bibn data
-            n_events_per_bin = 5
+            # generate uniformly distributed data points and bin data
+            n_events_per_bin = 30
             n_bins_per_dim = int(32**(1/nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
@@ -122,6 +129,38 @@ class TestPointToPointGOF(unittest.TestCase):
 
 
 class TestBinnedChi2GOF(unittest.TestCase):
+
+    def test_dimensions(self):
+        # test nD binned GOF in different dimensions:
+        for nD in range(2, 5+1):
+            # generate uniformly distributed data points and bin data
+            n_events_per_bin = 30
+            n_bins_per_dim = int(32**(1/nD))
+            n_events = int(n_bins_per_dim**nD * n_events_per_bin)
+
+            data_points = sps.uniform().rvs(size=[n_events, nD])
+            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.array([bin_edges for i in range(nD)])
+            binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
+            binned_data_flat = binned_data.reshape(-1)
+
+            # generate binned pdf
+            normed_pdf = np.ones(binned_data.shape)
+            normed_pdf /= np.sum(normed_pdf)
+            binned_reference = normed_pdf * np.sum(binned_data)
+            binned_reference_flat = binned_reference.reshape(-1)
+
+            # calculate gof for nD and flat:
+            gofclass = BinnedChi2GOF.from_binned(binned_data,
+                                                 binned_reference)
+            gof = gofclass.get_gof()
+
+            gofclass_flat = BinnedChi2GOF.from_binned(
+                binned_data_flat, binned_reference_flat)
+            gof_flat = gofclass_flat.get_gof()
+
+            self.assertEqual(gof_flat, gof)
+
     def test_chi2_distribution(self):
         """check, if binned data follows chi2-distribution with
         ndof = n_bins - 1 as one would expect. Test for 1-5 dimensions."""
@@ -176,7 +215,7 @@ class TestBinnedChi2GOF(unittest.TestCase):
         """Test if regular init and from_binned init give same result"""
         for nD in range(1, 5+1):
             # generate uniformly distributed data points and bibn data
-            n_events_per_bin = 5
+            n_events_per_bin = 15
             n_bins_per_dim = int(32**(1/nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
@@ -222,44 +261,30 @@ class TestPvalue(unittest.TestCase):
             data = np.vstack([data for i in range(nD)]).T
             gof_object = PointToPointGOF(data, data)
 
-            # For efficiency reasons, try first with few permutations
-            # and only increase number if p-value is outside of bounds.
-            n_perm_step = 100
-            n_perm_max = 1000
-            n_perm = 100
-            while n_perm <= n_perm_max:
-                try:
-                    p_value = gof_object.get_pvalue(n_perm=n_perm, d_min=d_min)
-                    break
-                except ValueError:
-                    p_value = -1
-                    n_perm += n_perm_step
-            self.assertEqual(p_value, 1)
+            # Ignore warning here since this is what we want to test
+            warnings.filterwarnings("ignore", message="p-value is 1.*")
+            n_perm = 300
+            p_value = gof_object.get_pvalue(n_perm=n_perm,
+                                            d_min=d_min)
+
+            self.assertTrue(p_value > .97)
 
     def test_value(self):
         """Test for 1D if binned_data = binned_reference gives p-value
         of one."""
         n_bins = 3
-        n_events_per_bin = 5
+        n_events_per_bin = 30
 
         data = np.ones(n_bins) * n_events_per_bin
 
         gof_objects = [BinnedChi2GOF.from_binned(data, data),
                        BinnedPoissonChi2GOF.from_binned(data, data)]
 
-        # For efficiency reasons, try first with few permutations
-        # and only increase number if p-value is outside of bounds.
-        n_mc_step = 200
-        n_mc_max = 1000
+        # Ignore warning here since this is what we want to test
+        warnings.filterwarnings("ignore", message="p-value is 1.*")
+        n_mc = 400
         for gof_object in gof_objects:
-            n_mc = 200
-            while n_mc <= n_mc_max:
-                try:
-                    p_value = gof_object.get_pvalue(n_mc=n_mc)
-                    break
-                except ValueError:
-                    p_value = -1
-                    n_mc += n_mc_step
+            p_value = gof_object.get_pvalue(n_mc=n_mc)
             self.assertEqual(p_value, 1)
 
 
