@@ -1,3 +1,5 @@
+__version__ = '0.1.0'
+
 from .evaluator_base import *
 
 from .evaluators_nd import *
