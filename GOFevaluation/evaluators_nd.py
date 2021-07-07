@@ -1,6 +1,8 @@
 import scipy.stats as sps
 import numpy as np
-from sklearn.neighbors import DistanceMetric
+# from sklearn.neighbors import DistanceMetric
+from sklearn.metrics import pairwise_distances
+from itertools import product
 import warnings
 
 from GOFevaluation import EvaluatorBaseBinned
@@ -48,8 +50,8 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
         """Get binned poisson chi2 GoF from binned data & reference
         """
         critical_bin_count = 10
-        print('-'*20)
-        print(binned_data, binned_reference)
+        # print('-' * 20)
+        # print(binned_data, binned_reference)
         if (binned_data < critical_bin_count).any():
             warnings.warn(f'Binned data contains bin count(s) below '
                           f'{critical_bin_count}. GoF not well defined!',
@@ -155,9 +157,32 @@ class PointToPointGOF(EvaluatorBaseSample):
     def __init__(self, data_sample, reference_sample):
         super().__init__(data_sample=data_sample,
                          reference_sample=reference_sample)
+        self.distance_matrix = None
 
     @staticmethod
-    def get_distances(data_sample, reference_sample):
+    def get_tuple_arrays(indices1, indices2=None):
+        if indices2 is None:
+            index_tuples = list(product(indices1, repeat=2))
+            tuple_array1 = np.array([i[0] for i in index_tuples
+                                     if i[0] < i[1]])
+            tuple_array2 = np.array([i[1] for i in index_tuples
+                                     if i[0] < i[1]])
+        else:
+            index_tuples = list(product(indices1, indices2))
+            tuple_array1 = np.array([i[0] for i in index_tuples])
+            tuple_array2 = np.array([i[1] for i in index_tuples])
+        return tuple_array1, tuple_array2
+
+    @classmethod
+    def group_distances(cls, distance_matrix, data_indices, reference_indices):
+        d_data_data = distance_matrix[cls.get_tuple_arrays(data_indices)]
+        d_ref_ref = distance_matrix[cls.get_tuple_arrays(reference_indices)]
+        d_data_ref = distance_matrix[cls.get_tuple_arrays(data_indices,
+                                                          reference_indices)]
+        return d_data_data, d_ref_ref, d_data_ref
+
+    def get_distances(self, data_sample=None, reference_sample=None,
+                      data_indices=None, reference_indices=None):
         """get distances of data-data, reference-reference
         and data-reference
 
@@ -168,26 +193,24 @@ class PointToPointGOF(EvaluatorBaseSample):
         :retrun: distance of (data-data, reference-reference, data-reference)
         :rtype: triple of arrays
         """
-        # For 1D input, arrays need to be transformed in
-        # order for the distance measure method to work
-        if data_sample.ndim == 1:
-            data_sample = np.vstack(data_sample)
-        if reference_sample.ndim == 1:
-            reference_sample = np.vstack(reference_sample)
+        if self.distance_matrix is None:
+            # print('---1---')
+            assert (data_sample is not None and reference_sample is not None), (
+                'Samples have to be passed if the distance matrix is \
+                    not yet calculated!')
+            distance_matrix = self.get_distance_matrix(data_sample,
+                                                       reference_sample)
+        else:
+            # print('---2---')
+            distance_matrix = self.distance_matrix
+        
+        if data_indices is None and reference_indices is None:
+            data_indices = np.arange(0, len(data_sample))
+            reference_indices = np.arange(len(data_sample),
+                                          len(data_sample) + len(reference_sample))
 
-        dist = DistanceMetric.get_metric("euclidean")
-
-        d_data_data = np.triu(dist.pairwise(data_sample))
-        d_data_data.reshape(-1)
-        d_data_data = d_data_data[d_data_data > 0]
-
-        d_ref_ref = np.triu(dist.pairwise(reference_sample))
-        d_ref_ref.reshape(-1)
-        d_ref_ref = d_ref_ref[d_ref_ref > 0]
-
-        d_data_ref = dist.pairwise(data_sample, reference_sample).reshape(-1)
-
-        return d_data_data, d_ref_ref, d_data_ref
+        return self.group_distances(distance_matrix, data_indices,
+                                    reference_indices)
 
     @staticmethod
     def get_d_min(d_ref_ref):
@@ -208,27 +231,63 @@ class PointToPointGOF(EvaluatorBaseSample):
         d[d <= d_min] = d_min
         return -np.log(d)
 
-    @classmethod
-    def calculate_gof(cls, data_sample, reference_sample, d_min=None):
+    # @classmethod
+    def calculate_gof(self, data_sample=None, reference_sample=None,
+                      d_min=None, data_indices=None, reference_indices=None):
         """Internal function to calculate gof for :func:`get_gof`
         and :func:`get_pvalue`"""
 
         nevents_data = np.shape(data_sample)[0]
         nevents_ref = np.shape(reference_sample)[0]
 
-        d_data_data, d_ref_ref, d_data_ref = cls.get_distances(
-            data_sample, reference_sample)
+        d_data_data, d_ref_ref, d_data_ref = self.get_distances(
+            data_sample, reference_sample, data_indices, reference_indices)
         if d_min is None:
-            d_min = cls.get_d_min(d_ref_ref)
+            d_min = self.get_d_min(d_ref_ref)
 
         ret_data_data = (1 / nevents_data ** 2 *
-                         np.sum(cls.weighting_function(d_data_data, d_min)))
+                         np.sum(self.weighting_function(d_data_data, d_min)))
         ret_ref_ref = (1 / nevents_ref ** 2 *
-                       np.sum(cls.weighting_function(d_ref_ref, d_min)))
+                       np.sum(self.weighting_function(d_ref_ref, d_min)))
         ret_data_ref = (-1 / nevents_ref / nevents_data *
-                        np.sum(cls.weighting_function(d_data_ref, d_min)))
+                        np.sum(self.weighting_function(d_data_ref, d_min)))
         gof = ret_data_data + ret_ref_ref + ret_data_ref
         return gof
+    
+    @staticmethod
+    def get_distance_matrix(data_sample, reference_sample):
+        samples = np.concatenate([data_sample, reference_sample])
+        return pairwise_distances(samples)
+
+    def permutation_gofs(self, n_perm=1000, d_min=None):
+        """Generate fake GoFs by re-sampling data and reference sample
+        This overrides evaluator_base.EvaluatorBaseSample.permutation_gofs()
+
+        :param n_perm: Number of fake-gofs calculated, defaults to 1000
+        :type n_perm: int, optional
+        :param d_min: Only for PointToPointGOF, defaults to None
+        :type d_min: float, optional
+        :return: Array of fake GoFs
+        :rtype: array_like
+        """
+        # print('I MADE IT HERE!')
+        n_data = len(self.data_sample)
+        n_reference = len(self.reference_sample)
+        indices = np.arange(n_data + n_reference)
+        fake_gofs = np.zeros(n_perm)
+        for i in range(n_perm):
+            rng = np.random.default_rng()
+            rng.shuffle(indices, axis=0)
+
+            data_indices = indices[:n_data]
+            reference_indices = indices[n_data:]
+            # print(data_indices[0])
+            fake_gofs[i] = self.calculate_gof(data_sample=self.data_sample,
+                                              reference_sample=self.reference_sample,
+                                              d_min=d_min,
+                                              data_indices=data_indices,
+                                              reference_indices=reference_indices)
+        return fake_gofs
 
     def get_gof(self, d_min=None):
         """gof is calculated using current class attributes
@@ -267,4 +326,7 @@ class PointToPointGOF(EvaluatorBaseSample):
         :return: p-value
         :rtype: float
         """
+        self.distance_matrix = self.get_distance_matrix(self.data_sample,
+                                                        self.reference_sample)
+        # print('USING DISTANCE MATRIX')
         return super().get_pvalue(n_perm, d_min)
