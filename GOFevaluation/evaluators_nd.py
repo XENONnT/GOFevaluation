@@ -175,10 +175,15 @@ class PointToPointGOF(EvaluatorBaseSample):
 
     @classmethod
     def group_distances(cls, distance_matrix, data_indices, reference_indices):
-        d_data_data = distance_matrix[cls.get_tuple_arrays(data_indices)]
-        d_ref_ref = distance_matrix[cls.get_tuple_arrays(reference_indices)]
-        d_data_ref = distance_matrix[cls.get_tuple_arrays(data_indices,
-                                                          reference_indices)]
+        d_data_data = np.triu(distance_matrix[data_indices].T[data_indices], k=1)
+        d_data_data.reshape(-1)
+        d_data_data = d_data_data[d_data_data > 0]
+        
+        d_ref_ref = np.triu(distance_matrix[reference_indices].T[reference_indices], k=1)
+        d_ref_ref.reshape(-1)
+        d_ref_ref = d_ref_ref[d_ref_ref > 0]
+        d_data_ref = distance_matrix[data_indices].T[reference_indices].reshape(-1)
+        
         return d_data_data, d_ref_ref, d_data_ref
 
     def get_distances(self, data_sample=None, reference_sample=None,
