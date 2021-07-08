@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
+# import time
 
 
 class EvaluatorBase(object):
@@ -197,16 +198,18 @@ class EvaluatorBaseSample(EvaluatorBase):
         :return: p-value
         :rtype: float
         """
+        # print(f'3:    {time.perf_counter():.4f} s')
         if self.gof is None:
             if d_min is not None:
                 _ = self.get_gof(d_min=d_min)
             else:
                 _ = self.get_gof()
-        fake_gofs = self.permutation_gofs(n_perm=n_perm, d_min=d_min)
-
+        # print(f'4:    {time.perf_counter():.4f} s')
+        fake_gofs = self.permutation_gofs(n_perm=n_perm)  # , d_min=d_min)
+        # print(f'5:    {time.perf_counter():.4f} s')
         percentile = sps.percentileofscore(fake_gofs, self.gof, kind='strict')
         pvalue = 1 - percentile / 100
-
+        # print(f'6:    {time.perf_counter():.4f} s')
         if pvalue == 0:
             warnings.warn(f'p-value is 0.0. (Observed GoF: '
                           f'{self.gof:.2e}, maximum of simulated GoFs: '
@@ -218,4 +221,8 @@ class EvaluatorBaseSample(EvaluatorBase):
                           f'{min(fake_gofs):.2e}). For a more '
                           f'precise result, increase n_mc!', stacklevel=2)
         self.pvalue = pvalue
+        # print(f'7:    {time.perf_counter():.4f} s')
+        if hasattr(self, 'weighted_distance_matrix'):
+            del self.weighted_distance_matrix
+            # print('Deleted weighted distance matrix')
         return pvalue
