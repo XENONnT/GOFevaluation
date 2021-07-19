@@ -340,10 +340,13 @@ class PointToPointGOF(EvaluatorBaseSample):
             d_min should be a typical distance of the reference_sample in
             the region of highest density
         """
-        self.d_min = d_min
-        gof = self.calculate_gof(
-            self.data_sample, self.reference_sample, store_matrix=store_matrix)
-        self.gof = gof
+        if self.gof is None:
+            self.d_min = d_min
+            gof = self.calculate_gof(
+                self.data_sample, self.reference_sample, store_matrix=store_matrix)
+            self.gof = gof
+        else:
+            gof = self.gof
         return gof
 
     def get_pvalue(self, n_perm=1000, d_min=None):
