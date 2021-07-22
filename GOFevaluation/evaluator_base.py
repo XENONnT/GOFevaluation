@@ -99,7 +99,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
                 samples, self.binned_reference)
         return fake_gofs
 
-    def get_pvalue(self, n_mc=1000):
+    def get_pvalue(self, n_mc=1000, return_fake_gofs=False):
         """p-value is calculated
 
         Computes the p-value by means of generating toyMCs and calculating
@@ -129,7 +129,10 @@ class EvaluatorBaseBinned(EvaluatorBase):
                           f'precise result, increase n_mc!', stacklevel=2)
 
         self.pvalue = pvalue
-        return pvalue
+        if return_fake_gofs:
+            return pvalue, fake_gofs
+        else:
+            return pvalue
 
 
 class EvaluatorBasePdf(EvaluatorBase):
