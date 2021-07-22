@@ -50,8 +50,8 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_perm=1000):
-        pvalue = super().get_pvalue(n_perm)
+    def get_pvalue(self, n_perm=1000, return_fake_gofs=False):
+        pvalue = super().get_pvalue(n_perm, return_fake_gofs=return_fake_gofs)
         return pvalue
 
 
@@ -124,7 +124,7 @@ class KSTestTwoSampleGOF(EvaluatorBaseSample):
     def calculate_gof(data_sample, reference_sample):
         """Internal function to calculate gof for :func:`get_gof`
         and :func:`get_pvalue`"""
-        gof = sps.ks_2samp(data_sample, reference_sample)[0]
+        gof = sps.ks_2samp(data_sample, reference_sample, mode='asymp')[0]
         return gof
 
     def get_gof(self):
@@ -138,6 +138,6 @@ class KSTestTwoSampleGOF(EvaluatorBaseSample):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_perm=1000):
-        pvalue = super().get_pvalue(n_perm)
+    def get_pvalue(self, n_perm=1000, return_fake_gofs=False):
+        pvalue = super().get_pvalue(n_perm, return_fake_gofs=return_fake_gofs)
         return pvalue

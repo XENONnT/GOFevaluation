@@ -187,7 +187,7 @@ class EvaluatorBaseSample(EvaluatorBase):
                     data_sample=data_perm, reference_sample=reference_perm)
         return fake_gofs
 
-    def get_pvalue(self, n_perm=1000, d_min=None):
+    def get_pvalue(self, n_perm=1000, d_min=None, return_fake_gofs=False):
         """p-value is calculated
 
         Computes the p-value by means of re-sampling data sample
@@ -221,4 +221,8 @@ class EvaluatorBaseSample(EvaluatorBase):
                           f'{min(fake_gofs):.2e}). For a more '
                           f'precise result, increase n_mc!', stacklevel=2)
         self.pvalue = pvalue
-        return pvalue
+
+        if return_fake_gofs:
+            return pvalue, fake_gofs
+        else:
+            return pvalue

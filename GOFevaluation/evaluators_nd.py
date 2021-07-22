@@ -71,7 +71,7 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
         return gof
 
     def get_pvalue(self, n_mc=1000, return_fake_gofs=False):
-        return super().get_pvalue(n_mc, return_fake_gofs)
+        return super().get_pvalue(n_mc, return_fake_gofs=return_fake_gofs)
 
 
 class BinnedChi2GOF(EvaluatorBaseBinned):
@@ -132,7 +132,7 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
         return gof
 
     def get_pvalue(self, n_mc=1000, return_fake_gofs=False):
-        return super().get_pvalue(n_mc, return_fake_gofs)
+        return super().get_pvalue(n_mc, return_fake_gofs=return_fake_gofs)
 
 
 class PointToPointGOF(EvaluatorBaseSample):
@@ -248,7 +248,7 @@ class PointToPointGOF(EvaluatorBaseSample):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_perm=1000, d_min=None):
+    def get_pvalue(self, n_perm=1000, d_min=None, return_fake_gofs=False):
         """p-value is calculated
 
         Computes the p-value by means of re-sampling data sample
@@ -265,4 +265,5 @@ class PointToPointGOF(EvaluatorBaseSample):
         :return: p-value
         :rtype: float
         """
-        return super().get_pvalue(n_perm, d_min)
+        return super().get_pvalue(n_perm, d_min,
+                                  return_fake_gofs=return_fake_gofs)
