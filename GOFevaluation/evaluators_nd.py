@@ -179,13 +179,13 @@ class PointToPointGOF(EvaluatorBaseSample):
         d_data_data.reshape(-1)
         d_data_data = d_data_data[d_data_data > 0]
 
-        d_ref_ref = np.triu(dist.pairwise(reference_sample))
-        d_ref_ref.reshape(-1)
-        d_ref_ref = d_ref_ref[d_ref_ref > 0]
+        # d_ref_ref = np.triu(dist.pairwise(reference_sample))
+        # d_ref_ref.reshape(-1)
+        # d_ref_ref = d_ref_ref[d_ref_ref > 0]
 
         d_data_ref = dist.pairwise(data_sample, reference_sample).reshape(-1)
 
-        return d_data_data, d_ref_ref, d_data_ref
+        return d_data_data, d_data_ref
 
     @staticmethod
     def get_d_min(d_ref_ref):
@@ -198,13 +198,23 @@ class PointToPointGOF(EvaluatorBaseSample):
         return d_min
 
     @staticmethod
-    def weighting_function(d, d_min):
+    def weighting_function(d, d_min, w_func='log'):
         """Weigh distances d according to log profile. Pole at d = 0
         is omitted by introducing d_min that replaces the distance for
         d < d_min
         """
         d[d <= d_min] = d_min
-        return -np.log(d)
+        if w_func == 'log':
+            ret = -np.log(d)
+        elif w_func == 'x2':
+            ret = d**2
+        elif w_func == 'x':
+            ret = d
+        elif w_func == '1/x':
+            ret = 1 / d
+        else:
+            raise KeyError(f'w_func {w_func} is not defined.')
+        return ret
 
     @classmethod
     def calculate_gof(cls, data_sample, reference_sample, d_min=None):
@@ -214,18 +224,18 @@ class PointToPointGOF(EvaluatorBaseSample):
         nevents_data = np.shape(data_sample)[0]
         nevents_ref = np.shape(reference_sample)[0]
 
-        d_data_data, d_ref_ref, d_data_ref = cls.get_distances(
+        d_data_data, d_data_ref = cls.get_distances(
             data_sample, reference_sample)
         if d_min is None:
-            d_min = cls.get_d_min(d_ref_ref)
+            d_min = cls.get_d_min(d_data_ref)
 
         ret_data_data = (1 / nevents_data ** 2 *
                          np.sum(cls.weighting_function(d_data_data, d_min)))
-        ret_ref_ref = (1 / nevents_ref ** 2 *
-                       np.sum(cls.weighting_function(d_ref_ref, d_min)))
+        # ret_ref_ref = (1 / nevents_ref ** 2 *
+        #                np.sum(cls.weighting_function(d_ref_ref, d_min)))
         ret_data_ref = (-1 / nevents_ref / nevents_data *
                         np.sum(cls.weighting_function(d_data_ref, d_min)))
-        gof = ret_data_data + ret_ref_ref + ret_data_ref
+        gof = ret_data_data + ret_data_ref  # ret_data_data + ret_ref_ref + ret_data_ref
         return gof
 
     def get_gof(self, d_min=None):
