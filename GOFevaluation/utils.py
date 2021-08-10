@@ -4,6 +4,54 @@ import numpy as np
 import matplotlib as mpl
 
 
+def equiprobable_histogram(data_sample, reference_sample, n_part_x,
+                           n_part_y=None, order='xy', plot=False,
+                           **kwargs):
+    """Define equiprobable histogram based on the reference sample and
+    bin the data sample according to it.
+
+    :param data_sample: Sample of unbinned data.
+    :type data_sample: array
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, n-Dimensional
+    :param n_part_x: Number of partitions in x
+    :type n_part_x: int
+    :param n_part_y: Number of partitions in x, defaults to None
+        If None: n_part_y = n_part_x
+    :type n_part_y: int, optional
+    :param order: Order in which the partitioning is performed, defaults to 'xy'
+        'xy' : first bin x then bin y for each partition in x
+        'yx' : first bin y then bin x for each partition in y
+    :type order: str, optional
+    :param plot: if True, histogram of data sample is plotted, defaults to False
+    :type plot: bool, optional
+    :return: n, be_first, be_second
+        n: number of counts of data sample in each bin
+        bin_edges_first, bin_edges_second: For order 'xy'('yx')
+        these are the bin edges in x(y) and y(x) respectively. bin_edges_second
+        is a list of bin edges corresponding to the partitions defined in
+        bin_edges_first.
+
+    .. note::
+        Reference: F. James, 2008: "Statistical Methods in Experimental
+                    Physics", Ch. 11.2.3
+    """
+    be_first, be_second = get_equiprobable_binning(
+        reference_sample=reference_sample, n_part_x=n_part_x,
+        n_part_y=n_part_y, order=order)
+    n = apply_irregular_binning(data_sample=data_sample,
+                                bin_edges_first=be_first,
+                                bin_edges_second=be_second,
+                                order=order)
+    if plot:
+        plot_equiprobable_histogram(data_sample=data_sample,
+                                    bin_edges_first=be_first,
+                                    bin_edges_second=be_second,
+                                    order=order,
+                                    **kwargs)
+    return n, be_first, be_second
+
+
 def get_equiprobable_binning(reference_sample, n_part_x, n_part_y=None,
                              order='xy'):
     """Define an equiprobable binning for the reference sample. The binning
@@ -204,6 +252,7 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges_first,
         norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
     else:
         delta = max(cmap_midpoint - ns.min(), ns.max() - cmap_midpoint)
+        delta = max(.1, delta)  # .1 instead of 0
         norm = mpl.colors.Normalize(
             vmin=cmap_midpoint - delta, vmax=cmap_midpoint + delta)
 
