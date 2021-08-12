@@ -16,7 +16,7 @@ def equiprobable_histogram(data_sample, reference_sample, n_part_x,
     :type reference_sample: array_like, n-Dimensional
     :param n_part_x: Number of partitions in x
     :type n_part_x: int
-    :param n_part_y: Number of partitions in x, defaults to None
+    :param n_part_y: Number of partitions in y, defaults to None
         If None: n_part_y = n_part_x
     :type n_part_y: int, optional
     :param order: Order in which the partitioning is performed, defaults to 'xy'
@@ -64,7 +64,7 @@ def get_equiprobable_binning(reference_sample, n_part_x, n_part_y=None,
     :type reference_sample: array_like, n-Dimensional
     :param n_part_x: Number of partitions in x
     :type n_part_x: int
-    :param n_part_y: Number of partitions in x, defaults to None
+    :param n_part_y: Number of partitions in y, defaults to None
         If None: n_part_y = n_part_x
     :type n_part_y: int, optional
     :param order: Order in which the partitioning is performed, defaults to 'xy'

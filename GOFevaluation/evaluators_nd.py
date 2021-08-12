@@ -14,15 +14,34 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
         In the limit of large bin counts (10+) this is Chi2 distributed.
         In the general case you may have to toyMC the distribution yourself.
 
-        - **unbinned data**
+        - **unbinned data, bin with regular binning**
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param pdf: binned pdf to be tested
             :type pdf: array_like, n-Dimensional
             :param bin_edges: binning of the pdf
             :type bin_edges: array_like, n-Dimensional
-            :param nevents_expected: expectation, can be mean of expected pdf
+            :param nevents_expected: total number of expected events
             :type nevents_expected: float
+
+        - **unbinned data, bin with equiprobable binning**
+            :param data_sample: sample of unbinned data
+            :type data_sample: array_like, n-Dimensional
+            :param reference_sample: sample of unbinned reference
+                (should have >50 samples than the data sample so that
+                statistical fluctuations are negligible.)
+            :type reference_sample: array_like, n-Dimensional
+            :param nevents_expected: total number of expected events
+            :type nevents_expected: float
+            :param n_part_x: Number of partitions in x
+            :type n_part_x: int
+            :param n_part_y: Number of partitions in y
+                If None: n_part_y = n_part_x
+            :type n_part_y: int
+            :param order: Order in which the partitioning is performed
+                'xy' : first bin x then bin y for each partition in x
+                'yx' : first bin y then bin x for each partition in y
+
 
         - **binned data**
             initialise with .from_binned(...)
@@ -47,15 +66,13 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
     def calculate_gof(binned_data, binned_reference):
         """Get binned poisson chi2 GoF from binned data & reference
         """
-        critical_bin_count = 10
-        if (binned_data < critical_bin_count).any():
-            warnings.warn(f'Binned data contains bin count(s) below '
-                          f'{critical_bin_count}. GoF not well defined!',
-                          stacklevel=2)
-        if (binned_reference < critical_bin_count).any():
-            warnings.warn(f'Binned reference contains bin count(s) below '
-                          f'{critical_bin_count}. GoF not well defined!',
-                          stacklevel=2)
+        if binned_reference.min() / binned_reference.max() < 1 / 100:
+            warnings.warn(
+                'Binned reference contains bin counts ranging over '
+                + 'multiple orders of magnitude '
+                + f'({min(binned_reference):.2e} - '
+                + f'{max(binned_reference):.2e}). GoF might be flawed!',
+                stacklevel=2)
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_reference).logpmf(binned_data)
         return 2 * np.sum(ret)
@@ -77,15 +94,34 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
 class BinnedChi2GOF(EvaluatorBaseBinned):
     """Compoutes the binned chi2 GoF based on Pearson's chi2.
 
-        - **unbinned data**
+        - **unbinned data, bin with regular binning**
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param pdf: binned pdf to be tested
             :type pdf: array_like, n-Dimensional
             :param bin_edges: binning of the pdf
             :type bin_edges: array_like, n-Dimensional
-            :param nevents_expected: expectation, can be mean of expected pdf
+            :param nevents_expected: total number of expected events
             :type nevents_expected: float
+
+        - **unbinned data, bin with equiprobable binning**
+            :param data_sample: sample of unbinned data
+            :type data_sample: array_like, n-Dimensional
+            :param reference_sample: sample of unbinned reference 
+                (should have >50 samples than the data sample so that
+                statistical fluctuations are negligible.)
+            :type reference_sample: array_like, n-Dimensional
+            :param nevents_expected: total number of expected events
+            :type nevents_expected: float
+            :param n_part_x: Number of partitions in x
+            :type n_part_x: int
+            :param n_part_y: Number of partitions in y
+                If None: n_part_y = n_part_x
+            :type n_part_y: int
+            :param order: Order in which the partitioning is performed
+                'xy' : first bin x then bin y for each partition in x
+                'yx' : first bin y then bin x for each partition in y
+
 
         - **binned data**
             initialise with .from_binned(...)
@@ -107,18 +143,15 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
     @staticmethod
     def calculate_gof(binned_data, binned_reference):
         """Get Chi2 GoF from binned data & expectations
-        """
-        critical_bin_count = 5
-        if (binned_data < critical_bin_count).any():
-            warnings.warn(f'Binned data contains bin count(s) below '
-                          f'{critical_bin_count}. GoF not well defined!',
-                          stacklevel=2)
-        if (binned_reference < critical_bin_count).any():
-            warnings.warn(f'Binned reference contains bin count(s) below '
-                          f'{critical_bin_count}. GoF not well defined!',
-                          stacklevel=2)
-        gof = sps.chisquare(binned_data,
-                            binned_reference, axis=None)[0]
+        # """
+        if binned_reference.min() / binned_reference.max() < 1 / 100:
+            warnings.warn(
+                'Binned reference contains bin counts ranging over '
+                + 'multiple orders of magnitude '
+                + f'({min(binned_reference):.2e} - '
+                + f'{max(binned_reference):.2e}). GoF might be flawed!',
+                stacklevel=2)
+        gof = np.sum((binned_data - binned_reference)**2 / binned_reference)
         return gof
 
     def get_gof(self):

@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
+from GOFevaluation import equiprobable_histogram, apply_irregular_binning
 
 
 class EvaluatorBase(object):
@@ -71,6 +72,40 @@ class EvaluatorBaseBinned(EvaluatorBase):
                    pdf=binned_reference / np.sum(binned_reference),
                    bin_edges=None,
                    nevents_expected=np.sum(binned_reference))
+
+    @classmethod
+    def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
+                         n_part_x, n_part_y, order):
+        """Initialize with data and reference sample that are binned
+        such that the expectation value is the same in each bin.
+        """
+        if len(reference_sample) < 50 * len(data_sample):
+            warnings.warn(
+                f'Number of reference samples ({len(reference_sample)}) '
+                + 'should be much larger than number of data samples '
+                + f'({len(data_sample)}) to ensure negligible statistical '
+                + 'fluctuations for the equiprobable binning.', stacklevel=2)
+
+        pdf, be_f, be_s = equiprobable_histogram(
+            data_sample=reference_sample,
+            reference_sample=reference_sample,
+            n_part_x=n_part_x,
+            n_part_y=n_part_y,
+            order=order)
+        pdf = pdf / np.sum(pdf)
+
+        binned_data = apply_irregular_binning(
+            data_sample=data_sample,
+            bin_edges_first=be_f,
+            bin_edges_second=be_s,
+            order=order)
+
+        # bin_edges=None will set self.binned_data=binned_data
+        # in the init
+        return cls(data_sample=binned_data,
+                   pdf=pdf,
+                   bin_edges=None,
+                   nevents_expected=nevents_expected)
 
     def bin_data(self, data_sample, bin_edges):
         """function to bin nD data sample"""
