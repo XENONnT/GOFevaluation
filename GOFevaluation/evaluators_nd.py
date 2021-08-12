@@ -25,6 +25,7 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
             :type nevents_expected: float
 
         - **unbinned data, bin with equiprobable binning**
+        initialise with .bin_equiprobable(...)
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param reference_sample: sample of unbinned reference
@@ -33,14 +34,13 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
             :type reference_sample: array_like, n-Dimensional
             :param nevents_expected: total number of expected events
             :type nevents_expected: float
-            :param n_part_x: Number of partitions in x
-            :type n_part_x: int
-            :param n_part_y: Number of partitions in y
-                If None: n_part_y = n_part_x
-            :type n_part_y: int
-            :param order: Order in which the partitioning is performed
-                'xy' : first bin x then bin y for each partition in x
-                'yx' : first bin y then bin x for each partition in y
+            :param n_partitions: Number of partitions in each dimension
+            :type n_partitions: list of int
+            :param order: Order in which the partitioning is performed, defaults to None
+                [0, 1] : first bin x then bin y for each partition in x
+                [1, 0] : first bin y then bin x for each partition in y
+                if None, the natural order, i.e. [0, 1] is used.
+            :type order: list, optional
 
 
         - **binned data**
@@ -105,6 +105,7 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
             :type nevents_expected: float
 
         - **unbinned data, bin with equiprobable binning**
+        initialise with .bin_equiprobable(...)
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param reference_sample: sample of unbinned reference 
@@ -113,14 +114,13 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
             :type reference_sample: array_like, n-Dimensional
             :param nevents_expected: total number of expected events
             :type nevents_expected: float
-            :param n_part_x: Number of partitions in x
-            :type n_part_x: int
-            :param n_part_y: Number of partitions in y
-                If None: n_part_y = n_part_x
-            :type n_part_y: int
-            :param order: Order in which the partitioning is performed
-                'xy' : first bin x then bin y for each partition in x
-                'yx' : first bin y then bin x for each partition in y
+            :param n_partitions: Number of partitions in each dimension
+            :type n_partitions: list of int
+            :param order: Order in which the partitioning is performed, defaults to None
+                [0, 1] : first bin x then bin y for each partition in x
+                [1, 0] : first bin y then bin x for each partition in y
+                if None, the natural order, i.e. [0, 1] is used.
+            :type order: list, optional
 
 
         - **binned data**

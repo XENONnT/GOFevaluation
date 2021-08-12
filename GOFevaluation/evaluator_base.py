@@ -75,7 +75,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
 
     @classmethod
     def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
-                         n_part_x, n_part_y, order):
+                         n_partitions, order):
         """Initialize with data and reference sample that are binned
         such that the expectation value is the same in each bin.
         """
@@ -86,18 +86,16 @@ class EvaluatorBaseBinned(EvaluatorBase):
                 + f'({len(data_sample)}) to ensure negligible statistical '
                 + 'fluctuations for the equiprobable binning.', stacklevel=2)
 
-        pdf, be_f, be_s = equiprobable_histogram(
+        pdf, bin_edges = equiprobable_histogram(
             data_sample=reference_sample,
             reference_sample=reference_sample,
-            n_part_x=n_part_x,
-            n_part_y=n_part_y,
+            n_partitions=n_partitions,
             order=order)
         pdf = pdf / np.sum(pdf)
 
         binned_data = apply_irregular_binning(
             data_sample=data_sample,
-            bin_edges_first=be_f,
-            bin_edges_second=be_s,
+            bin_edges=bin_edges,
             order=order)
 
         # bin_edges=None will set self.binned_data=binned_data

@@ -4,9 +4,8 @@ import numpy as np
 import matplotlib as mpl
 
 
-def equiprobable_histogram(data_sample, reference_sample, n_part_x,
-                           n_part_y=None, order='xy', plot=False,
-                           **kwargs):
+def equiprobable_histogram(data_sample, reference_sample, n_partitions,
+                           order=None, plot=False, **kwargs):
     """Define equiprobable histogram based on the reference sample and
     bin the data sample according to it.
 
@@ -14,46 +13,41 @@ def equiprobable_histogram(data_sample, reference_sample, n_part_x,
     :type data_sample: array
     :param reference_sample: sample of unbinned reference
     :type reference_sample: array_like, n-Dimensional
-    :param n_part_x: Number of partitions in x
-    :type n_part_x: int
-    :param n_part_y: Number of partitions in y, defaults to None
-        If None: n_part_y = n_part_x
-    :type n_part_y: int, optional
-    :param order: Order in which the partitioning is performed, defaults to 'xy'
-        'xy' : first bin x then bin y for each partition in x
-        'yx' : first bin y then bin x for each partition in y
-    :type order: str, optional
+    :param n_partitions: Number of partitions in each dimension
+    :type n_partitions: list of int
+    :param order: Order in which the partitioning is performed, defaults to None
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used.
+    :type order: list, optional
     :param plot: if True, histogram of data sample is plotted, defaults to False
     :type plot: bool, optional
-    :return: n, be_first, be_second
+    :return: n, bin_edges
         n: number of counts of data sample in each bin
-        bin_edges_first, bin_edges_second: For order 'xy'('yx')
-        these are the bin edges in x(y) and y(x) respectively. bin_edges_second
+        bin_edges: For order [0, 1]([1, 0])
+        these are the bin edges in x(y) and y(x) respectively. bin_edges[1]
         is a list of bin edges corresponding to the partitions defined in
-        bin_edges_first.
+        bin_edges[0].
 
     .. note::
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    be_first, be_second = get_equiprobable_binning(
-        reference_sample=reference_sample, n_part_x=n_part_x,
-        n_part_y=n_part_y, order=order)
+    bin_edges = get_equiprobable_binning(
+        reference_sample=reference_sample, n_partitions=n_partitions,
+        order=order)
     n = apply_irregular_binning(data_sample=data_sample,
-                                bin_edges_first=be_first,
-                                bin_edges_second=be_second,
+                                bin_edges=bin_edges,
                                 order=order)
     if plot:
         plot_equiprobable_histogram(data_sample=data_sample,
-                                    bin_edges_first=be_first,
-                                    bin_edges_second=be_second,
+                                    bin_edges=bin_edges,
                                     order=order,
                                     **kwargs)
-    return n, be_first, be_second
+    return n, bin_edges
 
 
-def get_equiprobable_binning(reference_sample, n_part_x, n_part_y=None,
-                             order='xy'):
+def get_equiprobable_binning(reference_sample, n_partitions, order=None):
     """Define an equiprobable binning for the reference sample. The binning
     is defined such that the number of counts in each bin are (almost) equal.
     Bins are defined based on the ECDF of the reference sample.
@@ -62,38 +56,32 @@ def get_equiprobable_binning(reference_sample, n_part_x, n_part_y=None,
 
     :param reference_sample: sample of unbinned reference
     :type reference_sample: array_like, n-Dimensional
-    :param n_part_x: Number of partitions in x
-    :type n_part_x: int
-    :param n_part_y: Number of partitions in y, defaults to None
-        If None: n_part_y = n_part_x
-    :type n_part_y: int, optional
-    :param order: Order in which the partitioning is performed, defaults to 'xy'
-        'xy' : first bin x then bin y for each partition in x
-        'yx' : first bin y then bin x for each partition in y
-    :type order: str, optional
-    :return: Returns bin_edges_first and bin_edges_second. For order 'xy'('yx')
-        these are the bin edges in x(y) and y(x) respectively. bin_edges_second
+    :param n_partitions: Number of partitions in each dimension
+    :type n_partitions: list of int
+    :param order: Order in which the partitioning is performed, defaults to None
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used.
+    :type order: list, optional
+    :return: Returns bin_edges. For order [0, 1]([1, 0])
+        these are the bin edges in x(y) and y(x) respectively. bin_edges[1]
         is a list of bin edges corresponding to the partitions defined in
-        bin_edges_first.
-    :rtype: array, 2d array
+        bin_edges[0].
+    :rtype: list of arrays
     :raises ValueError: when an unknown order is passed.
 
     .. note::
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    order_ind = get_order_ind(order)  # [0, 1] for 'xy', [1, 0] for 'yx'
-
-    if n_part_y is None:
-        n_part_y = n_part_x
-    n_bins = [n_part_x, n_part_y]
-
+    if order is None:
+        order = [0, 1]
     # Define data that is binned first and second based on the order argument
-    first = np.vstack(reference_sample.T[order_ind[0]])
-    second = np.vstack(reference_sample.T[order_ind[1]])
+    first = np.vstack(reference_sample.T[order[0]])
+    second = np.vstack(reference_sample.T[order[1]])
 
     # Get binning in first dimension:
-    enc = KBinsDiscretizer(n_bins=n_bins[order_ind[0]], encode='ordinal',
+    enc = KBinsDiscretizer(n_bins=n_partitions[order[0]], encode='ordinal',
                            strategy='quantile')
     enc.fit(first)
     bin_edges_first = enc.bin_edges_[0]
@@ -101,7 +89,7 @@ def get_equiprobable_binning(reference_sample, n_part_x, n_part_y=None,
     bin_edges_first[-1] = np.inf
 
     # Get binning in second dimension (for each bin in first dimension):
-    enc = KBinsDiscretizer(n_bins=n_bins[order_ind[1]], encode='ordinal',
+    enc = KBinsDiscretizer(n_bins=n_partitions[order[1]], encode='ordinal',
                            strategy='quantile')
     bin_edges_second = []
     for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
@@ -112,37 +100,36 @@ def get_equiprobable_binning(reference_sample, n_part_x, n_part_y=None,
         bin_edges[-1] = np.inf
         bin_edges_second.append(bin_edges)
     bin_edges_second = np.array(bin_edges_second)
+    bin_edges = [bin_edges_first, bin_edges_second]
 
-    return bin_edges_first, bin_edges_second
+    return bin_edges
 
 
-def apply_irregular_binning(data_sample, bin_edges_first, bin_edges_second,
-                            order='xy'):
+def apply_irregular_binning(data_sample, bin_edges, order=None):
     """Apply irregular binning to data sample.
 
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
-    :param bin_edges_first: Array of bin edges in first dimension
+    :param bin_edges: Array of bin edges
     :type bin_edges_first: array
-    :param bin_edges_second: Array of bin edges in second dimension for slices
-        in first dimension
-    :type bin_edges_second: 2d array
-    :param order: Order in which the partitioning is performed, defaults to 'xy'
-        'xy' : first bin x then bin y for each partition in x
-        'yx' : first bin y then bin x for each partition in y
-    :type order: str, optional
+    :param order: Order in which the partitioning is performed, defaults to None
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used.
+    :type order: list, optional
     :return: binned data. Number of counts in each bin.
     :rtype: array
     """
-    order_ind = get_order_ind(order)
-    first = np.vstack(data_sample.T[order_ind[0]])
-    second = np.vstack(data_sample.T[order_ind[1]])
+    if order is None:
+        order = [0, 1]
+    first = np.vstack(data_sample.T[order[0]])
+    second = np.vstack(data_sample.T[order[1]])
 
     ns = []
     i = 0
-    for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
+    for low, high in zip(bin_edges[0][:-1], bin_edges[0][1:]):
         mask = (first > low) & (first <= high)
-        n, _ = np.histogram(second[mask], bins=bin_edges_second[i])
+        n, _ = np.histogram(second[mask], bins=bin_edges[1][i])
         ns.append(n)
         i += 1
     assert len(data_sample) == np.sum(ns), (f'Sum of binned data {np.sum(ns)}'
@@ -151,44 +138,40 @@ def apply_irregular_binning(data_sample, bin_edges_first, bin_edges_second,
     return np.array(ns)
 
 
-def plot_irregular_binning(ax, bin_edges_first, bin_edges_second,
-                           order='xy', c='k',  # 'mediumvioletred',
-                           **kwargs):
+def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
     """Plot the bin edges as a grid.
 
     :param ax: axis to plot to
     :type ax: matplotlib axis
-    :param bin_edges_first: Array of bin edges in first dimension
-    :type bin_edges_first: array
-    :param bin_edges_second: Array of bin edges in second dimension for slices
-        in first dimension
-    :type bin_edges_second: 2d array
-    :param order: Order in which the partitioning is performed, defaults to 'xy'
-        'xy' : first bin x then bin y for each partition in x
-        'yx' : first bin y then bin x for each partition in y
-    :type order: str, optional
-    :param c: color of the grid, defaults to 'dodgerblue'
+    :param bin_edges: Array of bin edges
+    :type bin_edges: array
+    :param order: Order in which the partitioning is performed, defaults to None
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used.
+    :type order: list, optional
+    :param c: color of the grid, defaults to 'k'
     :type c: str, optional
     :param kwargs: kwargs are passed to the plot functions
     :raises ValueError: when an unknown order is passed.
     """
     ylim = ax.get_ylim()
     xlim = ax.get_xlim()
-    be_first = bin_edges_first.copy()
-    be_second = bin_edges_second.copy()
+    be_first = bin_edges[0].copy()
+    be_second = bin_edges[1].copy()
 
-    if order == 'xy':
+    if order == [0, 1]:
         plot_funcs = [ax.axvline, ax.hlines]
-        be_first[bin_edges_first == -np.inf] = xlim[0]
-        be_first[bin_edges_first == np.inf] = xlim[1]
-        be_second[bin_edges_second == -np.inf] = ylim[0]
-        be_second[bin_edges_second == np.inf] = ylim[1]
-    elif order == 'yx':
+        be_first[be_first == -np.inf] = xlim[0]
+        be_first[be_first == np.inf] = xlim[1]
+        be_second[be_second == -np.inf] = ylim[0]
+        be_second[be_second == np.inf] = ylim[1]
+    elif order == [1, 0]:
         plot_funcs = [ax.axhline, ax.vlines]
-        be_first[bin_edges_first == -np.inf] = ylim[0]
-        be_first[bin_edges_first == np.inf] = ylim[1]
-        be_second[bin_edges_second == -np.inf] = xlim[0]
-        be_second[bin_edges_second == np.inf] = xlim[1]
+        be_first[be_first == -np.inf] = ylim[0]
+        be_first[be_first == np.inf] = ylim[1]
+        be_second[be_second == -np.inf] = xlim[0]
+        be_second[be_second == np.inf] = xlim[1]
     else:
         raise ValueError(f'order {order} is not defined.')
 
@@ -201,9 +184,8 @@ def plot_irregular_binning(ax, bin_edges_first, bin_edges_second,
         i += 1
 
 
-def plot_equiprobable_histogram(ax, data_sample, bin_edges_first,
-                                bin_edges_second, order, cmap_midpoint=None,
-                                **kwargs):
+def plot_equiprobable_histogram(ax, data_sample, bin_edges, order,
+                                cmap_midpoint=None, **kwargs):
     """Plot 2d histogram of data sample binned according to the passed
     irregular binning.
 
@@ -211,15 +193,13 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges_first,
     :type ax: matplotlib axis
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
-    :param bin_edges_first: Array of bin edges in first dimension
-    :type bin_edges_first: array
-    :param bin_edges_second: Array of bin edges in second dimension for slices
-        in first dimension
-    :type bin_edges_second: 2d array
-    :param order: Order in which the partitioning is performed, defaults to 'xy'
-        'xy' : first bin x then bin y for each partition in x
-        'yx' : first bin y then bin x for each partition in y
-    :type order: str, optional
+    :param bin_edges: Array of bin edges
+    :type bin_edges: array
+    :param order: Order in which the partitioning is performed
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used.
+    :type order: list, optional
     :param cmap_midpoint: midpoint of the colormap (i.e. expectation value), 
         defaults to None
     :type cmap_midpoint: float, optional
@@ -227,32 +207,32 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges_first,
     """
     ylim = ax.get_ylim()
     xlim = ax.get_xlim()
-    be_first = bin_edges_first.copy()
-    be_second = bin_edges_second.copy()
+    be_first = bin_edges[0].copy()
+    be_second = bin_edges[1].copy()
 
-    if order == 'xy':
-        be_first[bin_edges_first == -np.inf] = xlim[0]
-        be_first[bin_edges_first == np.inf] = xlim[1]
-        be_second[bin_edges_second == -np.inf] = ylim[0]
-        be_second[bin_edges_second == np.inf] = ylim[1]
-    elif order == 'yx':
-        be_first[bin_edges_first == -np.inf] = ylim[0]
-        be_first[bin_edges_first == np.inf] = ylim[1]
-        be_second[bin_edges_second == -np.inf] = xlim[0]
-        be_second[bin_edges_second == np.inf] = xlim[1]
+    if order == [0, 1]:
+        be_first[be_first == -np.inf] = xlim[0]
+        be_first[be_first == np.inf] = xlim[1]
+        be_second[be_second == -np.inf] = ylim[0]
+        be_second[be_second == np.inf] = ylim[1]
+    elif order == [1, 0]:
+        be_first[be_first == -np.inf] = ylim[0]
+        be_first[be_first == np.inf] = ylim[1]
+        be_second[be_second == -np.inf] = xlim[0]
+        be_second[be_second == np.inf] = xlim[1]
     else:
         raise ValueError(f'order {order} is not defined.')
 
-    ns = apply_irregular_binning(data_sample, bin_edges_first,
-                                 bin_edges_second, order=order)
+    ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
     # get colormap and norm for colorbar
     cmap = mpl.cm.get_cmap('RdBu').reversed()
     if cmap_midpoint is None:
         norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
     else:
-        delta = max(cmap_midpoint - ns.min(), ns.max() - cmap_midpoint)
-        delta = max(.1, delta)  # .1 instead of 0
+        # delta = max(cmap_midpoint - ns.min(), ns.max() - cmap_midpoint)
+        # delta = max(.1, delta)  # .1 instead of 0
+        delta = 3 * np.sqrt(cmap_midpoint)
         norm = mpl.colors.Normalize(
             vmin=cmap_midpoint - delta, vmax=cmap_midpoint + delta)
 
@@ -261,13 +241,13 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges_first,
     for low_f, high_f in zip(be_first[:-1], be_first[1:]):
         j = 0
         for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
-            if order == 'xy':
+            if order == [0, 1]:
                 rec = Rectangle((low_f, low_s),
                                 high_f - low_f,
                                 high_s - low_s,
                                 facecolor=cmap(norm(ns[i][j])),
                                 **kwargs)
-            elif order == 'yx':
+            elif order == [1, 0]:
                 rec = Rectangle((low_s, low_f),
                                 high_s - low_s,
                                 high_f - low_f,
@@ -279,16 +259,3 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges_first,
     fig = mpl.pyplot.gcf()
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                  label='Counts per Bin')
-
-
-def get_order_ind(order):
-    """Get order indices:
-        [0, 1] for 'xy', [1, 0] for 'yx'
-    """
-    if order == 'xy':
-        order_ind = [0, 1]
-    elif order == 'yx':
-        order_ind = [1, 0]
-    else:
-        raise ValueError(f'order {order} is not defined.')
-    return order_ind

@@ -26,8 +26,10 @@ class GOFTest(object):
             * 'KSTestTwoSampleGOF',
             * 'BinnedPoissonChi2GOF',
             * 'BinnedPoissonChi2GOF.from_binned',
+            * 'BinnedPoissonChi2GOF.bin_equiprobable',
             * 'BinnedChi2GOF',
             * 'BinnedChi2GOF.from_binned',
+            * 'BinnedChi2GOF.bin_equiprobable',
             * 'PointToPointGOF'
         * A user warning is issued if unused keyword arguments are passed.
     """
@@ -37,8 +39,10 @@ class GOFTest(object):
         'KSTestTwoSampleGOF',
         'BinnedPoissonChi2GOF',
         'BinnedPoissonChi2GOF.from_binned',
+        'BinnedPoissonChi2GOF.bin_equiprobable',
         'BinnedChi2GOF',
         'BinnedChi2GOF.from_binned',
+        'BinnedChi2GOF.bin_equiprobable',
         'PointToPointGOF'
     ]
 
@@ -53,7 +57,7 @@ class GOFTest(object):
                 func = eval(gof_str)
             else:
                 allowed_str = ", ".join(
-                    ['"'+str(p)+'"' for p in self.allowed_gof_str])
+                    ['"' + str(p) + '"' for p in self.allowed_gof_str])
                 raise ValueError(f'"{gof_str}" is not an allowed value '
                                  f'for gof_list. Possible values are '
                                  f'{allowed_str}')
@@ -67,7 +71,7 @@ class GOFTest(object):
         return f'{self.__class__.__module__}:\n{self.__dict__}'
 
     def __str__(self):
-        args = ['GoF measures: '+", ".join(self.gof_list)]
+        args = ['GoF measures: ' + ", ".join(self.gof_list)]
         if self.gofs:
             gofs_str = ", ".join([str(g) for g in self.gofs.values()])
             args.append('gofs = ' + gofs_str)
