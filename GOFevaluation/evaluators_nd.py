@@ -70,8 +70,8 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
             warnings.warn(
                 'Binned reference contains bin counts ranging over '
                 + 'multiple orders of magnitude '
-                + f'({min(binned_reference):.2e} - '
-                + f'{max(binned_reference):.2e}). GoF might be flawed!',
+                + f'({binned_reference.min():.2e} - '
+                + f'{binned_reference.max():.2e}). GoF might be flawed!',
                 stacklevel=2)
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_reference).logpmf(binned_data)
@@ -148,8 +148,8 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
             warnings.warn(
                 'Binned reference contains bin counts ranging over '
                 + 'multiple orders of magnitude '
-                + f'({min(binned_reference):.2e} - '
-                + f'{max(binned_reference):.2e}). GoF might be flawed!',
+                + f'({binned_reference.min():.2e} - '
+                + f'{binned_reference.max():.2e}). GoF might be flawed!',
                 stacklevel=2)
         gof = np.sum((binned_data - binned_reference)**2 / binned_reference)
         return gof

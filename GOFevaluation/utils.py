@@ -18,7 +18,7 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     :param order: Order in which the partitioning is performed, defaults to None
         [0, 1] : first bin x then bin y for each partition in x
         [1, 0] : first bin y then bin x for each partition in y
-        if None, the natural order, i.e. [0, 1] is used.
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :param plot: if True, histogram of data sample is plotted, defaults to False
     :type plot: bool, optional
@@ -61,7 +61,7 @@ def get_equiprobable_binning(reference_sample, n_partitions, order=None):
     :param order: Order in which the partitioning is performed, defaults to None
         [0, 1] : first bin x then bin y for each partition in x
         [1, 0] : first bin y then bin x for each partition in y
-        if None, the natural order, i.e. [0, 1] is used.
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :return: Returns bin_edges. For order [0, 1]([1, 0])
         these are the bin edges in x(y) and y(x) respectively. bin_edges[1]
@@ -74,33 +74,41 @@ def get_equiprobable_binning(reference_sample, n_partitions, order=None):
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    if order is None:
-        order = [0, 1]
-    # Define data that is binned first and second based on the order argument
-    first = np.vstack(reference_sample.T[order[0]])
-    second = np.vstack(reference_sample.T[order[1]])
-
-    # Get binning in first dimension:
-    enc = KBinsDiscretizer(n_bins=n_partitions[order[0]], encode='ordinal',
-                           strategy='quantile')
-    enc.fit(first)
-    bin_edges_first = enc.bin_edges_[0]
-    bin_edges_first[0] = -np.inf
-    bin_edges_first[-1] = np.inf
-
-    # Get binning in second dimension (for each bin in first dimension):
-    enc = KBinsDiscretizer(n_bins=n_partitions[order[1]], encode='ordinal',
-                           strategy='quantile')
-    bin_edges_second = []
-    for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
-        mask = (first > low) & (first <= high)
-        enc.fit(np.vstack(second[mask]))
+    if len(reference_sample.shape) == 1:
+        enc = KBinsDiscretizer(n_bins=n_partitions, encode='ordinal',
+                               strategy='quantile')
+        enc.fit(np.vstack(reference_sample.T))
         bin_edges = enc.bin_edges_[0]
         bin_edges[0] = -np.inf
         bin_edges[-1] = np.inf
-        bin_edges_second.append(bin_edges)
-    bin_edges_second = np.array(bin_edges_second)
-    bin_edges = [bin_edges_first, bin_edges_second]
+    else:
+        if order is None:
+            order = [0, 1]
+        # Define data that is binned first and second based on the order argument
+        first = np.vstack(reference_sample.T[order[0]])
+        second = np.vstack(reference_sample.T[order[1]])
+
+        # Get binning in first dimension:
+        enc = KBinsDiscretizer(n_bins=n_partitions[order[0]], encode='ordinal',
+                               strategy='quantile')
+        enc.fit(first)
+        bin_edges_first = enc.bin_edges_[0]
+        bin_edges_first[0] = -np.inf
+        bin_edges_first[-1] = np.inf
+
+        # Get binning in second dimension (for each bin in first dimension):
+        enc = KBinsDiscretizer(n_bins=n_partitions[order[1]], encode='ordinal',
+                               strategy='quantile')
+        bin_edges_second = []
+        for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
+            mask = (first > low) & (first <= high)
+            enc.fit(np.vstack(second[mask]))
+            bin_edges = enc.bin_edges_[0]
+            bin_edges[0] = -np.inf
+            bin_edges[-1] = np.inf
+            bin_edges_second.append(bin_edges)
+        bin_edges_second = np.array(bin_edges_second)
+        bin_edges = [bin_edges_first, bin_edges_second]
 
     return bin_edges
 
@@ -115,26 +123,29 @@ def apply_irregular_binning(data_sample, bin_edges, order=None):
     :param order: Order in which the partitioning is performed, defaults to None
         [0, 1] : first bin x then bin y for each partition in x
         [1, 0] : first bin y then bin x for each partition in y
-        if None, the natural order, i.e. [0, 1] is used.
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :return: binned data. Number of counts in each bin.
     :rtype: array
     """
-    if order is None:
-        order = [0, 1]
-    first = np.vstack(data_sample.T[order[0]])
-    second = np.vstack(data_sample.T[order[1]])
+    if len(data_sample.shape) == 1:
+        ns, _ = np.histogram(data_sample, bins=bin_edges)
+    else:
+        if order is None:
+            order = [0, 1]
+        first = np.vstack(data_sample.T[order[0]])
+        second = np.vstack(data_sample.T[order[1]])
 
-    ns = []
-    i = 0
-    for low, high in zip(bin_edges[0][:-1], bin_edges[0][1:]):
-        mask = (first > low) & (first <= high)
-        n, _ = np.histogram(second[mask], bins=bin_edges[1][i])
-        ns.append(n)
-        i += 1
+        ns = []
+        i = 0
+        for low, high in zip(bin_edges[0][:-1], bin_edges[0][1:]):
+            mask = (first > low) & (first <= high)
+            n, _ = np.histogram(second[mask], bins=bin_edges[1][i])
+            ns.append(n)
+            i += 1
     assert len(data_sample) == np.sum(ns), (f'Sum of binned data {np.sum(ns)}'
                                             + ' unequal to size of data sample'
-                                            + ' {len(data_sample)}')
+                                            + f' {len(data_sample)}')
     return np.array(ns)
 
 
@@ -155,33 +166,37 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
     :param kwargs: kwargs are passed to the plot functions
     :raises ValueError: when an unknown order is passed.
     """
-    ylim = ax.get_ylim()
-    xlim = ax.get_xlim()
-    be_first = bin_edges[0].copy()
-    be_second = bin_edges[1].copy()
-
-    if order == [0, 1]:
-        plot_funcs = [ax.axvline, ax.hlines]
-        be_first[be_first == -np.inf] = xlim[0]
-        be_first[be_first == np.inf] = xlim[1]
-        be_second[be_second == -np.inf] = ylim[0]
-        be_second[be_second == np.inf] = ylim[1]
-    elif order == [1, 0]:
-        plot_funcs = [ax.axhline, ax.vlines]
-        be_first[be_first == -np.inf] = ylim[0]
-        be_first[be_first == np.inf] = ylim[1]
-        be_second[be_second == -np.inf] = xlim[0]
-        be_second[be_second == np.inf] = xlim[1]
+    if len(bin_edges.shape) == 1:
+        for line in bin_edges:
+            ax.axvline(line, c=c, zorder=4, **kwargs)
     else:
-        raise ValueError(f'order {order} is not defined.')
+        ylim = ax.get_ylim()
+        xlim = ax.get_xlim()
+        be_first = bin_edges[0].copy()
+        be_second = bin_edges[1].copy()
 
-    i = 0
-    for low, high in zip(be_first[:-1], be_first[1:]):
-        if i > 0:
-            plot_funcs[0](low, zorder=4, c=c, **kwargs)
-        plot_funcs[1](be_second[i][1:-1], low, high, zorder=4, color=c,
-                      **kwargs)
-        i += 1
+        if order == [0, 1]:
+            plot_funcs = [ax.axvline, ax.hlines]
+            be_first[be_first == -np.inf] = xlim[0]
+            be_first[be_first == np.inf] = xlim[1]
+            be_second[be_second == -np.inf] = ylim[0]
+            be_second[be_second == np.inf] = ylim[1]
+        elif order == [1, 0]:
+            plot_funcs = [ax.axhline, ax.vlines]
+            be_first[be_first == -np.inf] = ylim[0]
+            be_first[be_first == np.inf] = ylim[1]
+            be_second[be_second == -np.inf] = xlim[0]
+            be_second[be_second == np.inf] = xlim[1]
+        else:
+            raise ValueError(f'order {order} is not defined.')
+
+        i = 0
+        for low, high in zip(be_first[:-1], be_first[1:]):
+            if i > 0:
+                plot_funcs[0](low, zorder=4, c=c, **kwargs)
+            plot_funcs[1](be_second[i][1:-1], low, high, zorder=4, color=c,
+                          **kwargs)
+            i += 1
 
 
 def plot_equiprobable_histogram(ax, data_sample, bin_edges, order,
@@ -207,21 +222,6 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges, order,
     """
     ylim = ax.get_ylim()
     xlim = ax.get_xlim()
-    be_first = bin_edges[0].copy()
-    be_second = bin_edges[1].copy()
-
-    if order == [0, 1]:
-        be_first[be_first == -np.inf] = xlim[0]
-        be_first[be_first == np.inf] = xlim[1]
-        be_second[be_second == -np.inf] = ylim[0]
-        be_second[be_second == np.inf] = ylim[1]
-    elif order == [1, 0]:
-        be_first[be_first == -np.inf] = ylim[0]
-        be_first[be_first == np.inf] = ylim[1]
-        be_second[be_second == -np.inf] = xlim[0]
-        be_second[be_second == np.inf] = xlim[1]
-    else:
-        raise ValueError(f'order {order} is not defined.')
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
@@ -236,26 +236,53 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges, order,
         norm = mpl.colors.Normalize(
             vmin=cmap_midpoint - delta, vmax=cmap_midpoint + delta)
 
-    # plot rectangle for each bin
-    i = 0
-    for low_f, high_f in zip(be_first[:-1], be_first[1:]):
-        j = 0
-        for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
-            if order == [0, 1]:
-                rec = Rectangle((low_f, low_s),
-                                high_f - low_f,
-                                high_s - low_s,
-                                facecolor=cmap(norm(ns[i][j])),
-                                **kwargs)
-            elif order == [1, 0]:
-                rec = Rectangle((low_s, low_f),
-                                high_s - low_s,
-                                high_f - low_f,
-                                facecolor=cmap(norm(ns[i][j])),
-                                **kwargs)
+    if len(data_sample.shape) == 1:
+        i = 0
+        bin_edges[0] = xlim[0]
+        bin_edges[-1] = xlim[1]
+        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+            rec = Rectangle((low, 0), high - low, 1,
+                            facecolor=cmap(norm(ns[i])),
+                            **kwargs)
             ax.add_patch(rec)
-            j += 1
-        i += 1
+            i += 1
+    else:
+        be_first = bin_edges[0].copy()
+        be_second = bin_edges[1].copy()
+
+        if order == [0, 1]:
+            be_first[be_first == -np.inf] = xlim[0]
+            be_first[be_first == np.inf] = xlim[1]
+            be_second[be_second == -np.inf] = ylim[0]
+            be_second[be_second == np.inf] = ylim[1]
+        elif order == [1, 0]:
+            be_first[be_first == -np.inf] = ylim[0]
+            be_first[be_first == np.inf] = ylim[1]
+            be_second[be_second == -np.inf] = xlim[0]
+            be_second[be_second == np.inf] = xlim[1]
+        else:
+            raise ValueError(f'order {order} is not defined.')
+
+        # plot rectangle for each bin
+        i = 0
+        for low_f, high_f in zip(be_first[:-1], be_first[1:]):
+            j = 0
+            for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
+                if order == [0, 1]:
+                    rec = Rectangle((low_f, low_s),
+                                    high_f - low_f,
+                                    high_s - low_s,
+                                    facecolor=cmap(norm(ns[i][j])),
+                                    **kwargs)
+                elif order == [1, 0]:
+                    rec = Rectangle((low_s, low_f),
+                                    high_s - low_s,
+                                    high_f - low_f,
+                                    facecolor=cmap(norm(ns[i][j])),
+                                    **kwargs)
+                ax.add_patch(rec)
+                j += 1
+            i += 1
     fig = mpl.pyplot.gcf()
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                  label='Counts per Bin')
