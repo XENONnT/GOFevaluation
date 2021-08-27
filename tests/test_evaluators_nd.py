@@ -90,13 +90,11 @@ class TestPointToPointGOF(unittest.TestCase):
             nevents_ref = len(reference)
 
             gofclass = PointToPointGOF(data, reference)
-            d_data_data, d_ref_ref, d_data_ref = gofclass.get_distances(
+            d_data_data, d_data_ref = gofclass.get_distances(
                 data, reference)
 
             self.assertEqual(len(d_data_data), nevents_data *
                              (nevents_data-1) / 2)
-            self.assertEqual(len(d_ref_ref), nevents_ref *
-                             (nevents_ref-1) / 2)
             self.assertEqual(len(d_data_ref), nevents_ref *
                              nevents_data)
 
@@ -104,7 +102,7 @@ class TestPointToPointGOF(unittest.TestCase):
         # the pointwise energy test is symmetrical in reference and
         # science sample:
         xs_a = sps.uniform().rvs(50)[:, None]
-        xs_b = sps.uniform().rvs(50)[:, None]
+        xs_b = xs_a + .1
         gofclass_ab = PointToPointGOF(xs_a, xs_b)
         # set d_min explicitly to avoid asymmetry in setting d_min
         gof_ab = gofclass_ab.get_gof(d_min=0.01)
@@ -112,8 +110,7 @@ class TestPointToPointGOF(unittest.TestCase):
         # set d_min explicitly to avoid asymmetry in setting d_min
         gof_ba = gofclass_ba.get_gof(d_min=0.01)
 
-        # it seems precision is a bit low in this case
-        self.assertAlmostEqual(gof_ab, gof_ba, places=6)
+        self.assertAlmostEqual(gof_ab, gof_ba, places=10)
 
     def test_value(self):
         # simple values:
@@ -124,8 +121,7 @@ class TestPointToPointGOF(unittest.TestCase):
         gofclass_ab = PointToPointGOF(xs_a, xs_b)
         # set d_min explicitly to avoid asymmetry in setting d_min
         gof_ab = gofclass_ab.get_gof(d_min=0.01)
-        # it seems precision is a bit low in this case
-        self.assertAlmostEqual(gof_ab, e_data_ref, places=6)
+        self.assertAlmostEqual(gof_ab, e_data_ref, places=10)
 
 
 class TestBinnedChi2GOF(unittest.TestCase):

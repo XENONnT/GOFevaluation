@@ -32,6 +32,8 @@ class TestGOFTest(unittest.TestCase):
 
         d_min = 0.01  # define this manually
 
+        n_partitions = 10
+
         # Calculate GoF with wrapper:
         gof_list = GOFTest.allowed_gof_str
 
@@ -42,7 +44,8 @@ class TestGOFTest(unittest.TestCase):
                              binned_reference=binned_reference,
                              pdf=pdf,
                              nevents_expected=nevents_expected,
-                             bin_edges=bin_edges
+                             bin_edges=bin_edges,
+                             n_partitions=n_partitions
                              )
 
         gofs_wrapper = gof_object.get_gofs(d_min=d_min)
@@ -70,6 +73,12 @@ class TestGOFTest(unittest.TestCase):
                 BinnedPoissonChi2GOF.from_binned(
                 binned_data=binned_data,
                 binned_reference=binned_reference),
+            'BinnedPoissonChi2GOF.bin_equiprobable':
+                BinnedPoissonChi2GOF.bin_equiprobable(
+                data_sample=data_sample,
+                reference_sample=reference_sample,
+                nevents_expected=nevents_expected,
+                n_partitions=n_partitions),
             'BinnedChi2GOF': BinnedChi2GOF(
                 data_sample=data_sample,
                 pdf=pdf,
@@ -79,6 +88,12 @@ class TestGOFTest(unittest.TestCase):
                 BinnedChi2GOF.from_binned(
                 binned_data=binned_data,
                 binned_reference=binned_reference),
+            'BinnedChi2GOF.bin_equiprobable':
+                BinnedChi2GOF.bin_equiprobable(
+                data_sample=data_sample,
+                reference_sample=reference_sample,
+                nevents_expected=nevents_expected,
+                n_partitions=n_partitions),
             'PointToPointGOF': PointToPointGOF(
                 data_sample=data_sample,
                 reference_sample=reference_sample)

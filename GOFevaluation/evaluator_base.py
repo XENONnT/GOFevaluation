@@ -75,7 +75,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
 
     @classmethod
     def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
-                         n_partitions, order):
+                         n_partitions, order=None):
         """Initialize with data and reference sample that are binned
         such that the expectation value is the same in each bin.
         """
