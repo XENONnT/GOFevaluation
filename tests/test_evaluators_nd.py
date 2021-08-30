@@ -76,6 +76,30 @@ class TestBinnedPoissonChi2GOF(unittest.TestCase):
             self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
                              sorted(gofclass_from_init.__dict__.keys()))
 
+    def test_bin_equiprobable(self):
+        """Test if from_binned and bin_equiprobable init give same result"""
+        n_data = 12
+        n_expected = 14
+        n_partitions = [2, 3]
+        data_sample = np.linspace(0, 1, n_data)
+        data_sample = np.vstack([data_sample for i in range(2)]).T
+        reference_sample = np.linspace(0, 1, int(10 * n_data))
+        reference_sample = np.vstack([reference_sample for i in range(2)]).T
+
+        binned_data = np.full(n_partitions, n_data / np.product(n_partitions))
+        binned_reference = np.full(
+            n_partitions, n_expected / np.product(n_partitions))
+        gofclass_from_binned = BinnedPoissonChi2GOF.from_binned(
+            binned_data, binned_reference)
+        gof_from_binned = gofclass_from_binned.get_gof()
+
+        for order in [[0, 1], [1, 0]]:
+            gofclass_bin_equiprobable = BinnedPoissonChi2GOF.bin_equiprobable(
+                data_sample, reference_sample, nevents_expected=n_expected,
+                n_partitions=n_partitions, order=order)
+            gof_bin_equiprobable = gofclass_bin_equiprobable.get_gof()
+            self.assertAlmostEqual(gof_bin_equiprobable, gof_from_binned, 10)
+
 
 class TestPointToPointGOF(unittest.TestCase):
     def test_distances(self):
@@ -210,7 +234,7 @@ class TestBinnedChi2GOF(unittest.TestCase):
     def test_from_binned(self):
         """Test if regular init and from_binned init give same result"""
         for nD in range(1, 5+1):
-            # generate uniformly distributed data points and bibn data
+            # generate uniformly distributed data points and bin data
             n_events_per_bin = 15
             n_bins_per_dim = int(32**(1/nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
@@ -242,6 +266,30 @@ class TestBinnedChi2GOF(unittest.TestCase):
             # are the same
             self.assertEqual(sorted(gofclass_from_classmethod.__dict__.keys()),
                              sorted(gofclass_from_init.__dict__.keys()))
+
+    def test_bin_equiprobable(self):
+        """Test if from_binned and bin_equiprobable init give same result"""
+        n_data = 12
+        n_expected = 14
+        n_partitions = [2, 3]
+        data_sample = np.linspace(0, 1, n_data)
+        data_sample = np.vstack([data_sample for i in range(2)]).T
+        reference_sample = np.linspace(0, 1, int(10 * n_data))
+        reference_sample = np.vstack([reference_sample for i in range(2)]).T
+
+        binned_data = np.full(n_partitions, n_data / np.product(n_partitions))
+        binned_reference = np.full(
+            n_partitions, n_expected / np.product(n_partitions))
+        gofclass_from_binned = BinnedChi2GOF.from_binned(
+            binned_data, binned_reference)
+        gof_from_binned = gofclass_from_binned.get_gof()
+
+        for order in [[0, 1], [1, 0]]:
+            gofclass_bin_equiprobable = BinnedChi2GOF.bin_equiprobable(
+                data_sample, reference_sample, nevents_expected=n_expected,
+                n_partitions=n_partitions, order=order)
+            gof_bin_equiprobable = gofclass_bin_equiprobable.get_gof()
+            self.assertAlmostEqual(gof_bin_equiprobable, gof_from_binned, 10)
 
 
 class TestPvalue(unittest.TestCase):

@@ -260,25 +260,24 @@ class PointToPointGOF(EvaluatorBaseSample):
             raise KeyError(f'w_func {self.w_func} is not defined.')
         return ret
 
-    @classmethod
-    def calculate_gof(cls, data_sample, reference_sample, d_min=None):
+    def calculate_gof(self, data_sample, reference_sample, d_min=None):
         """Internal function to calculate gof for :func:`get_gof`
         and :func:`get_pvalue`"""
 
         nevents_data = np.shape(data_sample)[0]
         nevents_ref = np.shape(reference_sample)[0]
 
-        d_data_data, d_data_ref = cls.get_distances(
+        d_data_data, d_data_ref = self.get_distances(
             data_sample, reference_sample)
         if d_min is None:
-            d_min = cls.get_d_min(d_data_ref)
+            d_min = self.get_d_min(d_data_ref)
 
         ret_data_data = (1 / nevents_data ** 2 *
-                         np.sum(cls.weighting_function(d_data_data, d_min=d_min)))
+                         np.sum(self.weighting_function(d_data_data, d_min=d_min)))
         # ret_ref_ref = (1 / nevents_ref ** 2 *
-        #                np.sum(cls.weighting_function(d_ref_ref, d_min)))
+        #                np.sum(self.weighting_function(d_ref_ref, d_min)))
         ret_data_ref = (-1 / nevents_ref / nevents_data *
-                        np.sum(cls.weighting_function(d_data_ref, d_min=d_min)))
+                        np.sum(self.weighting_function(d_data_ref, d_min=d_min)))
         gof = ret_data_data + ret_data_ref  # ret_data_data + ret_ref_ref + ret_data_ref
         return gof
 
