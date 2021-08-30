@@ -63,10 +63,11 @@ def get_equiprobable_binning(reference_sample, n_partitions, order=None):
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
-    :return: Returns bin_edges. For order [0, 1]([1, 0])
-        these are the bin edges in x(y) and y(x) respectively. bin_edges[1]
-        is a list of bin edges corresponding to the partitions defined in
-        bin_edges[0].
+    :return: Returns bin_edges. 
+        1D: list of bin edges
+        2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x) 
+        respectively. bin_edges[1] is a list of bin edges corresponding to the 
+        partitions defined in bin_edges[0].
     :rtype: list of arrays
     :raises ValueError: when an unknown order is passed.
 
@@ -159,7 +160,7 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
     :param order: Order in which the partitioning is performed, defaults to None
         [0, 1] : first bin x then bin y for each partition in x
         [1, 0] : first bin y then bin x for each partition in y
-        if None, the natural order, i.e. [0, 1] is used.
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :param c: color of the grid, defaults to 'k'
     :type c: str, optional
@@ -213,9 +214,9 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges, order,
     :param order: Order in which the partitioning is performed
         [0, 1] : first bin x then bin y for each partition in x
         [1, 0] : first bin y then bin x for each partition in y
-        if None, the natural order, i.e. [0, 1] is used.
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
-    :param cmap_midpoint: midpoint of the colormap (i.e. expectation value), 
+    :param cmap_midpoint: midpoint of the colormap (i.e. expectation value),
         defaults to None
     :type cmap_midpoint: float, optional
     :raises ValueError: when an unknown order is passed.

@@ -39,7 +39,7 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
             :param order: Order in which the partitioning is performed, defaults to None
                 [0, 1] : first bin x then bin y for each partition in x
                 [1, 0] : first bin y then bin x for each partition in y
-                if None, the natural order, i.e. [0, 1] is used.
+                if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
             :type order: list, optional
 
 
@@ -119,7 +119,7 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
             :param order: Order in which the partitioning is performed, defaults to None
                 [0, 1] : first bin x then bin y for each partition in x
                 [1, 0] : first bin y then bin x for each partition in y
-                if None, the natural order, i.e. [0, 1] is used.
+                if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
             :type order: list, optional
 
 
@@ -175,6 +175,10 @@ class PointToPointGOF(EvaluatorBaseSample):
     :type data_sample: array_like, n-Dimensional
     :param reference_sample: sample of unbinned reference
     :type reference_sample: array_like, n-Dimensional
+    :param w_func: weighting function to use for the GOF measure. 
+        Defaults to 'log'. Other options are:
+        'x2', 'x', '1/x'
+    :type w_func' str, optional
 
     .. note::
         * Samples should be pre-processed to have similar scale in each
@@ -183,9 +187,10 @@ class PointToPointGOF(EvaluatorBaseSample):
           https://arxiv.org/abs/hep-ex/0203010
     """
 
-    def __init__(self, data_sample, reference_sample):
+    def __init__(self, data_sample, reference_sample, w_func='log'):
         super().__init__(data_sample=data_sample,
                          reference_sample=reference_sample)
+        self.w_func = w_func
 
     @staticmethod
     def get_distances(data_sample, reference_sample):
@@ -212,6 +217,9 @@ class PointToPointGOF(EvaluatorBaseSample):
         d_data_data.reshape(-1)
         d_data_data = d_data_data[d_data_data > 0]
 
+        # If the len(reference_sample)>>len(data_sample), d_ref_ref
+        # is the same for all permutations. The resulting constant offset
+        # in the GOF-value can be neglected.
         # d_ref_ref = np.triu(dist.pairwise(reference_sample))
         # d_ref_ref.reshape(-1)
         # d_ref_ref = d_ref_ref[d_ref_ref > 0]
@@ -230,23 +238,26 @@ class PointToPointGOF(EvaluatorBaseSample):
         d_min = np.quantile(d_ref_ref, 0.001)
         return d_min
 
-    @staticmethod
-    def weighting_function(d, d_min, w_func='log'):
+    def weighting_function(self, d, d_min):
         """Weigh distances d according to log profile. Pole at d = 0
         is omitted by introducing d_min that replaces the distance for
         d < d_min
+
+        :param d_min: Replaces the distance for distance d < d_min.
+            If None, d_min is estimated by :func:`get_dmin`
+        :type d_min: float
         """
         d[d <= d_min] = d_min
-        if w_func == 'log':
+        if self.w_func == 'log':
             ret = -np.log(d)
-        elif w_func == 'x2':
+        elif self.w_func == 'x2':
             ret = d**2
-        elif w_func == 'x':
+        elif self.w_func == 'x':
             ret = d
-        elif w_func == '1/x':
+        elif self.w_func == '1/x':
             ret = 1 / d
         else:
-            raise KeyError(f'w_func {w_func} is not defined.')
+            raise KeyError(f'w_func {self.w_func} is not defined.')
         return ret
 
     @classmethod
@@ -263,11 +274,11 @@ class PointToPointGOF(EvaluatorBaseSample):
             d_min = cls.get_d_min(d_data_ref)
 
         ret_data_data = (1 / nevents_data ** 2 *
-                         np.sum(cls.weighting_function(d_data_data, d_min)))
+                         np.sum(cls.weighting_function(d_data_data, d_min=d_min)))
         # ret_ref_ref = (1 / nevents_ref ** 2 *
         #                np.sum(cls.weighting_function(d_ref_ref, d_min)))
         ret_data_ref = (-1 / nevents_ref / nevents_data *
-                        np.sum(cls.weighting_function(d_data_ref, d_min)))
+                        np.sum(cls.weighting_function(d_data_ref, d_min=d_min)))
         gof = ret_data_data + ret_data_ref  # ret_data_data + ret_ref_ref + ret_data_ref
         return gof
 
@@ -287,7 +298,7 @@ class PointToPointGOF(EvaluatorBaseSample):
         """
 
         gof = self.calculate_gof(
-            self.data_sample, self.reference_sample, d_min)
+            self.data_sample, self.reference_sample, d_min=d_min)
         self.gof = gof
         return gof
 
@@ -305,6 +316,9 @@ class PointToPointGOF(EvaluatorBaseSample):
             If None, d_min is estimated by :func:`get_dmin`,
             defaults to None
         :type d_min: float, optional
+        :param return_fake_gofs: If true, the array of permutation GOFs is 
+            returned together with the p-value
+        :type return_fake_gofs: bool, optional
         :return: p-value
         :rtype: float
         """

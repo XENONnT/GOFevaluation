@@ -141,6 +141,9 @@ class EvaluatorBaseBinned(EvaluatorBase):
 
         :param n_mc: Number of fake-gofs calculated, defaults to 1000
         :type n_mc: int, optional
+        :param return_fake_gofs: If true, the array of toy GOFs is returned
+            together with the p-value
+        :type return_fake_gofs: bool, optional
         :return: p-value
         :rtype: float
         """
@@ -230,6 +233,9 @@ class EvaluatorBaseSample(EvaluatorBase):
 
         :param n_perm: Number of fake-gofs calculated, defaults to 1000
         :type n_perm: int, optional
+        :param return_fake_gofs: If true, the array of permutation GOFs is 
+            returned together with the p-value
+        :type return_fake_gofs: bool, optional
         :return: p-value
         :rtype: float
         """
