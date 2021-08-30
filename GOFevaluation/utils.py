@@ -167,7 +167,7 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
     :param kwargs: kwargs are passed to the plot functions
     :raises ValueError: when an unknown order is passed.
     """
-    if len(bin_edges.shape) == 1:
+    if bin_edges[0].shape == ():
         for line in bin_edges:
             ax.axvline(line, c=c, zorder=4, **kwargs)
     else:
@@ -200,13 +200,11 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
             i += 1
 
 
-def plot_equiprobable_histogram(ax, data_sample, bin_edges, order,
-                                cmap_midpoint=None, **kwargs):
+def plot_equiprobable_histogram(data_sample, bin_edges, order,
+                                ax=None, cmap_midpoint=None, **kwargs):
     """Plot 2d histogram of data sample binned according to the passed
     irregular binning.
 
-    :param ax: axis to plot to
-    :type ax: matplotlib axis
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
     :param bin_edges: Array of bin edges
@@ -216,11 +214,15 @@ def plot_equiprobable_histogram(ax, data_sample, bin_edges, order,
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
+    :param ax: axis to plot to, if None: make new axis. Defaults to None.
+    :type ax: matplotlib axis, optional
     :param cmap_midpoint: midpoint of the colormap (i.e. expectation value),
         defaults to None
     :type cmap_midpoint: float, optional
     :raises ValueError: when an unknown order is passed.
     """
+    if ax is None:
+        _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
     ylim = ax.get_ylim()
     xlim = ax.get_xlim()
 
