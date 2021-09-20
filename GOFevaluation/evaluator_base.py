@@ -43,6 +43,10 @@ class EvaluatorBaseBinned(EvaluatorBase):
     def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
         super().__init__()
         self.pdf = pdf
+        assert (isinstance(nevents_expected, int)
+                | isinstance(nevents_expected, float)), \
+            ('nevents_expected must be numeric but is of type '
+             + '{type(nevents_expected)}.')
         self.binned_reference = self.pdf * nevents_expected
 
         if bin_edges is None:
