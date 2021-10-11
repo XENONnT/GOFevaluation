@@ -87,8 +87,8 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_mc=1000, return_fake_gofs=False):
-        return super().get_pvalue(n_mc, return_fake_gofs=return_fake_gofs)
+    def get_pvalue(self, n_mc=1000):
+        return super().get_pvalue(n_mc)
 
 
 class BinnedChi2GOF(EvaluatorBaseBinned):
@@ -164,8 +164,8 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_mc=1000, return_fake_gofs=False):
-        return super().get_pvalue(n_mc, return_fake_gofs=return_fake_gofs)
+    def get_pvalue(self, n_mc=1000):
+        return super().get_pvalue(n_mc)
 
 
 class PointToPointGOF(EvaluatorBaseSample):
@@ -301,7 +301,7 @@ class PointToPointGOF(EvaluatorBaseSample):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_perm=1000, d_min=None, return_fake_gofs=False):
+    def get_pvalue(self, n_perm=1000, d_min=None):
         """p-value is calculated
 
         Computes the p-value by means of re-sampling data sample
@@ -315,11 +315,7 @@ class PointToPointGOF(EvaluatorBaseSample):
             If None, d_min is estimated by :func:`get_dmin`,
             defaults to None
         :type d_min: float, optional
-        :param return_fake_gofs: If true, the array of permutation GOFs is 
-            returned together with the p-value
-        :type return_fake_gofs: bool, optional
         :return: p-value
         :rtype: float
         """
-        return super().get_pvalue(n_perm, d_min,
-                                  return_fake_gofs=return_fake_gofs)
+        return super().get_pvalue(n_perm, d_min)

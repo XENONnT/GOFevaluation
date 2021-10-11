@@ -50,8 +50,8 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_perm=1000, return_fake_gofs=False):
-        pvalue = super().get_pvalue(n_perm, return_fake_gofs=return_fake_gofs)
+    def get_pvalue(self, n_perm=1000):
+        pvalue = super().get_pvalue(n_perm)
         return pvalue
 
 
@@ -138,6 +138,6 @@ class KSTestTwoSampleGOF(EvaluatorBaseSample):
         self.gof = gof
         return gof
 
-    def get_pvalue(self, n_perm=1000, return_fake_gofs=False):
-        pvalue = super().get_pvalue(n_perm, return_fake_gofs=return_fake_gofs)
+    def get_pvalue(self, n_perm=1000):
+        pvalue = super().get_pvalue(n_perm)
         return pvalue

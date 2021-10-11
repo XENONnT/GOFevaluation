@@ -136,21 +136,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
                 samples, self.binned_reference)
         return fake_gofs
 
-    def get_pvalue(self, n_mc=1000, return_fake_gofs=False):
-        """p-value is calculated
-
-        Computes the p-value by means of generating toyMCs and calculating
-        their GoF. The p-value can then be obtained from the distribution of
-        these fake-gofs.
-
-        :param n_mc: Number of fake-gofs calculated, defaults to 1000
-        :type n_mc: int, optional
-        :param return_fake_gofs: If true, the array of toy GOFs is returned
-            together with the p-value
-        :type return_fake_gofs: bool, optional
-        :return: p-value
-        :rtype: float
-        """
+    def _get_pvalue(self, n_mc=1000):
         if self.gof is None:
             _ = self.get_gof()
         fake_gofs = self.sample_gofs(n_mc=n_mc)
@@ -169,10 +155,38 @@ class EvaluatorBaseBinned(EvaluatorBase):
                           f'precise result, increase n_mc!', stacklevel=2)
 
         self.pvalue = pvalue
-        if return_fake_gofs:
-            return pvalue, fake_gofs
-        else:
-            return pvalue
+        return pvalue, fake_gofs
+
+    def get_pvalue(self, n_mc=1000):
+        """p-value is calculated
+
+        Computes the p-value by means of generating toyMCs and calculating
+        their GoF. The p-value can then be obtained from the distribution of
+        these fake-gofs.
+
+        :param n_mc: Number of fake-gofs calculated, defaults to 1000
+        :type n_mc: int, optional
+        :return: p-value
+        :rtype: float
+        """
+        pvalue, _ = self._get_pvalue(n_mc=n_mc)
+        return pvalue
+
+    def get_pvalue_return_fake_gofs(self, n_mc=1000):
+        """p-value is calculated
+
+        Computes the p-value by means of generating toyMCs and calculating
+        their GoF. The p-value can then be obtained from the distribution of
+        these fake-gofs. The array of fake-gofs is returned together with
+        the p-value.
+
+        :param n_mc: Number of fake-gofs calculated, defaults to 1000
+        :type n_mc: int, optional
+        :return: p-value
+        :rtype: float
+        """
+        pvalue, fake_gofs = self._get_pvalue(n_mc=n_mc)
+        return pvalue, fake_gofs
 
 
 class EvaluatorBasePdf(EvaluatorBase):
@@ -227,22 +241,7 @@ class EvaluatorBaseSample(EvaluatorBase):
                     data_sample=data_perm, reference_sample=reference_perm)
         return fake_gofs
 
-    def get_pvalue(self, n_perm=1000, d_min=None, return_fake_gofs=False):
-        """p-value is calculated
-
-        Computes the p-value by means of re-sampling data sample
-        and reference sample. For each re-sampling, the gof is calculated.
-        The p-value can then be obtained from the distribution of these
-        fake-gofs.
-
-        :param n_perm: Number of fake-gofs calculated, defaults to 1000
-        :type n_perm: int, optional
-        :param return_fake_gofs: If true, the array of permutation GOFs is 
-            returned together with the p-value
-        :type return_fake_gofs: bool, optional
-        :return: p-value
-        :rtype: float
-        """
+    def _get_pvalue(self, n_perm=1000, d_min=None):
         if self.gof is None:
             if d_min is not None:
                 _ = self.get_gof(d_min=d_min)
@@ -265,7 +264,38 @@ class EvaluatorBaseSample(EvaluatorBase):
                           f'precise result, increase n_mc!', stacklevel=2)
         self.pvalue = pvalue
 
-        if return_fake_gofs:
-            return pvalue, fake_gofs
-        else:
-            return pvalue
+        return pvalue, fake_gofs
+
+    def get_pvalue(self, n_perm=1000, d_min=None):
+        """p-value is calculated
+
+        Computes the p-value by means of re-sampling data sample
+        and reference sample. For each re-sampling, the gof is calculated.
+        The p-value can then be obtained from the distribution of these
+        fake-gofs.
+
+        :param n_perm: Number of fake-gofs calculated, defaults to 1000
+        :type n_perm: int, optional
+        :return: p-value
+        :rtype: float
+        """
+        pvalue, _ = self._get_pvalue(n_perm=n_perm, d_min=d_min)
+        return pvalue
+
+    def get_pvalue_return_fake_gofs(self, n_perm=1000, d_min=None):
+        """p-value is calculated
+
+        Computes the p-value by means of re-sampling data sample
+        and reference sample. For each re-sampling, the gof is calculated.
+        The p-value can then be obtained from the distribution of these
+        fake-gofs. The array of fake-gofs is returned together with
+        the p-value.
+
+        :param n_perm: Number of fake-gofs calculated, defaults to 1000
+        :type n_perm: int, optional
+
+        :return: p-value, fake_gofs
+        :rtype: float
+        """
+        pvalue, fake_gofs = self._get_pvalue(n_perm=n_perm, d_min=d_min)
+        return pvalue, fake_gofs
