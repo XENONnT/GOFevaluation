@@ -167,6 +167,8 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
     :param kwargs: kwargs are passed to the plot functions
     :raises ValueError: when an unknown order is passed.
     """
+    if order is None:
+        order = [0, 1]
     if bin_edges[0].shape == ():
         for line in bin_edges:
             ax.axvline(line, c=c, zorder=4, **kwargs)
@@ -200,7 +202,7 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
             i += 1
 
 
-def plot_equiprobable_histogram(data_sample, bin_edges, order,
+def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                 ax=None, cmap_midpoint=None, **kwargs):
     """Plot 2d histogram of data sample binned according to the passed
     irregular binning.
@@ -221,6 +223,8 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order,
     :type cmap_midpoint: float, optional
     :raises ValueError: when an unknown order is passed.
     """
+    if order is None:
+        order = [0, 1]
     if ax is None:
         _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
     ylim = ax.get_ylim()
@@ -229,7 +233,8 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order,
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
     # get colormap and norm for colorbar
-    cmap = mpl.cm.get_cmap('RdBu').reversed()
+    cmap_str = kwargs.get('cmap', 'RdBu_r')
+    cmap = mpl.cm.get_cmap(cmap_str)
     if cmap_midpoint is None:
         norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
     else:
