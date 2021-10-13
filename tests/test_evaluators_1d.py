@@ -8,6 +8,8 @@ from GOFevaluation import KSTestGOF
 from GOFevaluation import KSTestTwoSampleGOF
 from GOFevaluation import ADTestTwoSampleGOF
 from GOFevaluation import PointToPointGOF
+from GOFevaluation import BinnedPoissonChi2GOF
+from GOFevaluation import BinnedChi2GOF
 
 
 class TestKSTestGOF(unittest.TestCase):
@@ -121,6 +123,50 @@ class TestPvalues(unittest.TestCase):
             else:
                 p_value = gof_object.get_pvalue(n_perm=n_perm)
             self.assertTrue(p_value > .97)
+
+
+class TestBinnedPoissonChi2GOF(unittest.TestCase):
+    def test_bin_equiprobable(self):
+        """Test if from_binned and bin_equiprobable init give same result"""
+        n_data = 10
+        n_expected = 12
+        n_partitions = 5
+        data_sample = np.linspace(0, 1, n_data)
+        reference_sample = np.linspace(0, 1, int(10 * n_data))
+
+        binned_data = np.full(n_partitions, n_data / n_partitions)
+        binned_reference = np.full(n_partitions, n_expected / n_partitions)
+        gofclass_from_binned = BinnedPoissonChi2GOF.from_binned(
+            binned_data, binned_reference)
+        gof_from_binned = gofclass_from_binned.get_gof()
+
+        gofclass_bin_equiprobable = BinnedPoissonChi2GOF.bin_equiprobable(
+            data_sample, reference_sample, nevents_expected=n_expected,
+            n_partitions=n_partitions)
+        gof_bin_equiprobable = gofclass_bin_equiprobable.get_gof()
+        self.assertAlmostEqual(gof_bin_equiprobable, gof_from_binned, 10)
+
+
+class TestBinnedChi2GOF(unittest.TestCase):
+    def test_bin_equiprobable(self):
+        """Test if from_binned and bin_equiprobable init give same result"""
+        n_data = 10
+        n_expected = 12
+        n_partitions = 5
+        data_sample = np.linspace(0, 1, n_data)
+        reference_sample = np.linspace(0, 1, int(10 * n_data))
+
+        binned_data = np.full(n_partitions, n_data / n_partitions)
+        binned_reference = np.full(n_partitions, n_expected / n_partitions)
+        gofclass_from_binned = BinnedChi2GOF.from_binned(
+            binned_data, binned_reference)
+        gof_from_binned = gofclass_from_binned.get_gof()
+
+        gofclass_bin_equiprobable = BinnedChi2GOF.bin_equiprobable(
+            data_sample, reference_sample, nevents_expected=n_expected,
+            n_partitions=n_partitions)
+        gof_bin_equiprobable = gofclass_bin_equiprobable.get_gof()
+        self.assertAlmostEqual(gof_bin_equiprobable, gof_from_binned, 10)
 
 
 if __name__ == "__main__":

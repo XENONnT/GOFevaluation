@@ -124,7 +124,7 @@ class KSTestTwoSampleGOF(EvaluatorBaseSample):
     def calculate_gof(data_sample, reference_sample):
         """Internal function to calculate gof for :func:`get_gof`
         and :func:`get_pvalue`"""
-        gof = sps.ks_2samp(data_sample, reference_sample)[0]
+        gof = sps.ks_2samp(data_sample, reference_sample, mode='asymp')[0]
         return gof
 
     def get_gof(self):
