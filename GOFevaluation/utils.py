@@ -203,7 +203,7 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
-                                ax=None, cmap_midpoint=None, **kwargs):
+                                ax=None, nevents_expected=None, **kwargs):
     """Plot 2d histogram of data sample binned according to the passed
     irregular binning.
 
@@ -218,9 +218,11 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     :type order: list, optional
     :param ax: axis to plot to, if None: make new axis. Defaults to None.
     :type ax: matplotlib axis, optional
-    :param cmap_midpoint: midpoint of the colormap (i.e. expectation value),
-        defaults to None
-    :type cmap_midpoint: float, optional
+    :param nevents_expected: total number of expected events used for centering
+        the colormap around the expectation value per bin and giving the
+        z-axis in units of sigma-deviation from expectation. If None is passed,
+        cmap scale ranges from min to max. Defaults to None.
+    :type nevents_expected: float, optional
     :raises ValueError: when an unknown order is passed.
     """
     if order is None:
@@ -235,14 +237,17 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     # get colormap and norm for colorbar
     cmap_str = kwargs.get('cmap', 'RdBu_r')
     cmap = mpl.cm.get_cmap(cmap_str)
-    if cmap_midpoint is None:
+    if nevents_expected is None:
         norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
     else:
-        # delta = max(cmap_midpoint - ns.min(), ns.max() - cmap_midpoint)
-        # delta = max(.1, delta)  # .1 instead of 0
-        delta = 3 * np.sqrt(cmap_midpoint)
-        norm = mpl.colors.Normalize(
-            vmin=cmap_midpoint - delta, vmax=cmap_midpoint + delta)
+        n_bins = get_n_bins(bin_edges)
+        midpoint = nevents_expected / n_bins
+        # max deviation
+        delta = max(midpoint - ns.min(), ns.max() - midpoint)
+        sigma_deviation = delta / np.sqrt(midpoint)
+        norm = mpl.colors.Normalize(vmin=-sigma_deviation,
+                                    vmax=sigma_deviation)
+        ns = (ns - midpoint) / np.sqrt(midpoint)
 
     if len(data_sample.shape) == 1:
         i = 0
@@ -292,5 +297,18 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                 j += 1
             i += 1
     fig = mpl.pyplot.gcf()
+    if nevents_expected is None:
+        label = 'Counts per Bin'
+    else:
+        label = r'$\sigma$-deviation from expected'
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
-                 label='Counts per Bin')
+                 label=label)
+
+
+def get_n_bins(eqpb_bin_edges):
+    if isinstance(eqpb_bin_edges[0], float):
+        n_bins = len(eqpb_bin_edges) - 1
+    else:
+        n_bins = (eqpb_bin_edges[1].shape[0]
+                  * (eqpb_bin_edges[1].shape[1] - 1))
+    return n_bins
