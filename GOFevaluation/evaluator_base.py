@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
-from GOFevaluation import equiprobable_histogram, apply_irregular_binning
+from GOFevaluation import equiprobable_histogram, apply_irregular_binning, plot_equiprobable_histogram, check_sample_sanity
 
 
 class EvaluatorBase(object):
@@ -41,12 +41,14 @@ class EvaluatorBaseBinned(EvaluatorBase):
     """Evaluator base class for binned expectations reference input."""
 
     def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
+        check_sample_sanity(data_sample)
         super().__init__()
         self.pdf = pdf
         assert (isinstance(nevents_expected, int)
+                | isinstance(nevents_expected, np.int64)
                 | isinstance(nevents_expected, float)), \
             ('nevents_expected must be numeric but is of type '
-             + '{type(nevents_expected)}.')
+             + f'{type(nevents_expected)}.')
         self.binned_reference = self.pdf * nevents_expected
 
         if bin_edges is None:
@@ -79,10 +81,13 @@ class EvaluatorBaseBinned(EvaluatorBase):
 
     @classmethod
     def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
-                         n_partitions, order=None):
+                         n_partitions, order=None, plot=False, **kwargs):
         """Initialize with data and reference sample that are binned
         such that the expectation value is the same in each bin.
+        kwargs are passed to `plot_equiprobable_histogram` if plot is True.
         """
+        check_sample_sanity(data_sample)
+        check_sample_sanity(reference_sample)
         if len(reference_sample) < 50 * len(data_sample):
             warnings.warn(
                 f'Number of reference samples ({len(reference_sample)}) '
@@ -101,6 +106,13 @@ class EvaluatorBaseBinned(EvaluatorBase):
             data_sample=data_sample,
             bin_edges=bin_edges,
             order=order)
+
+        if plot:
+            plot_equiprobable_histogram(data_sample=data_sample,
+                                        bin_edges=bin_edges,
+                                        order=order,
+                                        nevents_expected=nevents_expected,
+                                        **kwargs)
 
         # bin_edges=None will set self.binned_data=binned_data
         # in the init
@@ -193,6 +205,7 @@ class EvaluatorBasePdf(EvaluatorBase):
     """Evaluator base class for sample data, binned pdf reference input."""
 
     def __init__(self, data_sample, pdf):
+        check_sample_sanity(data_sample)
         super().__init__()
         self.data_sample = data_sample
         self.pdf = pdf
@@ -207,6 +220,8 @@ class EvaluatorBaseSample(EvaluatorBase):
     """Evaluator base class for sample data and reference input."""
 
     def __init__(self, data_sample, reference_sample):
+        check_sample_sanity(data_sample)
+        check_sample_sanity(reference_sample)
         super().__init__()
         self.data_sample = data_sample
         self.reference_sample = reference_sample
