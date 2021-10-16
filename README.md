@@ -1,6 +1,7 @@
 # GOFevaluation
 Evaluate the Goodness-of-Fit (GoF) for binned or unbinned data.  
 ![Test package](https://github.com/XENONnT/GOFevaluation/actions/workflows/python-package.yml/badge.svg)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/XENONnT/GOFevaluation/HEAD)
 
 This GoF suite comprises the possibility to calculate different 1D / nD, binned / two-sample (unbinned) GoF measures and the corresponding p-value. A list of implemented measures is given below. 
 
