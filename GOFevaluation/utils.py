@@ -250,6 +250,10 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     # get colormap and norm for colorbar
     cmap_str = kwargs.get('cmap', 'RdBu_r')
     cmap = mpl.cm.get_cmap(cmap_str)
+    try:
+        kwargs.pop('cmap')
+    except KeyError:
+        pass
     if nevents_expected is None:
         norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
     else:
