@@ -33,7 +33,7 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    bin_edges = get_equiprobable_binning(
+    bin_edges = _get_equiprobable_binning(
         reference_sample=reference_sample, n_partitions=n_partitions,
         order=order)
     n = apply_irregular_binning(data_sample=data_sample,
@@ -47,7 +47,7 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     return n, bin_edges
 
 
-def get_equiprobable_binning(reference_sample, n_partitions, order=None):
+def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
     """Define an equiprobable binning for the reference sample. The binning
     is defined such that the number of counts in each bin are (almost) equal.
     Bins are defined based on the ECDF of the reference sample.
@@ -167,6 +167,8 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
     :param kwargs: kwargs are passed to the plot functions
     :raises ValueError: when an unknown order is passed.
     """
+    if order is None:
+        order = [0, 1]
     if bin_edges[0].shape == ():
         for line in bin_edges:
             ax.axvline(line, c=c, zorder=4, **kwargs)
@@ -200,9 +202,10 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
             i += 1
 
 
-def plot_equiprobable_histogram(data_sample, bin_edges, order,
-                                ax=None, cmap_midpoint=None, **kwargs):
-    """Plot 2d histogram of data sample binned according to the passed
+def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
+                                ax=None, nevents_expected=None, plot_xlim=None,
+                                plot_ylim=None, **kwargs):
+    """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
 
     :param data_sample: Sample of unbinned data.
@@ -216,28 +219,52 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order,
     :type order: list, optional
     :param ax: axis to plot to, if None: make new axis. Defaults to None.
     :type ax: matplotlib axis, optional
-    :param cmap_midpoint: midpoint of the colormap (i.e. expectation value),
-        defaults to None
-    :type cmap_midpoint: float, optional
+    :param nevents_expected: total number of expected events used for centering
+        the colormap around the expectation value per bin and giving the
+        z-axis in units of sigma-deviation from expectation. If None is passed,
+        cmap scale ranges from min to max. Defaults to None.
+    :type nevents_expected: float, optional
+    :param plot_xlim: xlim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_xlim: tuple, optional
+    :param plot_ylim: ylim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_ylim: tuple, optional
     :raises ValueError: when an unknown order is passed.
     """
+    if order is None:
+        order = [0, 1]
     if ax is None:
         _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
-    ylim = ax.get_ylim()
-    xlim = ax.get_xlim()
+    if (plot_xlim is None) or (plot_ylim is None):
+        xlim, ylim = get_plot_limits(data_sample)
+    if plot_xlim is not None:
+        xlim = plot_xlim
+    if plot_ylim is not None:
+        ylim = plot_ylim
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
     # get colormap and norm for colorbar
-    cmap = mpl.cm.get_cmap('RdBu').reversed()
-    if cmap_midpoint is None:
+    cmap_str = kwargs.get('cmap', 'RdBu_r')
+    cmap = mpl.cm.get_cmap(cmap_str)
+    try:
+        kwargs.pop('cmap')
+    except KeyError:
+        pass
+    if nevents_expected is None:
         norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
     else:
-        # delta = max(cmap_midpoint - ns.min(), ns.max() - cmap_midpoint)
-        # delta = max(.1, delta)  # .1 instead of 0
-        delta = 3 * np.sqrt(cmap_midpoint)
-        norm = mpl.colors.Normalize(
-            vmin=cmap_midpoint - delta, vmax=cmap_midpoint + delta)
+        n_bins = get_n_bins(bin_edges)
+        midpoint = nevents_expected / n_bins
+        # max deviation
+        delta = max(midpoint - ns.min(), ns.max() - midpoint)
+        sigma_deviation = delta / np.sqrt(midpoint)
+        norm = mpl.colors.Normalize(vmin=-sigma_deviation,
+                                    vmax=sigma_deviation)
+        ns = (ns - midpoint) / np.sqrt(midpoint)
 
     if len(data_sample.shape) == 1:
         i = 0
@@ -268,6 +295,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order,
 
         # plot rectangle for each bin
         i = 0
+        edgecolor = kwargs.get('edgecolor', 'k')
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
             for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
@@ -276,16 +304,47 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order,
                                     high_f - low_f,
                                     high_s - low_s,
                                     facecolor=cmap(norm(ns[i][j])),
+                                    edgecolor=edgecolor,
                                     **kwargs)
                 elif order == [1, 0]:
                     rec = Rectangle((low_s, low_f),
                                     high_s - low_s,
                                     high_f - low_f,
                                     facecolor=cmap(norm(ns[i][j])),
+                                    edgecolor=edgecolor,
                                     **kwargs)
                 ax.add_patch(rec)
                 j += 1
             i += 1
     fig = mpl.pyplot.gcf()
+    if nevents_expected is None:
+        label = 'Counts per Bin'
+    else:
+        label = r'$\sigma$-deviation from expectation'
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
-                 label='Counts per Bin')
+                 label=label)
+
+
+def get_n_bins(eqpb_bin_edges):
+    if isinstance(eqpb_bin_edges[0], float):
+        n_bins = len(eqpb_bin_edges) - 1
+    else:
+        n_bins = (eqpb_bin_edges[1].shape[0]
+                  * (eqpb_bin_edges[1].shape[1] - 1))
+    return n_bins
+
+
+def get_plot_limits(data_sample):
+    if len(data_sample.shape) == 1:
+        xlim = (min(data_sample), max(data_sample))
+        ylim = None
+    else:
+        xlim = (min(data_sample.T[0]), max(data_sample.T[0]))
+        ylim = (min(data_sample.T[1]), max(data_sample.T[1]))
+
+    return xlim, ylim
+
+
+def check_sample_sanity(sample):
+    assert ~np.isnan(sample).any(), 'Sample contains NaN entries!'
+    assert ~np.isinf(sample).any(), 'Sample contains inf values!'

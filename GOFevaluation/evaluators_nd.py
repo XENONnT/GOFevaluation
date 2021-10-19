@@ -143,7 +143,10 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
     @staticmethod
     def calculate_gof(binned_data, binned_reference):
         """Get Chi2 GoF from binned data & expectations
-        # """
+        """
+        assert (binned_reference > 0).all(), ("binned_reference contains "
+                                              + "entries of zero that would "
+                                              + "cause an infinite GOF value!")
         if binned_reference.min() / binned_reference.max() < 1 / 100:
             warnings.warn(
                 'Binned reference contains bin counts ranging over '
