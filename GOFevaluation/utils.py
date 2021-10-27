@@ -324,6 +324,291 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                  label=label)
 
+def plot_equiprobable_histogram_numhits(data_sample, bin_edges, order=None,
+                                ax=None, nevents_expected=None, plot_xlim=None,
+                                plot_ylim=None, **kwargs):
+    """Plot 1d/2d histogram of data sample binned according to the passed
+    irregular binning. With total number of hits rather than deviation from exp
+
+    :param data_sample: Sample of unbinned data.
+    :type data_sample: array
+    :param bin_edges: Array of bin edges
+    :type bin_edges: array
+    :param order: Order in which the partitioning is performed
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
+    :type order: list, optional
+    :param ax: axis to plot to, if None: make new axis. Defaults to None.
+    :type ax: matplotlib axis, optional
+    :param nevents_expected: total number of expected events used for centering
+        the colormap around the expectation value per bin and giving the
+        z-axis in units of sigma-deviation from expectation. If None is passed,
+        cmap scale ranges from min to max. Defaults to None.
+    :type nevents_expected: float, optional
+    :param plot_xlim: xlim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_xlim: tuple, optional
+    :param plot_ylim: ylim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_ylim: tuple, optional
+    :raises ValueError: when an unknown order is passed.
+    """
+    if order is None:
+        order = [0, 1]
+    if ax is None:
+        _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
+    if (plot_xlim is None) or (plot_ylim is None):
+        xlim, ylim = get_plot_limits(data_sample)
+    if plot_xlim is not None:
+        xlim = plot_xlim
+    if plot_ylim is not None:
+        ylim = plot_ylim
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
+    ns = apply_irregular_binning(data_sample, bin_edges, order=order)
+
+    # get colormap and norm for colorbar
+    cmap_str = kwargs.get('cmap', 'RdBu_r')
+    cmap = mpl.cm.get_cmap(cmap_str)
+    try:
+        kwargs.pop('cmap')
+    except KeyError:
+        pass
+    if nevents_expected is None:
+        norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
+    else:
+        n_bins = get_n_bins(bin_edges)
+        midpoint = nevents_expected / n_bins
+        # max deviation
+        vmin=np.min([np.min(ns),0])
+        vmax=np.max(ns)
+        
+        norm = mpl.colors.Normalize(vmin,vmax)
+
+    if len(data_sample.shape) == 1:
+        i = 0
+        bin_edges[0] = xlim[0]
+        bin_edges[-1] = xlim[1]
+        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+            rec = Rectangle((low, 0), high - low, 1,
+                            facecolor=cmap(norm(ns[i])),
+                            **kwargs)
+            ax.add_patch(rec)
+            i += 1
+    else:
+        be_first = bin_edges[0].copy()
+        be_second = bin_edges[1].copy()
+
+        if order == [0, 1]:
+            be_first[be_first == -np.inf] = xlim[0]
+            be_first[be_first == np.inf] = xlim[1]
+            be_second[be_second == -np.inf] = ylim[0]
+            be_second[be_second == np.inf] = ylim[1]
+        elif order == [1, 0]:
+            be_first[be_first == -np.inf] = ylim[0]
+            be_first[be_first == np.inf] = ylim[1]
+            be_second[be_second == -np.inf] = xlim[0]
+            be_second[be_second == np.inf] = xlim[1]
+        else:
+            raise ValueError(f'order {order} is not defined.')
+
+        # plot rectangle for each bin
+        i = 0
+        edgecolor = kwargs.get('edgecolor', 'k')
+        for low_f, high_f in zip(be_first[:-1], be_first[1:]):
+            j = 0
+            for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
+                if order == [0, 1]:
+                    rec = Rectangle((low_f, low_s),
+                                    high_f - low_f,
+                                    high_s - low_s,
+                                    facecolor=cmap(norm(ns[i][j])),
+                                    edgecolor=edgecolor,
+                                    **kwargs)
+                elif order == [1, 0]:
+                    rec = Rectangle((low_s, low_f),
+                                    high_s - low_s,
+                                    high_f - low_f,
+                                    facecolor=cmap(norm(ns[i][j])),
+                                    edgecolor=edgecolor,
+                                    **kwargs)
+                ax.add_patch(rec)
+                j += 1
+            i += 1
+    fig = mpl.pyplot.gcf()
+    if nevents_expected is None:
+        label = 'Counts per Bin'
+    else:
+        label = r'Detections per bin, expected '+str(midpoint)
+    fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
+                 label=label)
+
+
+def plot_equiprobable_histogram_hitdensity(data_sample, bin_edges, order=None,
+                                ax=None, nevents_expected=None, plot_xlim=None,
+                                plot_ylim=None, **kwargs):
+    """Plot 1d/2d histogram of data sample binned according to the passed
+    irregular binning. With number of hits per bin area rather than deviation from exp
+
+    :param data_sample: Sample of unbinned data.
+    :type data_sample: array
+    :param bin_edges: Array of bin edges
+    :type bin_edges: array
+    :param order: Order in which the partitioning is performed
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
+    :type order: list, optional
+    :param ax: axis to plot to, if None: make new axis. Defaults to None.
+    :type ax: matplotlib axis, optional
+    :param nevents_expected: total number of expected events used for centering
+        the colormap around the expectation value per bin and giving the
+        z-axis in units of sigma-deviation from expectation. If None is passed,
+        cmap scale ranges from min to max. Defaults to None.
+    :type nevents_expected: float, optional
+    :param plot_xlim: xlim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_xlim: tuple, optional
+    :param plot_ylim: ylim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_ylim: tuple, optional
+    :raises ValueError: when an unknown order is passed.
+    """
+    if order is None:
+        order = [0, 1]
+    if ax is None:
+        _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
+    if (plot_xlim is None) or (plot_ylim is None):
+        xlim, ylim = get_plot_limits(data_sample)
+    if plot_xlim is not None:
+        xlim = plot_xlim
+    if plot_ylim is not None:
+        ylim = plot_ylim
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
+    ns = apply_irregular_binning(data_sample, bin_edges, order=order)
+    ns=np.array(ns,dtype=float)
+
+    # get colormap and norm for colorbar
+    cmap_str = kwargs.get('cmap', 'RdBu_r')
+    cmap = mpl.cm.get_cmap(cmap_str)
+    try:
+        kwargs.pop('cmap')
+    except KeyError:
+        pass
+    if nevents_expected is None:
+        norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
+    else:
+        n_bins = get_n_bins(bin_edges)
+        midpoint = (nevents_expected/((xlim[1]-xlim[0])*(ylim[1]-ylim[0])) )/ n_bins
+        # max deviation
+        vmin=np.min([np.min(ns),0])
+        vmax=np.max(ns)
+        
+        
+        
+    if len(data_sample.shape) == 1:
+        i=0
+        bin_edges[0] = xlim[0]
+        bin_edges[-1] = xlim[1]
+        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+            rec = Rectangle((low, 0), high - low, 1,
+                            facecolor=cmap(norm(ns[i])),
+                            **kwargs)
+            ns[i]=ns[i]/(high-low)
+            i+=1
+    else:
+        be_first = bin_edges[0].copy()
+        be_second = bin_edges[1].copy()
+
+        if order == [0, 1]:
+            be_first[be_first == -np.inf] = xlim[0]
+            be_first[be_first == np.inf] = xlim[1]
+            be_second[be_second == -np.inf] = ylim[0]
+            be_second[be_second == np.inf] = ylim[1]
+        elif order == [1, 0]:
+            be_first[be_first == -np.inf] = ylim[0]
+            be_first[be_first == np.inf] = ylim[1]
+            be_second[be_second == -np.inf] = xlim[0]
+            be_second[be_second == np.inf] = xlim[1]
+        else:
+            raise ValueError(f'order {order} is not defined.')
+
+        # plot rectangle for each bin
+        i = 0
+        edgecolor = kwargs.get('edgecolor', 'k')
+        for low_f, high_f in zip(be_first[:-1], be_first[1:]):
+            j = 0
+            for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
+                    ns[i][j]=ns[i][j]/((high_f-low_f)*(high_s-low_s))
+                    j += 1
+            i += 1
+        
+    vmin=np.min([np.min(ns),0])
+    vmax=np.max(ns)
+    norm = mpl.colors.Normalize(vmin,vmax)
+
+    if len(data_sample.shape) == 1:
+        i = 0
+        bin_edges[0] = xlim[0]
+        bin_edges[-1] = xlim[1]
+        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+            rec = Rectangle((low, 0), high - low, 1,
+                            facecolor=cmap(norm(ns[i])),
+                            **kwargs)
+            ax.add_patch(rec)
+            i += 1
+    else:
+        be_first = bin_edges[0].copy()
+        be_second = bin_edges[1].copy()
+
+        if order == [0, 1]:
+            be_first[be_first == -np.inf] = xlim[0]
+            be_first[be_first == np.inf] = xlim[1]
+            be_second[be_second == -np.inf] = ylim[0]
+            be_second[be_second == np.inf] = ylim[1]
+        elif order == [1, 0]:
+            be_first[be_first == -np.inf] = ylim[0]
+            be_first[be_first == np.inf] = ylim[1]
+            be_second[be_second == -np.inf] = xlim[0]
+            be_second[be_second == np.inf] = xlim[1]
+        else:
+            raise ValueError(f'order {order} is not defined.')
+
+        # plot rectangle for each bin
+        i = 0
+        edgecolor = kwargs.get('edgecolor', 'k')
+        for low_f, high_f in zip(be_first[:-1], be_first[1:]):
+            j = 0
+            for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
+                if order == [0, 1]:
+                    rec = Rectangle((low_f, low_s),
+                                    high_f - low_f,
+                                    high_s - low_s,
+                                    facecolor=cmap(norm(ns[i][j])),
+                                    edgecolor=edgecolor,
+                                    **kwargs)
+                elif order == [1, 0]:
+                    rec = Rectangle((low_s, low_f),
+                                    high_s - low_s,
+                                    high_f - low_f,
+                                    facecolor=cmap(norm(ns[i][j])),
+                                    edgecolor=edgecolor,
+                                    **kwargs)
+                ax.add_patch(rec)
+                j += 1
+            i += 1
+    fig = mpl.pyplot.gcf()
+    if nevents_expected is None:
+        label = 'Counts per Bin'
+    else:
+        label = r'Detection density, average '+str(round(midpoint,4))
+    fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
+                 label=label)
+
 
 def get_n_bins(eqpb_bin_edges):
     if isinstance(eqpb_bin_edges[0], float):
