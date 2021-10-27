@@ -79,12 +79,15 @@ class EvaluatorBaseBinned(EvaluatorBase):
                    bin_edges=None,
                    nevents_expected=np.sum(binned_reference))
 
+
     @classmethod
     def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
                          n_partitions, order=None, plot=False, **kwargs):
         """Initialize with data and reference sample that are binned
         such that the expectation value is the same in each bin.
         kwargs are passed to `plot_equiprobable_histogram` if plot is True.
+        for plotnumhits, the total number of hits will be plotted via 'plot_equiprobable_histogram_numhits'
+        for plotnumhitdensity, the total number of hits per bin area will be plotted via 'plot_equiprobable_histogram_hitdensity'
         """
         check_sample_sanity(data_sample)
         check_sample_sanity(reference_sample)
@@ -120,6 +123,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
                    pdf=pdf,
                    bin_edges=None,
                    nevents_expected=nevents_expected)
+
 
     def bin_data(self, data_sample, bin_edges):
         """function to bin nD data sample"""
