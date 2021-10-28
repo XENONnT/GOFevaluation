@@ -4,3 +4,5 @@ sklearn
 matplotlib
 flake8
 pytest
+coverage
+coveralls
