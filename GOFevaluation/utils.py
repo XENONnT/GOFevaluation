@@ -63,10 +63,10 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
-    :return: Returns bin_edges. 
+    :return: Returns bin_edges.
         1D: list of bin edges
-        2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x) 
-        respectively. bin_edges[1] is a list of bin edges corresponding to the 
+        2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
+        respectively. bin_edges[1] is a list of bin edges corresponding to the
         partitions defined in bin_edges[0].
     :rtype: list of arrays
     :raises ValueError: when an unknown order is passed.
