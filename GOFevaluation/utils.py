@@ -437,9 +437,9 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
 
     fig = mpl.pyplot.gcf()
     if(plot_mode == 'count_density'):
-        label = r'Hits per area in each bin'
+        label = r'Counts per area in each bin'
     elif(plot_mode == 'num_counts'):
-        label = r'Number of hits in each bin'
+        label = r'Number of counts in each bin'
     else:
         if nevents_expected is None:
             label = 'Counts per Bin'
