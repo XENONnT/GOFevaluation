@@ -1,7 +1,10 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
-from GOFevaluation import equiprobable_histogram, apply_irregular_binning, plot_equiprobable_histogram, check_sample_sanity
+from GOFevaluation import equiprobable_histogram
+from GOFevaluation import apply_irregular_binning
+from GOFevaluation import plot_equiprobable_histogram
+from GOFevaluation import check_sample_sanity
 
 
 class EvaluatorBase(object):
@@ -79,15 +82,15 @@ class EvaluatorBaseBinned(EvaluatorBase):
                    bin_edges=None,
                    nevents_expected=np.sum(binned_reference))
 
-
     @classmethod
     def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
-                         n_partitions, order=None, plot=False, **kwargs):
+                         n_partitions, order=None, plot=False,
+                         plot_mode='sigma_deviation', **kwargs):
         """Initialize with data and reference sample that are binned
         such that the expectation value is the same in each bin.
-        kwargs are passed to `plot_equiprobable_histogram` if plot is True.
-        for plotnumhits, the total number of hits will be plotted via 'plot_equiprobable_histogram_numhits'
-        for plotnumhitdensity, the total number of hits per bin area will be plotted via 'plot_equiprobable_histogram_hitdensity'
+        kwargs are passed to `plot_equiprobable_histogram`
+        if plot is True.
+        'plotmode' can be set to num_counts or count_density
         """
         check_sample_sanity(data_sample)
         check_sample_sanity(reference_sample)
@@ -115,6 +118,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
                                         bin_edges=bin_edges,
                                         order=order,
                                         nevents_expected=nevents_expected,
+                                        plot_mode=plot_mode,
                                         **kwargs)
 
         # bin_edges=None will set self.binned_data=binned_data
@@ -123,7 +127,6 @@ class EvaluatorBaseBinned(EvaluatorBase):
                    pdf=pdf,
                    bin_edges=None,
                    nevents_expected=nevents_expected)
-
 
     def bin_data(self, data_sample, bin_edges):
         """function to bin nD data sample"""
