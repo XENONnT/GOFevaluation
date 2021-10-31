@@ -70,7 +70,7 @@ def limit_bin_edges(bin_edges, data_sample, order):
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :return: Returns bin_edges.
-            1D: list of bin edges
+        1D: list of bin edges
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
         respectively. bin_edges[1] is a list of bin edges corresponding to the
         partitions defined in bin_edges[0].
@@ -125,7 +125,7 @@ def density_modifier(ns, be_first, be_second, data_sample):
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :return: Returns bin_edges.
-            1D: list of bin edges
+        1D: list of bin edges
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
         respectively. bin_edges[1] is a list of bin edges corresponding to the
         partitions defined in bin_edges[0].
@@ -167,7 +167,7 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :return: Returns bin_edges.
-            1D: list of bin edges
+        1D: list of bin edges
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
         respectively. bin_edges[1] is a list of bin edges corresponding to the
         partitions defined in bin_edges[0].
