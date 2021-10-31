@@ -85,7 +85,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
     @classmethod
     def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
                          n_partitions, order=None, plot=False,
-                         plot_mode='sigma_deviation', **kwargs):
+                         **kwargs):
         """Initialize with data and reference sample that are binned
         such that the expectation value is the same in each bin.
         kwargs are passed to `plot_equiprobable_histogram`
@@ -118,7 +118,6 @@ class EvaluatorBaseBinned(EvaluatorBase):
                                         bin_edges=bin_edges,
                                         order=order,
                                         nevents_expected=nevents_expected,
-                                        plot_mode=plot_mode,
                                         **kwargs)
 
         # bin_edges=None will set self.binned_data=binned_data
