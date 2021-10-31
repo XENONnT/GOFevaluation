@@ -49,14 +49,11 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     return n, bin_edges
 
 
-def limit_bin_edges(bin_edges, data_sample, order):
-    """Creates limits for the edges of bins. Normally, bins
-    at the borders are infinite, this allows for all possible
-    datapoints to be binned. However, this makes it impossible
-    to calculate the areas of these border bins, and to show the
-    edges of these bins in a plot. This function uses the limits
-    and data_sample to limit the total area of all of the bins
-    so that they can be plotted and their area can be measured.
+def get_finite_bin_edges(bin_edges, data_sample, order):
+    """Replaces infinite values in bin_edges with finite
+    values determined such that the bins encompass all
+    the counts in data_sample. Necessary for plotting
+    and for determining bin area.
 
     :param bin_edges: list of bin_edges,
     probably form _get_equiprobable_binning
@@ -103,14 +100,9 @@ def limit_bin_edges(bin_edges, data_sample, order):
     return be
 
 
-def density_modifier(ns, be_first, be_second, data_sample):
-    """Creates limits for the edges of bins. Normally, bins
-    at the borders are infinite, this allows for all possible
-    datapoints to be binned. However, this makes it impossible
-    to calculate the areas of these border bins, and to show the
-    edges of these bins in a plot. This function uses the limits
-    and data_sample to limit the total area of all of the bins
-    so that they can be plotted and their area can be measured.
+def get_count_density(ns, be_first, be_second, data_sample):
+    """Measures the area of each bin and scales the counts in
+    that bin by the inverse of that area.
 
     :param be_first: list of bin_edges in the first dimension,
     :type be_first: array
@@ -137,7 +129,6 @@ def density_modifier(ns, be_first, be_second, data_sample):
             ns[i] = ns[i]/(high-low)
             i += 1
     else:
-        # plot rectangle for each bin
         i = 0
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
@@ -310,7 +301,7 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                 ax=None, nevents_expected=None, plot_xlim=None,
-                                plot_ylim=None, plot_mode='sigma_deviation',
+                                plot_ylim=None,
                                 **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
@@ -331,16 +322,15 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         z-axis in units of sigma-deviation from expectation. If None is passed,
         cmap scale ranges from min to max. Defaults to None.
     :type nevents_expected: float, optional
-    :param plot_mode: sets the plotting schedule. defaults to sigma_deviation.
-        can be set to 'num_counts' or 'count_density' (if not one of these,
-        sigma_deviation method ) will be used.
-    :type: string 'num_counts' or string 'count_density'
+    :param plot_mode: sets the plotting schedule. Defaults to sigma_deviation
+        which shows the deviation of the counts in each bin from expected.
+        Can be set to 'num_counts' to plot the total number of counts in each
+        bin or 'count_density' to show the counts scaled by the inverse of the
+        area of the bin, throws error if set to other value
+    :type: string
     :param plot_xlim: xlim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_xlim: tuple, optional
-    :param plot_ylim: ylim to use for the plot. If None is passed, take min and
-        max values of the data sample. Defaults to None.
-    :type plot_ylim: tuple, optional
     :param plot_ylim: ylim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_ylim: tuple, optional
@@ -359,24 +349,34 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
+    plot_mode = 'sigma_deviation'
+    try:
+        plot_mode = kwargs.pop('plot_mode')
+    except KeyError:
+        pass
+
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
     ns = np.array(ns, dtype=float)
 
-    be = limit_bin_edges(bin_edges, data_sample, order)
+    be = get_finite_bin_edges(bin_edges, data_sample, order)
     be_first = be[0]
     be_second = be[1]
 
-    # get colormap and norm for colorbar
-    cmap_str = kwargs.get('cmap', 'RdBu_r')
-    cmap = mpl.cm.get_cmap(cmap_str)
-
-    if(plot_mode == 'count_density'):
-        ns = density_modifier(ns, be_first, be_second, data_sample)
+    if(plot_mode == 'sigma_deviation'):
+        cmap_str = kwargs.get('cmap', 'RdBu_r')
+        cmap = mpl.cm.get_cmap(cmap_str)
+        if nevents_expected is None:
+            raise ValueError('nevents_expected cannot ' +
+                             'be None while plot_mode=\'sigma_deviation\'')
+    elif(plot_mode == 'count_density'):
+        ns = get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.get('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
-    if(plot_mode == 'num_counts'):
+    elif(plot_mode == 'num_counts'):
         cmap_str = kwargs.get('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
+    else:
+        raise ValueError(f'plot_mode {plot_mode} is not defined.')
 
     try:
         kwargs.pop('cmap')
@@ -436,15 +436,16 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
             i += 1
 
     fig = mpl.pyplot.gcf()
-    if(plot_mode == 'count_density'):
+
+    if(plot_mode == 'sigma_deviation'):
+        label = r'$\sigma$-deviation from expectation'
+    elif(plot_mode == 'count_density'):
         label = r'Counts per area in each bin'
     elif(plot_mode == 'num_counts'):
-        label = r'Number of counts in each bin'
+        label = r'Number of counts in eace bin'
     else:
-        if nevents_expected is None:
-            label = 'Counts per Bin'
-        else:
-            label = r'$\sigma$-deviation from expectation'
+        raise ValueError(f'plot_mode {plot_mode} is not defined.')
+
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                  label=label)
     return
