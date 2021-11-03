@@ -49,7 +49,7 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     return n, bin_edges
 
 
-def get_finite_bin_edges(bin_edges, data_sample, order):
+def _get_finite_bin_edges(bin_edges, data_sample, order):
     """Replaces infinite values in bin_edges with finite
     values determined such that the bins encompass all
     the counts in data_sample. Necessary for plotting
@@ -100,7 +100,7 @@ def get_finite_bin_edges(bin_edges, data_sample, order):
     return be
 
 
-def get_count_density(ns, be_first, be_second, data_sample):
+def _get_count_density(ns, be_first, be_second, data_sample):
     """Measures the area of each bin and scales the counts in
     that bin by the inverse of that area.
 
