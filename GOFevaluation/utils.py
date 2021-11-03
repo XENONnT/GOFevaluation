@@ -363,16 +363,19 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     be_second = be[1]
 
     if(plot_mode == 'sigma_deviation'):
+        label = r'$\sigma$-deviation from expectation'
         cmap_str = kwargs.get('cmap', 'RdBu_r')
         cmap = mpl.cm.get_cmap(cmap_str)
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot ' +
                              'be None while plot_mode=\'sigma_deviation\'')
     elif(plot_mode == 'count_density'):
+        label = r'Counts per area in each bin'
         ns = get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.get('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
     elif(plot_mode == 'num_counts'):
+        label = r'Number of counts in eace bin'
         cmap_str = kwargs.get('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
     else:
@@ -436,15 +439,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
             i += 1
 
     fig = mpl.pyplot.gcf()
-
-    if(plot_mode == 'sigma_deviation'):
-        label = r'$\sigma$-deviation from expectation'
-    elif(plot_mode == 'count_density'):
-        label = r'Counts per area in each bin'
-    elif(plot_mode == 'num_counts'):
-        label = r'Number of counts in eace bin'
-    else:
-        raise ValueError(f'plot_mode {plot_mode} is not defined.')
 
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                  label=label)
