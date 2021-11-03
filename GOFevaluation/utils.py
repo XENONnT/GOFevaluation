@@ -353,46 +353,38 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     be_first = be[0]
     be_second = be[1]
 
+
     if(plot_mode == 'sigma_deviation'):
         label = r'$\sigma$-deviation from expectation'
-        cmap_str = kwargs.get('cmap', 'RdBu_r')
+        cmap_str = kwargs.pop('cmap', 'RdBu_r')
         cmap = mpl.cm.get_cmap(cmap_str)
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot ' +
                              'be None while plot_mode=\'sigma_deviation\'')
-    elif(plot_mode == 'count_density'):
-        label = r'Counts per area in each bin'
-        ns = _get_count_density(ns, be_first, be_second, data_sample)
-        cmap_str = kwargs.get('cmap', 'viridis')
-        cmap = mpl.cm.get_cmap(cmap_str)
-    elif(plot_mode == 'num_counts'):
-        label = r'Number of counts in eace bin'
-        cmap_str = kwargs.get('cmap', 'viridis')
-        cmap = mpl.cm.get_cmap(cmap_str)
-    else:
-        raise ValueError(f'plot_mode {plot_mode} is not defined.')
-
-    try:
-        kwargs.pop('cmap')
-    except KeyError:
-        pass
-
-    if nevents_expected is None:
-        norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
-    else:
-        n_bins = get_n_bins(bin_edges)
-        # max deviation
-
-        if(plot_mode == 'count_density' or plot_mode == 'num_counts'):
-            norm = mpl.colors.Normalize(vmin=np.min(ns),
-                                        vmax=np.max(ns))
         else:
+            n_bins = get_n_bins(bin_edges)
             midpoint = nevents_expected / n_bins
             delta = max(midpoint - ns.min(), ns.max() - midpoint)
             sigma_deviation = delta / np.sqrt(midpoint)
             ns = (ns - midpoint) / np.sqrt(midpoint)
             norm = mpl.colors.Normalize(vmin=-sigma_deviation,
                                         vmax=sigma_deviation)
+    elif(plot_mode == 'count_density'):
+        label = r'Counts per area in each bin'
+        ns = _get_count_density(ns, be_first, be_second, data_sample)
+        cmap_str = kwargs.pop('cmap', 'viridis')
+        cmap = mpl.cm.get_cmap(cmap_str)
+        norm = mpl.colors.Normalize(vmin=np.min(ns),
+                                    vmax=np.max(ns))
+    elif(plot_mode == 'num_counts'):
+        label = r'Number of counts in eace bin'
+        cmap_str = kwargs.pop('cmap', 'viridis')
+        cmap = mpl.cm.get_cmap(cmap_str)
+        norm = mpl.colors.Normalize(vmin=np.min(ns),
+                                    vmax=np.max(ns))
+    else:
+        raise ValueError(f'plot_mode {plot_mode} is not defined.')
+
 
     if len(data_sample.shape) == 1:
         i = 0
