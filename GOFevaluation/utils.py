@@ -293,7 +293,7 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                 ax=None, nevents_expected=None, plot_xlim=None,
-                                plot_ylim=None,
+                                plot_ylim=None, plot_mode='sigma_deviation',
                                 **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
@@ -340,12 +340,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
-    plot_mode = 'sigma_deviation'
-    try:
-        plot_mode = kwargs.pop('plot_mode')
-    except KeyError:
-        pass
-
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
     ns = np.array(ns, dtype=float)
 
@@ -383,7 +377,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                     vmax=np.max(ns))
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
-e
+
     if len(data_sample.shape) == 1:
         i = 0
         bin_edges[0] = xlim[0]
