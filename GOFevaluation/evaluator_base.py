@@ -90,7 +90,6 @@ class EvaluatorBaseBinned(EvaluatorBase):
         such that the expectation value is the same in each bin.
         kwargs are passed to `plot_equiprobable_histogram`
         if plot is True.
-        'plotmode' can be set to num_counts or count_density
         """
         check_sample_sanity(data_sample)
         check_sample_sanity(reference_sample)
