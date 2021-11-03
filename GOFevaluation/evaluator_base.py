@@ -90,6 +90,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
         such that the expectation value is the same in each bin.
         kwargs are passed to `plot_equiprobable_histogram`
         if plot is True.
+        'plotmode' can be set to num_counts or count_density
         """
         check_sample_sanity(data_sample)
         check_sample_sanity(reference_sample)
@@ -113,10 +114,15 @@ class EvaluatorBaseBinned(EvaluatorBase):
             order=order)
 
         if plot:
+            try:
+                plot_mode = kwargs.pop('plot_mode')
+            except KeyError:
+                pass
             plot_equiprobable_histogram(data_sample=data_sample,
                                         bin_edges=bin_edges,
                                         order=order,
                                         nevents_expected=nevents_expected,
+                                        plot_mode=plot_mode,
                                         **kwargs)
 
         # bin_edges=None will set self.binned_data=binned_data
