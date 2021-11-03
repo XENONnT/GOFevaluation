@@ -353,7 +353,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     be_first = be[0]
     be_second = be[1]
 
-
     if(plot_mode == 'sigma_deviation'):
         label = r'$\sigma$-deviation from expectation'
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
@@ -384,8 +383,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                     vmax=np.max(ns))
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
-
-
+e
     if len(data_sample.shape) == 1:
         i = 0
         bin_edges[0] = xlim[0]
