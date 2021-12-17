@@ -45,6 +45,7 @@ python setup.py install --user
 You are now good to go!
 
 ## Usage
+The best way to start with the `GOFevaluation` package is to have a look at the tutorial notebook, but the general use cases are also summarized below.
 ### Individual GoF Measures
 Depending on your data and reference input you can initialise a `gof_object` in one of the following ways:
 ```python
@@ -92,27 +93,38 @@ gof_object.get_gofs(d_min=d_min)
 # OUTPUT:
 # OrderedDict([('ADTestTwoSampleGOF', 1.6301454042304904),
 #              ('KSTestTwoSampleGOF', 0.14),
-#              ('PointToPointGOF', 0.00048491049630050576)])
+#              ('PointToPointGOF', -0.7324060759792504)])
 
 gof_object.get_pvalues(d_min=d_min)
 # OUTPUT:
 # OrderedDict([('ADTestTwoSampleGOF', 0.08699999999999997),
 #              ('KSTestTwoSampleGOF', 0.10699999999999998),
-#              ('PointToPointGOF', 0.14300000000000002)])
+#              ('PointToPointGOF', 0.31200000000000006)])
 
 # Re-calculate p-value only for one measure:
-gof_object.get_pvalues(d_min=.3, gof_list=['PointToPointGOF'])
+gof_object.get_pvalues(d_min=.001, gof_list=['PointToPointGOF'])
 # OUTPUT:
 # OrderedDict([('ADTestTwoSampleGOF', 0.08699999999999997),
 #              ('KSTestTwoSampleGOF', 0.10699999999999998),
-#              ('PointToPointGOF', 0.03400000000000003)])
+#              ('PointToPointGOF', 0.128)])
 
 print(gof_object)
 # OUTPUT:
 # GOFevaluation.gof_test
-# GoF measures: ADTestTwoSampleGOF, KSTestTwoSampleGOF, PointToPointGOF
-# gofs = 1.6301454042304904, 0.14, 0.00048491049630050576
-# p-values = 0.08699999999999997, 0.10699999999999998, 0.03400000000000003
+# GOF measures: ADTestTwoSampleGOF, KSTestTwoSampleGOF, PointToPointGOF
+
+
+# ADTestTwoSampleGOF
+# gof = 1.6301454042304904
+# p-value = 0.08499999999999996
+
+# KSTestTwoSampleGOF
+# gof = 0.13999999999999996
+# p-value = 0.09799999999999998
+
+# PointToPointGOF
+# gof = -0.7324060759792504
+# p-value = 0.128
 ```
 
 
