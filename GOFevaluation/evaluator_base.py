@@ -22,9 +22,9 @@ class EvaluatorBase(object):
 
     def __str__(self):
         args = [self._name]
-        if self.gof:
+        if self.gof is not None:
             args.append(f'gof = {self.gof}')
-        if self.pvalue:
+        if self.pvalue is not None:
             args.append(f'p-value = {self.pvalue}')
         args_str = "\n".join(args)
         return f'{self.__class__.__module__}\n{args_str}'
@@ -171,7 +171,6 @@ class EvaluatorBaseBinned(EvaluatorBase):
                           f'{self.gof:.2e}, minimum of simulated GoFs: '
                           f'{min(fake_gofs):.2e}). For a more '
                           f'precise result, increase n_mc!', stacklevel=2)
-
         self.pvalue = pvalue
         return pvalue, fake_gofs
 
