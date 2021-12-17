@@ -20,9 +20,9 @@ class EvaluatorBase(object):
 
     def __str__(self):
         args = [self._name]
-        if self.gof:
+        if self.gof is not None:
             args.append(f'gof = {self.gof}')
-        if self.pvalue:
+        if self.pvalue is not None:
             args.append(f'p-value = {self.pvalue}')
         args_str = "\n".join(args)
         return f'{self.__class__.__module__}\n{args_str}'
