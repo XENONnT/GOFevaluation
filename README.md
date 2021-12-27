@@ -47,7 +47,7 @@ python setup.py install --user
 You are now good to go!
 
 ## Usage
-The best way to start with the `GOFevaluation` package is to have a look at the tutorial notebook, but the general use cases are also summarized below.
+The best way to start with the `GOFevaluation` package is to have a look at the tutorial notebook. If you click on the mybinder badge, you can execute the interactive notebook and give it a try yourself! 
 ### Individual GoF Measures
 Depending on your data and reference input you can initialise a `gof_object` in one of the following ways:
 ```python
