@@ -30,7 +30,7 @@ class TestKSTestGOF(unittest.TestCase):
                               kind='cubic')
 
         # Calculate GoF 'by hand'
-        ecdf = np.arange(n_samples+1, dtype=float)/n_samples
+        ecdf = np.arange(n_samples + 1, dtype=float) / n_samples
         dn = np.abs(interp_cdf(np.sort(data)) - ecdf[:-1])
 
         # Calculate GoF
@@ -104,9 +104,9 @@ class TestPvalues(unittest.TestCase):
     def test_two_sample_value(self):
         """Test if p-value for two identical samples is 1."""
         # Fixed Standard Normal distributed data
-        data = np.array([-0.80719796,  0.39138662,  0.12886947, -0.4383365,
-                         0.88404481, 0.98167819,  1.22302837,  0.1138414,
-                         0.45974904,  0.48926863])
+        data = np.array([-0.80719796, 0.39138662, 0.12886947, -0.4383365,
+                         0.88404481, 0.98167819, 1.22302837, 0.1138414,
+                         0.45974904, 0.48926863])
 
         gof_objects = [ADTestTwoSampleGOF(data, data),
                        KSTestTwoSampleGOF(data, data),

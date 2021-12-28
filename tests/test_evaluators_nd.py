@@ -11,14 +11,14 @@ from GOFevaluation import BinnedChi2GOF
 class TestBinnedPoissonChi2GOF(unittest.TestCase):
     def test_dimensions(self):
         # test nD binned GOF in different dimensions:
-        for nD in range(2, 5+1):
+        for nD in range(2, 5 + 1):
             # generate uniformly distributed data points and bin data
             n_events_per_bin = 30
-            n_bins_per_dim = int(32**(1/nD))
+            n_bins_per_dim = int(32**(1 / nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
             data_points = sps.uniform().rvs(size=[n_events, nD])
-            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.linspace(0, 1, n_bins_per_dim + 1)
             bin_edges = np.array([bin_edges for i in range(nD)])
             binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
             binned_data_flat = binned_data.reshape(-1)
@@ -42,14 +42,14 @@ class TestBinnedPoissonChi2GOF(unittest.TestCase):
 
     def test_from_binned(self):
         """Test if regular init and from_binned init give same result"""
-        for nD in range(1, 5+1):
+        for nD in range(1, 5 + 1):
             # generate uniformly distributed data points and bin data
             n_events_per_bin = 30
-            n_bins_per_dim = int(32**(1/nD))
+            n_bins_per_dim = int(32**(1 / nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
             data_points = sps.uniform().rvs(size=[n_events, nD])
-            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.linspace(0, 1, n_bins_per_dim + 1)
             bin_edges = np.array([bin_edges for i in range(nD)])
             binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
 
@@ -118,7 +118,7 @@ class TestPointToPointGOF(unittest.TestCase):
                 data, reference)
 
             self.assertEqual(len(d_data_data), nevents_data *
-                             (nevents_data-1) / 2)
+                             (nevents_data - 1) / 2)
             self.assertEqual(len(d_data_ref), nevents_ref *
                              nevents_data)
 
@@ -141,7 +141,7 @@ class TestPointToPointGOF(unittest.TestCase):
         xs_a = np.array([0])[:, None]
         xs_b = np.array([1, 2])[:, None]
 
-        e_data_ref = np.log(2)/2
+        e_data_ref = np.log(2) / 2
         gofclass_ab = PointToPointGOF(xs_a, xs_b)
         # set d_min explicitly to avoid asymmetry in setting d_min
         gof_ab = gofclass_ab.get_gof(d_min=0.01)
@@ -152,14 +152,14 @@ class TestBinnedChi2GOF(unittest.TestCase):
 
     def test_dimensions(self):
         # test nD binned GOF in different dimensions:
-        for nD in range(2, 5+1):
+        for nD in range(2, 5 + 1):
             # generate uniformly distributed data points and bin data
             n_events_per_bin = 30
-            n_bins_per_dim = int(32**(1/nD))
+            n_bins_per_dim = int(32**(1 / nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
             data_points = sps.uniform().rvs(size=[n_events, nD])
-            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.linspace(0, 1, n_bins_per_dim + 1)
             bin_edges = np.array([bin_edges for i in range(nD)])
             binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
             binned_data_flat = binned_data.reshape(-1)
@@ -187,14 +187,14 @@ class TestBinnedChi2GOF(unittest.TestCase):
 
         n_testvalues = 100
         model = sps.uniform()
-        for nD in range(1, 5+1):
+        for nD in range(1, 5 + 1):
             # have same number of events per bin and total number
             # of bins for all tests
             n_events_per_bin = 20
-            n_bins_per_dim = int(32**(1/nD))
+            n_bins_per_dim = int(32**(1 / nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
-            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.linspace(0, 1, n_bins_per_dim + 1)
             bin_edges = np.array([bin_edges for i in range(nD)])
 
             chi2_vals = []
@@ -202,7 +202,7 @@ class TestBinnedChi2GOF(unittest.TestCase):
                 # generate uniformly distributed rvs with fixed random
                 # states for reproducibility
                 data_points = model.rvs(
-                    size=[n_events, nD], random_state=300+i)
+                    size=[n_events, nD], random_state=300 + i)
                 binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
 
                 normed_pdf = np.ones(binned_data.shape)
@@ -228,19 +228,19 @@ class TestBinnedChi2GOF(unittest.TestCase):
 
             # calculate 'reduced chi2' to estimate agreement of chi2 values
             # and chi2 pdf
-            test_chi2 = np.sum((chi2_pdf-n)**2 / chi2_pdf)/n_chi2_bins
-            self.assertTrue((test_chi2 > 1/3) & (test_chi2 < 3))
+            test_chi2 = np.sum((chi2_pdf - n)**2 / chi2_pdf) / n_chi2_bins
+            self.assertTrue((test_chi2 > 1 / 3) & (test_chi2 < 3))
 
     def test_from_binned(self):
         """Test if regular init and from_binned init give same result"""
-        for nD in range(1, 5+1):
+        for nD in range(1, 5 + 1):
             # generate uniformly distributed data points and bin data
             n_events_per_bin = 15
-            n_bins_per_dim = int(32**(1/nD))
+            n_bins_per_dim = int(32**(1 / nD))
             n_events = int(n_bins_per_dim**nD * n_events_per_bin)
 
             data_points = sps.uniform().rvs(size=[n_events, nD])
-            bin_edges = np.linspace(0, 1, n_bins_per_dim+1)
+            bin_edges = np.linspace(0, 1, n_bins_per_dim + 1)
             bin_edges = np.array([bin_edges for i in range(nD)])
             binned_data, _ = np.histogramdd(data_points, bins=bin_edges)
 
@@ -299,9 +299,9 @@ class TestPvalue(unittest.TestCase):
         d_min = .00001
         for nD in [2, 3, 4]:
             # Fixed Standard Normal distributed data
-            data = np.array([-0.80719796,  0.39138662,  0.12886947, -0.4383365,
-                             0.88404481, 0.98167819,  1.22302837,  0.1138414,
-                             0.45974904,  0.48926863])
+            data = np.array([-0.80719796, 0.39138662, 0.12886947, -0.4383365,
+                             0.88404481, 0.98167819, 1.22302837, 0.1138414,
+                             0.45974904, 0.48926863])
             data = np.vstack([data for i in range(nD)]).T
             gof_object = PointToPointGOF(data, data)
 

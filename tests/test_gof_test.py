@@ -22,7 +22,7 @@ class TestGOFTest(unittest.TestCase):
         model = sps.uniform
         nevents_expected = 300
         data_sample = model.rvs(size=nevents_expected)
-        reference_sample = model.rvs(size=nevents_expected*3)
+        reference_sample = model.rvs(size=nevents_expected * 3)
         bin_edges = np.linspace(0, 1, 11)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         binned_data, _ = np.histogram(data_sample, bins=bin_edges)

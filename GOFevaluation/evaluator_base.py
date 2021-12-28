@@ -1,7 +1,8 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
-from GOFevaluation import equiprobable_histogram, apply_irregular_binning, plot_equiprobable_histogram, check_sample_sanity
+from GOFevaluation import (equiprobable_histogram, apply_irregular_binning,
+                           plot_equiprobable_histogram, check_sample_sanity)
 
 
 class EvaluatorBase(object):
@@ -19,9 +20,9 @@ class EvaluatorBase(object):
 
     def __str__(self):
         args = [self._name]
-        if self.gof:
+        if self.gof is not None:
             args.append(f'gof = {self.gof}')
-        if self.pvalue:
+        if self.pvalue is not None:
             args.append(f'p-value = {self.pvalue}')
         args_str = "\n".join(args)
         return f'{self.__class__.__module__}\n{args_str}'

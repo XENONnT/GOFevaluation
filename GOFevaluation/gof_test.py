@@ -55,6 +55,8 @@ class GOFTest(object):
         for gof_str in self.gof_list:
             if gof_str in self.allowed_gof_str:
                 func = eval(gof_str)
+                self.gofs[gof_str] = None
+                self.pvalues[gof_str] = None
             else:
                 allowed_str = ", ".join(
                     ['"' + str(p) + '"' for p in self.allowed_gof_str])
@@ -71,13 +73,13 @@ class GOFTest(object):
         return f'{self.__class__.__module__}:\n{self.__dict__}'
 
     def __str__(self):
-        args = ['GoF measures: ' + ", ".join(self.gof_list)]
-        if self.gofs:
-            gofs_str = ", ".join([str(g) for g in self.gofs.values()])
-            args.append('gofs = ' + gofs_str)
-        if self.pvalues:
-            pvalues_str = ", ".join([str(p) for p in self.pvalues.values()])
-            args.append('p-values = ' + pvalues_str)
+        args = ['GOF measures: ' + ", ".join(self.gof_list)] + ['\n']
+        for key, gof in self.gofs.items():
+            pval = self.pvalues[key]
+            results_str = '\033[1m' + key + '\033[0m' + '\n'
+            results_str += f'gof = {gof}\n'
+            results_str += f'p-value = {pval}\n'
+            args.append(results_str)
         args_str = "\n".join(args)
         return f'{self.__class__.__module__}\n{args_str}'
 
@@ -134,6 +136,7 @@ class GOFTest(object):
             specific_kwargs = self._get_specific_kwargs(func, kwargs)
             pvalue = func(**specific_kwargs)
             self.pvalues[key] = pvalue
+            self.gofs[key] = self.gof_objects[key].gof
             kwargs_used += specific_kwargs.keys()
         self._check_kwargs_used(kwargs_used, kwargs)
         return self.pvalues

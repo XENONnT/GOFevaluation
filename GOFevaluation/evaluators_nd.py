@@ -108,7 +108,7 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
         initialise with .bin_equiprobable(...)
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
-            :param reference_sample: sample of unbinned reference 
+            :param reference_sample: sample of unbinned reference
                 (should have >50 samples than the data sample so that
                 statistical fluctuations are negligible.)
             :type reference_sample: array_like, n-Dimensional
@@ -178,7 +178,7 @@ class PointToPointGOF(EvaluatorBaseSample):
     :type data_sample: array_like, n-Dimensional
     :param reference_sample: sample of unbinned reference
     :type reference_sample: array_like, n-Dimensional
-    :param w_func: weighting function to use for the GOF measure. 
+    :param w_func: weighting function to use for the GOF measure.
         Defaults to 'log'. Other options are:
         'x2', 'x', '1/x'
     :type w_func' str, optional
