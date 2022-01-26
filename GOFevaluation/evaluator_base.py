@@ -109,10 +109,15 @@ class EvaluatorBaseBinned(EvaluatorBase):
             order=order)
 
         if plot:
+            try:
+                plot_mode = kwargs.pop('plot_mode')
+            except KeyError:
+                pass
             plot_equiprobable_histogram(data_sample=data_sample,
                                         bin_edges=bin_edges,
                                         order=order,
                                         nevents_expected=nevents_expected,
+                                        plot_mode=plot_mode,
                                         **kwargs)
 
         # bin_edges=None will set self.binned_data=binned_data
