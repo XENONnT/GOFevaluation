@@ -47,6 +47,95 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     return n, bin_edges
 
 
+def _get_finite_bin_edges(bin_edges, data_sample, order):
+    """Replaces infinite values in bin_edges with finite
+    values determined such that the bins encompass all
+    the counts in data_sample. Necessary for plotting
+    and for determining bin area.
+    :param bin_edges: list of bin_edges,
+    probably form _get_equiprobable_binning
+    :type bin_edges: array
+    :param data_sample: Sample of unbinned data.
+    :type data_sample: array
+    :param order: Order in which the partitioning is performed,
+    defaults to None
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
+    :type order: list, optional
+    :return: Returns bin_edges.
+        1D: list of bin edges
+        2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
+        respectively. bin_edges[1] is a list of bin edges corresponding to the
+        partitions defined in bin_edges[0].
+    :rtype: list of arrays
+    """
+    xlim, ylim = get_plot_limits(data_sample)
+    be = []
+    if len(data_sample.shape) == 1:
+        bin_edges[0] = xlim[0]
+        bin_edges[-1] = xlim[1]
+        be = [bin_edges.copy(), None]
+    else:
+        be_first = bin_edges[0].copy()
+        be_second = bin_edges[1].copy()
+
+        if order == [0, 1]:
+            be_first[be_first == -np.inf] = xlim[0]
+            be_first[be_first == np.inf] = xlim[1]
+            be_second[be_second == -np.inf] = ylim[0]
+            be_second[be_second == np.inf] = ylim[1]
+        elif order == [1, 0]:
+            be_first[be_first == -np.inf] = ylim[0]
+            be_first[be_first == np.inf] = ylim[1]
+            be_second[be_second == -np.inf] = xlim[0]
+            be_second[be_second == np.inf] = xlim[1]
+        else:
+            raise ValueError(f'order {order} is not defined.')
+        be = [be_first, be_second]
+
+    return be
+
+
+def _get_count_density(ns, be_first, be_second, data_sample):
+    """Measures the area of each bin and scales the counts in
+    that bin by the inverse of that area.
+    :param be_first: list of bin_edges in the first dimension,
+    :type be_first: array
+    :param be_first: list of bin_edges in the first dimension,
+    :type be_first: array
+    :param data_sample: Sample of unbinned data.
+    :type data_sample: array
+    :param order: Order in which the partitioning is performed,
+        defaults to None
+        [0, 1] : first bin x then bin y for each partition in x
+        [1, 0] : first bin y then bin x for each partition in y
+        if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
+    :type order: list, optional
+    :return: Returns bin_edges.
+        1D: list of bin edges
+        2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
+        respectively. bin_edges[1] is a list of bin edges corresponding to the
+        partitions defined in bin_edges[0].
+    :rtype: list of arrays
+    """
+    if len(data_sample.shape) == 1:
+        i = 0
+        for low, high in zip(be_first[:-1], be_first[1:]):
+            ns[i] = ns[i]/(high-low)
+            i += 1
+    else:
+        i = 0
+        for low_f, high_f in zip(be_first[:-1], be_first[1:]):
+            j = 0
+            for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
+                ns[i][j] = ns[i][j]/((high_f-low_f)*(high_s-low_s))
+                j += 1
+            i += 1
+
+    return ns
+
+
 def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
     """Define an equiprobable binning for the reference sample. The binning
     is defined such that the number of counts in each bin are (almost) equal.
@@ -204,7 +293,8 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                 ax=None, nevents_expected=None, plot_xlim=None,
-                                plot_ylim=None, **kwargs):
+                                plot_ylim=None, plot_mode='sigma_deviation',
+                                **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
 
@@ -224,6 +314,12 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         z-axis in units of sigma-deviation from expectation. If None is passed,
         cmap scale ranges from min to max. Defaults to None.
     :type nevents_expected: float, optional
+    :param plot_mode: sets the plotting schedule. Defaults to sigma_deviation
+    which shows the deviation of the counts in each bin from expected.
+    Can be set to 'num_counts' to plot the total number of counts in each
+    bin or 'count_density' to show the counts scaled by the inverse of the
+    area of the bin, throws error if set to other value
+    :type: string
     :param plot_xlim: xlim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_xlim: tuple, optional
@@ -246,25 +342,42 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     ax.set_ylim(ylim)
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
+    ns = np.array(ns, dtype=float)
 
-    # get colormap and norm for colorbar
-    cmap_str = kwargs.get('cmap', 'RdBu_r')
-    cmap = mpl.cm.get_cmap(cmap_str)
-    try:
-        kwargs.pop('cmap')
-    except KeyError:
-        pass
-    if nevents_expected is None:
-        norm = mpl.colors.Normalize(vmin=ns.min(), vmax=ns.max())
+    be = _get_finite_bin_edges(bin_edges, data_sample, order)
+    be_first = be[0]
+    be_second = be[1]
+    
+    if(plot_mode == 'sigma_deviation'):
+        label = r'$\sigma$-deviation from expectation'
+        cmap_str = kwargs.pop('cmap', 'RdBu_r')
+        cmap = mpl.cm.get_cmap(cmap_str)
+        if nevents_expected is None:
+            raise ValueError('nevents_expected cannot ' +
+                             'be None while plot_mode=\'sigma_deviation\'')
+        else:
+            n_bins = get_n_bins(bin_edges)
+            midpoint = nevents_expected / n_bins
+            delta = max(midpoint - ns.min(), ns.max() - midpoint)
+            sigma_deviation = delta / np.sqrt(midpoint)
+            ns = (ns - midpoint) / np.sqrt(midpoint)
+            norm = mpl.colors.Normalize(vmin=-sigma_deviation,
+                                        vmax=sigma_deviation)
+    elif(plot_mode == 'count_density'):
+        label = r'Counts per area in each bin'
+        ns = _get_count_density(ns, be_first, be_second, data_sample)
+        cmap_str = kwargs.pop('cmap', 'viridis')
+        cmap = mpl.cm.get_cmap(cmap_str)
+        norm = mpl.colors.Normalize(vmin=np.min(ns),
+                                    vmax=np.max(ns))
+    elif(plot_mode == 'num_counts'):
+        label = r'Number of counts in eace bin'
+        cmap_str = kwargs.pop('cmap', 'viridis')
+        cmap = mpl.cm.get_cmap(cmap_str)
+        norm = mpl.colors.Normalize(vmin=np.min(ns),
+                                    vmax=np.max(ns))
     else:
-        n_bins = get_n_bins(bin_edges)
-        midpoint = nevents_expected / n_bins
-        # max deviation
-        delta = max(midpoint - ns.min(), ns.max() - midpoint)
-        sigma_deviation = delta / np.sqrt(midpoint)
-        norm = mpl.colors.Normalize(vmin=-sigma_deviation,
-                                    vmax=sigma_deviation)
-        ns = (ns - midpoint) / np.sqrt(midpoint)
+        raise ValueError(f'plot_mode {plot_mode} is not defined.')
 
     if len(data_sample.shape) == 1:
         i = 0
@@ -277,22 +390,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
             ax.add_patch(rec)
             i += 1
     else:
-        be_first = bin_edges[0].copy()
-        be_second = bin_edges[1].copy()
-
-        if order == [0, 1]:
-            be_first[be_first == -np.inf] = xlim[0]
-            be_first[be_first == np.inf] = xlim[1]
-            be_second[be_second == -np.inf] = ylim[0]
-            be_second[be_second == np.inf] = ylim[1]
-        elif order == [1, 0]:
-            be_first[be_first == -np.inf] = ylim[0]
-            be_first[be_first == np.inf] = ylim[1]
-            be_second[be_second == -np.inf] = xlim[0]
-            be_second[be_second == np.inf] = xlim[1]
-        else:
-            raise ValueError(f'order {order} is not defined.')
-
         # plot rectangle for each bin
         i = 0
         edgecolor = kwargs.get('edgecolor', 'k')
@@ -316,14 +413,12 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                 ax.add_patch(rec)
                 j += 1
             i += 1
+            
     fig = mpl.pyplot.gcf()
-    if nevents_expected is None:
-        label = 'Counts per Bin'
-    else:
-        label = r'$\sigma$-deviation from expectation'
+    
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                  label=label)
-
+    return
 
 def get_n_bins(eqpb_bin_edges):
     if isinstance(eqpb_bin_edges[0], float):
