@@ -49,6 +49,7 @@ class GOFTest(object):
     def __init__(self, gof_list, **kwargs):
         self.gof_objects = OrderedDict()
         self.gof_list = gof_list
+        kwargs_used = []  # check if all kwargs were used
         self.gofs = OrderedDict()
         self.pvalues = OrderedDict()
         kwargs_used = []  # check if all kwargs were used
