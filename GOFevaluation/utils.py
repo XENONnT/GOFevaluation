@@ -122,14 +122,14 @@ def _get_count_density(ns, be_first, be_second, data_sample):
     if len(data_sample.shape) == 1:
         i = 0
         for low, high in zip(be_first[:-1], be_first[1:]):
-            ns[i] = ns[i]/(high-low)
+            ns[i] = ns[i] / (high-low)
             i += 1
     else:
         i = 0
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
             for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
-                ns[i][j] = ns[i][j]/((high_f-low_f)*(high_s-low_s))
+                ns[i][j] = ns[i][j] / ((high_f-low_f) * (high_s-low_s))
                 j += 1
             i += 1
 
@@ -315,11 +315,11 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         cmap scale ranges from min to max. Defaults to None.
     :type nevents_expected: float, optional
     :param plot_mode: sets the plotting schedule. Defaults to sigma_deviation
-    which shows the deviation of the counts in each bin from expected.
-    Can be set to 'num_counts' to plot the total number of counts in each
-    bin or 'count_density' to show the counts scaled by the inverse of the
-    area of the bin, throws error if set to other value
-    :type: string
+        which shows the deviation of the counts in each bin from expected.
+        Can be set to 'num_counts' to plot the total number of counts in each
+        bin or 'count_density' to show the counts scaled by the inverse of the
+        area of the bin, throws error if set to other value
+    :type plot_mode: string
     :param plot_xlim: xlim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_xlim: tuple, optional
