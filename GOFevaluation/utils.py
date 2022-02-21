@@ -357,7 +357,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
             label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
                      + f'{midpoint:.1f} counts')
     elif(plot_mode == 'count_density'):
-        label = r'Counts per area expected in each bin'
+        label = r'Counts per area in each bin'
         ns = _get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
