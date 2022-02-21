@@ -54,6 +54,9 @@ class TestEqpb(unittest.TestCase):
                              [n_partitions[order[0]], n_partitions[order[1]]])
 
     def test__get_finite_bin_edges(self):
+        '''Test if get_finite_bin_edges in fact gives the bin edges 
+        that effectively contain all of the data without being
+        infinite'''
         n_data = 12
         n_partitions = [2, 3]
         data_sample = np.linspace(0, 1, n_data)
@@ -79,6 +82,8 @@ class TestEqpb(unittest.TestCase):
                     self.assertEqual(edges[1][i][j], bin_edges[1][i][j])
 
     def test__get_count_density(self):
+        '''Test if _get_count_density can correctly count the density
+        of data points in 2D  for both orderings'''
         n_data = 12
         n_partitions = [2, 3]
         data_sample = np.linspace(0, 1, n_data)
