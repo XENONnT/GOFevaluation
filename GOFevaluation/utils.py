@@ -8,7 +8,6 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
                            order=None, plot=False, **kwargs):
     """Define equiprobable histogram based on the reference sample and
     bin the data sample according to it.
-
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
     :param reference_sample: sample of unbinned reference
@@ -28,7 +27,6 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
         these are the bin edges in x(y) and y(x) respectively. bin_edges[1]
         is a list of bin edges corresponding to the partitions defined in
         bin_edges[0].
-
     .. note::
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
@@ -142,7 +140,6 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
     Bins are defined based on the ECDF of the reference sample.
     The number of partitions in x and y direction as well as the order of
     partitioning influence the result.
-
     :param reference_sample: sample of unbinned reference
     :type reference_sample: array_like, n-Dimensional
     :param n_partitions: Number of partitions in each dimension
@@ -159,7 +156,6 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
         partitions defined in bin_edges[0].
     :rtype: list of arrays
     :raises ValueError: when an unknown order is passed.
-
     .. note::
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
@@ -205,7 +201,6 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
 
 def apply_irregular_binning(data_sample, bin_edges, order=None):
     """Apply irregular binning to data sample.
-
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
     :param bin_edges: Array of bin edges
@@ -241,7 +236,6 @@ def apply_irregular_binning(data_sample, bin_edges, order=None):
 
 def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
     """Plot the bin edges as a grid.
-
     :param ax: axis to plot to
     :type ax: matplotlib axis
     :param bin_edges: Array of bin edges
@@ -297,7 +291,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                 **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
-
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
     :param bin_edges: Array of bin edges
@@ -342,11 +335,11 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     ax.set_ylim(ylim)
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
-    
+
     be = _get_finite_bin_edges(bin_edges, data_sample, order)
     be_first = be[0]
     be_second = be[1]
-    
+
     if(plot_mode == 'sigma_deviation'):
         label = r'$\sigma$-deviation from expectation'
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
@@ -412,12 +405,13 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                 ax.add_patch(rec)
                 j += 1
             i += 1
-            
+
     fig = mpl.pyplot.gcf()
-    
+
     fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
                  label=label)
     return
+
 
 def get_n_bins(eqpb_bin_edges):
     if isinstance(eqpb_bin_edges[0], float):
