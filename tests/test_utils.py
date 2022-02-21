@@ -99,6 +99,12 @@ class TestEqpb(unittest.TestCase):
             edges = _get_finite_bin_edges(bin_edges, data_sample, order)
             count_density = _get_count_density(n.copy(), edges[0], edges[1], data_sample)
             self.assertEqual(np.shape(n), np.shape(count_density))
+            testarray0=np.array([[24.203389830508474, 24.203389830508474, 5.974895397489539], [5.97489539748954, 24.203389830508463, 24.203389830508478]])
+            testarray1=np.array([[36.61538461538461,7.175879396984923],[11.999999999999998, 11.999999999999998],[7.175879396984927,36.615384615384606]])
+
             for i in range(0, len(edges[0]) - 1):
                 for j in range(0, len(edges[1][i]) - 1):
-                    self.assertEqual(n[i][j] / ((edges[0][i + 1] - edges[0][i]) * (edges[1][i][j+1] - edges[1][i][j])) == count_density[i][j])
+                    if(order==[0,1]):
+                        self.assertEqual(testarray0[i][j],count_density[i][j])
+                    elif(order==[1,0]):
+                        self.assertEqual(testarray1[i][j],count_density[i][j])
