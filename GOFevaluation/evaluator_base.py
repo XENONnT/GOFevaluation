@@ -1,8 +1,10 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
-from GOFevaluation import (equiprobable_histogram, apply_irregular_binning,
-                           plot_equiprobable_histogram, check_sample_sanity)
+from GOFevaluation.utils import equiprobable_histogram
+from GOFevaluation.utils import apply_irregular_binning
+from GOFevaluation.utils import plot_equiprobable_histogram
+from GOFevaluation.utils import check_sample_sanity
 
 
 class EvaluatorBase(object):

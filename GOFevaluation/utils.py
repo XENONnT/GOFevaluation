@@ -120,14 +120,14 @@ def _get_count_density(ns, be_first, be_second, data_sample):
     if len(data_sample.shape) == 1:
         i = 0
         for low, high in zip(be_first[:-1], be_first[1:]):
-            ns[i] = ns[i] / (high-low)
+            ns[i] = ns[i] / (high - low)
             i += 1
     else:
         i = 0
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
             for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
-                ns[i][j] = ns[i][j] / ((high_f-low_f) * (high_s-low_s))
+                ns[i][j] = ns[i][j] / ((high_f - low_f) * (high_s - low_s))
                 j += 1
             i += 1
 

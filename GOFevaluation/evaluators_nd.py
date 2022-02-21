@@ -3,8 +3,8 @@ import numpy as np
 from sklearn.neighbors import DistanceMetric
 import warnings
 
-from GOFevaluation import EvaluatorBaseBinned
-from GOFevaluation import EvaluatorBaseSample
+from GOFevaluation.evaluator_base import EvaluatorBaseBinned
+from GOFevaluation.evaluator_base import EvaluatorBaseSample
 
 
 class BinnedPoissonChi2GOF(EvaluatorBaseBinned):

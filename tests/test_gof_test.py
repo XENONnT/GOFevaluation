@@ -3,12 +3,12 @@ import numpy as np
 import unittest
 from collections import OrderedDict
 
-from GOFevaluation import ADTestTwoSampleGOF
-from GOFevaluation import KSTestTwoSampleGOF
-from GOFevaluation import BinnedPoissonChi2GOF
-from GOFevaluation import BinnedChi2GOF
-from GOFevaluation import PointToPointGOF
-from GOFevaluation import GOFTest
+from GOFevaluation.evaluators_1d import ADTestTwoSampleGOF
+from GOFevaluation.evaluators_1d import KSTestTwoSampleGOF
+from GOFevaluation.evaluators_nd import BinnedPoissonChi2GOF
+from GOFevaluation.evaluators_nd import BinnedChi2GOF
+from GOFevaluation.evaluators_nd import PointToPointGOF
+from GOFevaluation.gof_test import GOFTest
 
 
 class TestGOFTest(unittest.TestCase):

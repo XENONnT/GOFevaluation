@@ -2,9 +2,9 @@
 import numpy as np
 import unittest
 
-from GOFevaluation import equiprobable_histogram
-from GOFevaluation import _get_finite_bin_edges
-from GOFevaluation import _get_count_density
+from GOFevaluation.utils import equiprobable_histogram
+from GOFevaluation.utils import _get_finite_bin_edges
+from GOFevaluation.utils import _get_count_density
 
 
 class TestEqpb(unittest.TestCase):
