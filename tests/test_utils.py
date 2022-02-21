@@ -92,7 +92,6 @@ class TestEqpb(unittest.TestCase):
                                                   n_partitions=n_partitions,
                                                   order=order)
             ns = apply_irregular_binning(data_sample, bin_edges, order=order)
-            ns = np.array(ns, dtype=float)
             edges = _get_finite_bin_edges(bin_edges, data_sample, order)
             count_density = _get_count_density(ns.copy(), edges[0], edges[1], data_sample)
             self.assertEqual(np.shape(ns), np.shape(count_density))
