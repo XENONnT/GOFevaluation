@@ -53,7 +53,7 @@ class TestEqpb(unittest.TestCase):
                              [n_partitions[order[0]], n_partitions[order[1]]])
 
     def test__get_finite_bin_edges(self):
-        '''Test if get_finite_bin_edges in fact gives the bin edges 
+        '''Test if get_finite_bin_edges in fact gives the bin edges
         that effectively contain all of the data without being
         infinite'''
         n_data = 12
