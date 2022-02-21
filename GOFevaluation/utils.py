@@ -236,7 +236,7 @@ def apply_irregular_binning(data_sample, bin_edges, order=None):
     assert len(data_sample) == np.sum(ns), (f'Sum of binned data {np.sum(ns)}'
                                             + ' unequal to size of data sample'
                                             + f' {len(data_sample)}')
-    return np.array(ns)
+    return np.array(ns, dtype=float)
 
 
 def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
@@ -342,8 +342,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     ax.set_ylim(ylim)
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
-    ns = np.array(ns, dtype=float)
-
+    
     be = _get_finite_bin_edges(bin_edges, data_sample, order)
     be_first = be[0]
     be_second = be[1]
