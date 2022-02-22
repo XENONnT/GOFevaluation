@@ -346,16 +346,16 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot ' +
                              'be None while plot_mode=\'sigma_deviation\'')
-        else:
-            n_bins = get_n_bins(bin_edges)
-            midpoint = nevents_expected / n_bins
-            delta = max(midpoint - ns.min(), ns.max() - midpoint)
-            sigma_deviation = delta / np.sqrt(midpoint)
-            ns = (ns - midpoint) / np.sqrt(midpoint)
-            norm = mpl.colors.Normalize(vmin=-sigma_deviation,
-                                        vmax=sigma_deviation)
-            label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
-                     + f'{midpoint:.1f} counts')
+
+        n_bins = get_n_bins(bin_edges)
+        midpoint = nevents_expected / n_bins
+        delta = max(midpoint - ns.min(), ns.max() - midpoint)
+        sigma_deviation = delta / np.sqrt(midpoint)
+        ns = (ns - midpoint) / np.sqrt(midpoint)
+        norm = mpl.colors.Normalize(vmin=-sigma_deviation,
+                                    vmax=sigma_deviation)
+        label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
+                 + f'{midpoint:.1f} counts')
     elif(plot_mode == 'count_density'):
         label = r'Counts per area in each bin'
         ns = _get_count_density(ns, be_first, be_second, data_sample)

@@ -1,3 +1,8 @@
+v0.1.1
+===================
+* Add an example notebook that can be used as a guide when using the package for the first time (#29)
+* Improve and extend plotting of equiprobable binnings. This adds the option of plotting the binwise count density (#35)
+
 v0.1.0
 ===================
 * Multiple GOF tests (binned and unbinned) can be performed (#1, #5, #10, #12, #13)
