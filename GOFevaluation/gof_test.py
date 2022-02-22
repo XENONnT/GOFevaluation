@@ -2,11 +2,11 @@ from collections import OrderedDict
 from inspect import signature
 import warnings
 
-from GOFevaluation import ADTestTwoSampleGOF
-from GOFevaluation import KSTestTwoSampleGOF
-from GOFevaluation import BinnedPoissonChi2GOF
-from GOFevaluation import BinnedChi2GOF
-from GOFevaluation import PointToPointGOF
+from GOFevaluation.evaluators_1d import ADTestTwoSampleGOF
+from GOFevaluation.evaluators_1d import KSTestTwoSampleGOF
+from GOFevaluation.evaluators_nd import BinnedPoissonChi2GOF
+from GOFevaluation.evaluators_nd import BinnedChi2GOF
+from GOFevaluation.evaluators_nd import PointToPointGOF
 
 
 class GOFTest(object):

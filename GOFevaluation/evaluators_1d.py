@@ -3,8 +3,8 @@ import numpy as np
 import warnings
 from scipy.interpolate import interp1d
 
-from GOFevaluation import EvaluatorBasePdf
-from GOFevaluation import EvaluatorBaseSample
+from GOFevaluation.evaluator_base import EvaluatorBasePdf
+from GOFevaluation.evaluator_base import EvaluatorBaseSample
 
 
 class ADTestTwoSampleGOF(EvaluatorBaseSample):

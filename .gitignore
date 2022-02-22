@@ -2,6 +2,7 @@
 *.vscode
 *.ipynb_checkpoints
 *.pytest_cache
+*.DS_Store
 build
 dist
 __pycache__

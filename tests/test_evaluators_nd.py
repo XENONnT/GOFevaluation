@@ -3,9 +3,9 @@ import numpy as np
 import unittest
 import warnings
 
-from GOFevaluation import BinnedPoissonChi2GOF
-from GOFevaluation import PointToPointGOF
-from GOFevaluation import BinnedChi2GOF
+from GOFevaluation.evaluators_nd import BinnedPoissonChi2GOF
+from GOFevaluation.evaluators_nd import PointToPointGOF
+from GOFevaluation.evaluators_nd import BinnedChi2GOF
 
 
 class TestBinnedPoissonChi2GOF(unittest.TestCase):

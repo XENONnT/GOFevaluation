@@ -4,12 +4,12 @@ from scipy.interpolate import interp1d
 import unittest
 import warnings
 
-from GOFevaluation import KSTestGOF
-from GOFevaluation import KSTestTwoSampleGOF
-from GOFevaluation import ADTestTwoSampleGOF
-from GOFevaluation import PointToPointGOF
-from GOFevaluation import BinnedPoissonChi2GOF
-from GOFevaluation import BinnedChi2GOF
+from GOFevaluation.evaluators_1d import KSTestGOF
+from GOFevaluation.evaluators_1d import KSTestTwoSampleGOF
+from GOFevaluation.evaluators_1d import ADTestTwoSampleGOF
+from GOFevaluation.evaluators_nd import PointToPointGOF
+from GOFevaluation.evaluators_nd import BinnedPoissonChi2GOF
+from GOFevaluation.evaluators_nd import BinnedChi2GOF
 
 
 class TestKSTestGOF(unittest.TestCase):
