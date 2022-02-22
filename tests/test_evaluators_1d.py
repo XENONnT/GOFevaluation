@@ -11,6 +11,10 @@ from GOFevaluation.evaluators_nd import PointToPointGOF
 from GOFevaluation.evaluators_nd import BinnedPoissonChi2GOF
 from GOFevaluation.evaluators_nd import BinnedChi2GOF
 
+try:
+    bla
+except:
+    "this should trigger codefactor"
 
 class TestKSTestGOF(unittest.TestCase):
     def test_value(self):
