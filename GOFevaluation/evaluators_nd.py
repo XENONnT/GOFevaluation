@@ -29,8 +29,8 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param reference_sample: sample of unbinned reference
-                (should have >50 samples than the data sample so that
-                statistical fluctuations are negligible.)
+                (should have at least 50 times larger than the data sample
+                to ensure that statistical fluctuations are negligible.)
             :type reference_sample: array_like, n-Dimensional
             :param nevents_expected: total number of expected events
             :type nevents_expected: float
@@ -109,8 +109,8 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param reference_sample: sample of unbinned reference
-                (should have >50 samples than the data sample so that
-                statistical fluctuations are negligible.)
+                (should have at least 50 times larger than the data sample
+                to ensure that statistical fluctuations are negligible.)
             :type reference_sample: array_like, n-Dimensional
             :param nevents_expected: total number of expected events
             :type nevents_expected: float
