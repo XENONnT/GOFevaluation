@@ -92,7 +92,7 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
 
 
 class BinnedChi2GOF(EvaluatorBaseBinned):
-    """Compoutes the binned chi2 GoF based on Pearson's chi2.
+    """Computes the binned chi2 GoF based on Pearson's chi2.
 
         - **unbinned data, bin with regular binning**
             :param data_sample: sample of unbinned data
