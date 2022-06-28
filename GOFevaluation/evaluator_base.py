@@ -276,12 +276,12 @@ class EvaluatorBaseSample(EvaluatorBase):
             warnings.warn(f'p-value is 0.0. (Observed GoF: '
                           f'{self.gof:.2e}, maximum of simulated GoFs: '
                           f'{max(fake_gofs):.2e}). For a more '
-                          f'precise result, increase n_mc!', stacklevel=2)
+                          f'precise result, increase n_perm!', stacklevel=2)
         elif pvalue == 1:
             warnings.warn(f'p-value is 1.0. (Observed GoF '
                           f'{self.gof:.2e}, minimum of simulated GoFs: '
                           f'{min(fake_gofs):.2e}). For a more '
-                          f'precise result, increase n_mc!', stacklevel=2)
+                          f'precise result, increase n_perm!', stacklevel=2)
         self.pvalue = pvalue
 
         return pvalue, fake_gofs
