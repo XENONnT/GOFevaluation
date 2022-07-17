@@ -432,8 +432,11 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if draw_colorbar:
         fig = mpl.pyplot.gcf()
 
-        fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
-                    label=label)
+        fig.colorbar(
+            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+            ax=ax,
+            label=label,
+        )
     return
 
 
