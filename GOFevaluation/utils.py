@@ -287,7 +287,8 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                 ax=None, nevents_expected=None, plot_xlim=None,
-                                plot_ylim=None, plot_mode='sigma_deviation',
+                                plot_ylim=None, plot_color=None,
+                                plot_mode='sigma_deviation', draw_colorbar=True,
                                 **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
@@ -312,13 +313,17 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         Can be set to 'num_counts' to plot the total number of counts in each
         bin or 'count_density' to show the counts scaled by the inverse of the
         area of the bin, throws error if set to other value
-    :type plot_mode: string
+    :type plot_mode: string, optional
+    :param draw_colorbar: whether draw the colorbar
+    :type draw_colorbar: bool, optional
     :param plot_xlim: xlim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_xlim: tuple, optional
     :param plot_ylim: ylim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_ylim: tuple, optional
+    :param plot_color: colorbar range to use for the plot.
+    :type plot_color: tuple, optional
     :raises ValueError: when an unknown order is passed.
     """
     if order is None:
@@ -331,8 +336,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         xlim = plot_xlim
     if plot_ylim is not None:
         ylim = plot_ylim
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
@@ -372,6 +375,10 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
 
+    if plot_color is not None:
+        norm = mpl.colors.Normalize(vmin=plot_color[0],
+                                    vmax=plot_color[1])
+
     if len(data_sample.shape) == 1:
         i = 0
         bin_edges[0] = xlim[0]
@@ -385,9 +392,21 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     else:
         # plot rectangle for each bin
         i = 0
+        if order == [0, 1]:
+            be_first[0] = xlim[0]
+            be_first[-1] = xlim[1]
+        elif order == [1, 0]:
+            be_first[0] = ylim[0]
+            be_first[-1] = ylim[1]
         edgecolor = kwargs.get('edgecolor', 'k')
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
+            if order == [0, 1]:
+                be_second[i][0] = ylim[0]
+                be_second[i][-1] = ylim[1]
+            elif order == [1, 0]:
+                be_second[i][0] = xlim[0]
+                be_second[i][-1] = xlim[1]
             for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
                 if order == [0, 1]:
                     rec = Rectangle((low_f, low_s),
@@ -407,10 +426,14 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                 j += 1
             i += 1
 
-    fig = mpl.pyplot.gcf()
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
 
-    fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
-                 label=label)
+    if draw_colorbar:
+        fig = mpl.pyplot.gcf()
+
+        fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
+                    label=label)
     return
 
 
