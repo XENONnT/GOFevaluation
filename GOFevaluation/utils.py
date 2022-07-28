@@ -287,9 +287,8 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                                 ax=None, nevents_expected=None, plot_xlim=None,
-                                plot_ylim=None, plot_color=None,
-                                plot_mode='sigma_deviation', draw_colorbar=True,
-                                **kwargs):
+                                plot_ylim=None, plot_mode='sigma_deviation',
+                                draw_colorbar=True, **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
     :param data_sample: Sample of unbinned data.
@@ -322,8 +321,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     :param plot_ylim: ylim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_ylim: tuple, optional
-    :param plot_color: colorbar range to use for the plot.
-    :type plot_color: tuple, optional
     :raises ValueError: when an unknown order is passed.
     """
     if order is None:
@@ -332,6 +329,10 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
     if (plot_xlim is None) or (plot_ylim is None):
         xlim, ylim = get_plot_limits(data_sample)
+    if plot_mode == 'count_density':
+        if (plot_xlim is not None) or (plot_ylim is not None):
+            raise RuntimeError('Manually set x or y limit in'
+                            'count_density mode is misleading')
     if plot_xlim is not None:
         xlim = plot_xlim
     if plot_ylim is not None:
@@ -355,8 +356,8 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         delta = max(midpoint - ns.min(), ns.max() - midpoint)
         sigma_deviation = delta / np.sqrt(midpoint)
         ns = (ns - midpoint) / np.sqrt(midpoint)
-        norm = mpl.colors.Normalize(vmin=-sigma_deviation,
-                                    vmax=sigma_deviation)
+        vmin = -sigma_deviation
+        vmax = sigma_deviation
         label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
                  + f'{midpoint:.1f} counts')
     elif(plot_mode == 'count_density'):
@@ -364,20 +365,20 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         ns = _get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
-        norm = mpl.colors.Normalize(vmin=np.min(ns),
-                                    vmax=np.max(ns))
+        vmin = np.min(ns)
+        vmax = np.max(ns)
     elif(plot_mode == 'num_counts'):
         label = r'Number of counts in eace bin'
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
-        norm = mpl.colors.Normalize(vmin=np.min(ns),
-                                    vmax=np.max(ns))
+        vmin = np.min(ns)
+        vmax = np.max(ns)
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
 
-    if plot_color is not None:
-        norm = mpl.colors.Normalize(vmin=plot_color[0],
-                                    vmax=plot_color[1])
+    norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
+                                vmax=kwargs.pop('vmax', vmax),
+                                clip=False)
 
     if len(data_sample.shape) == 1:
         i = 0
@@ -398,7 +399,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         elif order == [1, 0]:
             be_first[0] = ylim[0]
             be_first[-1] = ylim[1]
-        edgecolor = kwargs.get('edgecolor', 'k')
+        edgecolor = kwargs.pop('edgecolor', 'k')
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
             if order == [0, 1]:
@@ -432,10 +433,19 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if draw_colorbar:
         fig = mpl.pyplot.gcf()
 
+        extend = 'neither'
+        if norm.vmin > vmin & norm.vmax < vmax:
+            extend='both'
+        elif norm.vmin > vmin:
+            extend = 'min'
+        elif norm.vmax < vmax:
+            extend = 'max'
+
         fig.colorbar(
             mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
             ax=ax,
             label=label,
+            extend=extend
         )
     return
 
