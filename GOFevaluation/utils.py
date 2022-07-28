@@ -2,6 +2,7 @@ from matplotlib.patches import Rectangle
 from sklearn.preprocessing import KBinsDiscretizer
 import numpy as np
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
@@ -327,7 +328,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if order is None:
         order = [0, 1]
     if ax is None:
-        _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
+        _, ax = plt.subplots(1, figsize=(4, 4))
     if (plot_xlim is None) or (plot_ylim is None):
         xlim, ylim = get_plot_limits(data_sample)
     if plot_mode == 'count_density':
@@ -432,7 +433,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     ax.set_ylim(ylim)
 
     if draw_colorbar:
-        fig = mpl.pyplot.gcf()
+        fig = plt.gcf()
 
         extend = 'neither'
         if norm.vmin > vmin & norm.vmax < vmax:
