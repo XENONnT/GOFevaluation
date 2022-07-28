@@ -436,7 +436,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         fig = plt.gcf()
 
         extend = 'neither'
-        if norm.vmin > vmin & norm.vmax < vmax:
+        if norm.vmin > vmin and norm.vmax < vmax:
             extend = 'both'
         elif norm.vmin > vmin:
             extend = 'min'
