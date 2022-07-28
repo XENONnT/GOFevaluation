@@ -9,7 +9,7 @@ from GOFevaluation.utils import plot_equiprobable_histogram
 class TestPlotEqualProbable(unittest.TestCase):
     def test_plot_arguments(self):
         n_data = 100
-        n_reference = 1000
+        n_reference = 10000
         data_sample = sps.uniform(-3, 3).rvs(size=[n_data, 2])
         x = sps.norm().rvs(size=n_reference)
         y = sps.uniform(-3, 3).rvs(size=n_reference)
@@ -17,7 +17,7 @@ class TestPlotEqualProbable(unittest.TestCase):
 
         n_partitions = [5, 3]
         order = [0, 1]
-        nevents_expected = sps.poisson(mu=n_data)
+        nevents_expected = sps.poisson(mu=n_data).rvs()
         pdf, bin_edges = equiprobable_histogram(data_sample,
                                                 reference_sample,
                                                 n_partitions,
