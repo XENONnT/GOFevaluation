@@ -286,8 +286,9 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
-                                ax=None, nevents_expected=None, plot_xlim=None,
-                                plot_ylim=None, plot_mode='sigma_deviation',
+                                ax=None, nevents_expected=None,
+                                plot_xlim=None, plot_ylim=None,
+                                plot_mode='sigma_deviation',
                                 draw_colorbar=True, **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
@@ -332,7 +333,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if plot_mode == 'count_density':
         if (plot_xlim is not None) or (plot_ylim is not None):
             raise RuntimeError('Manually set x or y limit in'
-                            'count_density mode is misleading')
+                               'count_density mode is misleading')
     if plot_xlim is not None:
         xlim = plot_xlim
     if plot_ylim is not None:
@@ -435,7 +436,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
 
         extend = 'neither'
         if norm.vmin > vmin & norm.vmax < vmax:
-            extend='both'
+            extend = 'both'
         elif norm.vmin > vmin:
             extend = 'min'
         elif norm.vmax < vmax:

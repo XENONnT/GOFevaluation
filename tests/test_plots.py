@@ -17,8 +17,11 @@ class TestPlotEqualProbable(unittest.TestCase):
         n_partitions = [5, 3]
         order = [0, 1]
         nevents_expected = sps.poisson(mu=n_events)
-        pdf, bin_edges = equiprobable_histogram(data_sample, reference_sample, n_partitions,
-                            order=order, plot=False)
+        pdf, bin_edges = equiprobable_histogram(data_sample,
+                                                reference_sample,
+                                                n_partitions,
+                                                order=order,
+                                                plot=False)
         pdf /= np.sum(pdf)
 
         kwargs = {}
@@ -64,10 +67,11 @@ class TestPlotEqualProbable(unittest.TestCase):
                                         plot_mode='count_density',
                                         **kwargs)
             error_raised = False
-        except:
+        except Exception:
             if not error_raised:
                 raise RuntimeError('Should raise error when count_density'
-                                'mode with x or y limit specified')
+                                   'mode with x or y limit specified')
+
 
 if __name__ == "__main__":
     unittest.main()
