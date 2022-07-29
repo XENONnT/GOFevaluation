@@ -352,14 +352,10 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot ' +
                              'be None while plot_mode=\'sigma_deviation\'')
-
         n_bins = get_n_bins(bin_edges)
         midpoint = nevents_expected / n_bins
         delta = max(midpoint - ns.min(), ns.max() - midpoint)
-        sigma_deviation = delta / np.sqrt(midpoint)
         ns = (ns - midpoint) / np.sqrt(midpoint)
-        vmin = -sigma_deviation
-        vmax = sigma_deviation
         label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
                  + f'{midpoint:.1f} counts')
     elif(plot_mode == 'count_density'):
@@ -367,16 +363,15 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         ns = _get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
-        vmin = np.min(ns)
-        vmax = np.max(ns)
     elif(plot_mode == 'num_counts'):
         label = r'Number of counts in eace bin'
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
-        vmin = np.min(ns)
-        vmax = np.max(ns)
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
+
+    vmin = np.min(ns)
+    vmax = np.max(ns)
 
     norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
                                 vmax=kwargs.pop('vmax', vmax),
