@@ -20,10 +20,10 @@ class TestPlotEqualProbable(unittest.TestCase):
 
         order = [0, 1]
         _, bin_edges = equiprobable_histogram(data_sample,
-                                            reference_sample,
-                                            n_partitions,
-                                            order=order,
-                                            plot=False)
+                                              reference_sample,
+                                              n_partitions,
+                                              order=order,
+                                              plot=False)
 
         kwargs = {}
         plot_equiprobable_histogram(data_sample=data_sample,
@@ -56,10 +56,10 @@ class TestPlotEqualProbable(unittest.TestCase):
 
         order = [1, 0]
         _, bin_edges = equiprobable_histogram(data_sample,
-                                            reference_sample,
-                                            n_partitions,
-                                            order=order,
-                                            plot=False)
+                                              reference_sample,
+                                              n_partitions,
+                                              order=order,
+                                              plot=False)
 
         kwargs = {'vmin': -1, 'vmax': 1}
         plot_equiprobable_histogram(data_sample=data_sample,
@@ -92,7 +92,7 @@ class TestPlotEqualProbable(unittest.TestCase):
         except Exception:
             if not error_raised:
                 raise RuntimeError('Should raise error when count_density'
-                                'mode with x or y limit specified')
+                                   'mode with x or y limit specified')
 
 
 if __name__ == "__main__":

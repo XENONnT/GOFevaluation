@@ -354,7 +354,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                              'be None while plot_mode=\'sigma_deviation\'')
         n_bins = get_n_bins(bin_edges)
         midpoint = nevents_expected / n_bins
-        delta = max(midpoint - ns.min(), ns.max() - midpoint)
         ns = (ns - midpoint) / np.sqrt(midpoint)
         label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
                  + f'{midpoint:.1f} counts')
