@@ -1,3 +1,4 @@
+import warnings
 from matplotlib.patches import Rectangle
 from sklearn.preprocessing import KBinsDiscretizer
 import numpy as np
@@ -354,7 +355,14 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                              'be None while plot_mode=\'sigma_deviation\'')
         n_bins = get_n_bins(bin_edges)
         midpoint = nevents_expected / n_bins
+        delta = max(midpoint - ns.min(), ns.max() - midpoint)
+        sigma_deviation = delta / np.sqrt(midpoint)
         ns = (ns - midpoint) / np.sqrt(midpoint)
+        vmin = -sigma_deviation
+        vmax = sigma_deviation
+        if abs(kwargs.get('vmin', vmin)) != abs(kwargs.get('vmax', vmax)):
+            warnings.warn('You are specifying different `vmin` and `vmax`!',
+                          stacklevel=2)
         label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
                  + f'{midpoint:.1f} counts')
     elif(plot_mode == 'count_density'):
@@ -362,15 +370,16 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         ns = _get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
+        vmin = np.min(ns)
+        vmax = np.max(ns)
     elif(plot_mode == 'num_counts'):
         label = r'Number of counts in eace bin'
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
+        vmin = np.min(ns)
+        vmax = np.max(ns)
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
-
-    vmin = np.min(ns)
-    vmax = np.max(ns)
 
     norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
                                 vmax=kwargs.pop('vmax', vmax),
@@ -430,11 +439,11 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         fig = plt.gcf()
 
         extend = 'neither'
-        if norm.vmin > vmin and norm.vmax < vmax:
+        if norm.vmin > np.min(ns) and norm.vmax < np.max(ns):
             extend = 'both'
-        elif norm.vmin > vmin:
+        elif norm.vmin > np.min(ns):
             extend = 'min'
-        elif norm.vmax < vmax:
+        elif norm.vmax < np.max(ns):
             extend = 'max'
 
         fig.colorbar(

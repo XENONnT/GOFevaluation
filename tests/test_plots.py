@@ -44,6 +44,16 @@ class TestPlotEqualProbable(unittest.TestCase):
                                     plot_mode='sigma_deviation',
                                     **kwargs)
 
+        kwargs = {'vmin': -1, 'vmax': 2}
+        plot_equiprobable_histogram(data_sample=data_sample,
+                                    bin_edges=bin_edges,
+                                    order=order,
+                                    nevents_expected=nevents_expected,
+                                    plot_xlim=plot_xlim,
+                                    plot_ylim=plot_ylim,
+                                    plot_mode='sigma_deviation',
+                                    **kwargs)
+
         kwargs = {'vmin': -3, 'vmax': 3}
         plot_equiprobable_histogram(data_sample=data_sample,
                                     bin_edges=bin_edges,
