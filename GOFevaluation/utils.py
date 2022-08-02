@@ -1,7 +1,9 @@
+import warnings
 from matplotlib.patches import Rectangle
 from sklearn.preprocessing import KBinsDiscretizer
 import numpy as np
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
@@ -286,9 +288,10 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
-                                ax=None, nevents_expected=None, plot_xlim=None,
-                                plot_ylim=None, plot_mode='sigma_deviation',
-                                **kwargs):
+                                ax=None, nevents_expected=None,
+                                plot_xlim=None, plot_ylim=None,
+                                plot_mode='sigma_deviation',
+                                draw_colorbar=True, **kwargs):
     """Plot 1d/2d histogram of data sample binned according to the passed
     irregular binning.
     :param data_sample: Sample of unbinned data.
@@ -312,7 +315,9 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         Can be set to 'num_counts' to plot the total number of counts in each
         bin or 'count_density' to show the counts scaled by the inverse of the
         area of the bin, throws error if set to other value
-    :type plot_mode: string
+    :type plot_mode: string, optional
+    :param draw_colorbar: whether draw the colorbar
+    :type draw_colorbar: bool, optional
     :param plot_xlim: xlim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_xlim: tuple, optional
@@ -324,15 +329,17 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if order is None:
         order = [0, 1]
     if ax is None:
-        _, ax = mpl.pyplot.subplots(1, figsize=(4, 4))
+        _, ax = plt.subplots(1, figsize=(4, 4))
     if (plot_xlim is None) or (plot_ylim is None):
         xlim, ylim = get_plot_limits(data_sample)
+    if plot_mode == 'count_density':
+        if (plot_xlim is not None) or (plot_ylim is not None):
+            raise RuntimeError('Manually set x or y limit in'
+                               'count_density mode is misleading')
     if plot_xlim is not None:
         xlim = plot_xlim
     if plot_ylim is not None:
         ylim = plot_ylim
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
@@ -340,37 +347,43 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     be_first = be[0]
     be_second = be[1]
 
-    if(plot_mode == 'sigma_deviation'):
+    if plot_mode == 'sigma_deviation':
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
         cmap = mpl.cm.get_cmap(cmap_str)
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot ' +
                              'be None while plot_mode=\'sigma_deviation\'')
-
         n_bins = get_n_bins(bin_edges)
         midpoint = nevents_expected / n_bins
         delta = max(midpoint - ns.min(), ns.max() - midpoint)
         sigma_deviation = delta / np.sqrt(midpoint)
         ns = (ns - midpoint) / np.sqrt(midpoint)
-        norm = mpl.colors.Normalize(vmin=-sigma_deviation,
-                                    vmax=sigma_deviation)
+        vmin = -sigma_deviation
+        vmax = sigma_deviation
+        if abs(kwargs.get('vmin', vmin)) != abs(kwargs.get('vmax', vmax)):
+            warnings.warn('You are specifying different `vmin` and `vmax`!',
+                          stacklevel=2)
         label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
                  + f'{midpoint:.1f} counts')
-    elif(plot_mode == 'count_density'):
+    elif plot_mode == 'count_density':
         label = r'Counts per area in each bin'
         ns = _get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
-        norm = mpl.colors.Normalize(vmin=np.min(ns),
-                                    vmax=np.max(ns))
-    elif(plot_mode == 'num_counts'):
+        vmin = np.min(ns)
+        vmax = np.max(ns)
+    elif plot_mode == 'num_counts':
         label = r'Number of counts in eace bin'
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
-        norm = mpl.colors.Normalize(vmin=np.min(ns),
-                                    vmax=np.max(ns))
+        vmin = np.min(ns)
+        vmax = np.max(ns)
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
+
+    norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
+                                vmax=kwargs.pop('vmax', vmax),
+                                clip=False)
 
     if len(data_sample.shape) == 1:
         i = 0
@@ -385,9 +398,21 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     else:
         # plot rectangle for each bin
         i = 0
-        edgecolor = kwargs.get('edgecolor', 'k')
+        if order == [0, 1]:
+            be_first[0] = xlim[0]
+            be_first[-1] = xlim[1]
+        elif order == [1, 0]:
+            be_first[0] = ylim[0]
+            be_first[-1] = ylim[1]
+        edgecolor = kwargs.pop('edgecolor', 'k')
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
+            if order == [0, 1]:
+                be_second[i][0] = ylim[0]
+                be_second[i][-1] = ylim[1]
+            elif order == [1, 0]:
+                be_second[i][0] = xlim[0]
+                be_second[i][-1] = xlim[1]
             for low_s, high_s in zip(be_second[i][:-1], be_second[i][1:]):
                 if order == [0, 1]:
                     rec = Rectangle((low_f, low_s),
@@ -407,10 +432,26 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                 j += 1
             i += 1
 
-    fig = mpl.pyplot.gcf()
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
 
-    fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax,
-                 label=label)
+    if draw_colorbar:
+        fig = plt.gcf()
+
+        extend = 'neither'
+        if norm.vmin > np.min(ns) and norm.vmax < np.max(ns):
+            extend = 'both'
+        elif norm.vmin > np.min(ns):
+            extend = 'min'
+        elif norm.vmax < np.max(ns):
+            extend = 'max'
+
+        fig.colorbar(
+            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+            ax=ax,
+            label=label,
+            extend=extend
+        )
     return
 
 
