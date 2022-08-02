@@ -347,7 +347,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     be_first = be[0]
     be_second = be[1]
 
-    if(plot_mode == 'sigma_deviation'):
+    if plot_mode == 'sigma_deviation':
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
         cmap = mpl.cm.get_cmap(cmap_str)
         if nevents_expected is None:
@@ -365,14 +365,14 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                           stacklevel=2)
         label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
                  + f'{midpoint:.1f} counts')
-    elif(plot_mode == 'count_density'):
+    elif plot_mode == 'count_density':
         label = r'Counts per area in each bin'
         ns = _get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
         vmin = np.min(ns)
         vmax = np.max(ns)
-    elif(plot_mode == 'num_counts'):
+    elif plot_mode == 'num_counts':
         label = r'Number of counts in eace bin'
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = mpl.cm.get_cmap(cmap_str)
