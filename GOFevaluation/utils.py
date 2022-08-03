@@ -488,5 +488,3 @@ def _get_cmap(cmap_str, alpha=1):
     cmap = _cmap(np.arange(_cmap.N))
     cmap[:,-1] = alpha
     return mpl.colors.LinearSegmentedColormap.from_list("dummy", cmap)
-
- 
