@@ -396,7 +396,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                        high,
                        facecolor=cmap(norm(ns[i])),
                        **kwargs,
-                      )
+                       )
             i += 1
     else:
         # plot rectangle for each bin
@@ -486,5 +486,5 @@ def check_sample_sanity(sample):
 def _get_cmap(cmap_str, alpha=1):
     _cmap = mpl.cm.get_cmap(cmap_str)
     cmap = _cmap(np.arange(_cmap.N))
-    cmap[:,-1] = alpha
+    cmap[:, -1] = alpha
     return mpl.colors.LinearSegmentedColormap.from_list("dummy", cmap)
