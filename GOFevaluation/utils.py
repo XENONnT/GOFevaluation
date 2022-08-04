@@ -386,7 +386,8 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
                                 vmax=kwargs.pop('vmax', vmax),
                                 clip=False)
-
+    
+    edgecolor = kwargs.pop('edgecolor', 'k')
     if len(data_sample.shape) == 1:
         i = 0
         bin_edges[0] = xlim[0]
@@ -395,6 +396,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
             ax.axvspan(low,
                        high,
                        facecolor=cmap(norm(ns[i])),
+                       edgecolor=edgecolor,
                        **kwargs,
                        )
             i += 1
@@ -407,7 +409,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         elif order == [1, 0]:
             be_first[0] = ylim[0]
             be_first[-1] = ylim[1]
-        edgecolor = kwargs.pop('edgecolor', 'k')
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
             if order == [0, 1]:
