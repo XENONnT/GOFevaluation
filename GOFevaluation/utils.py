@@ -347,9 +347,11 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     be_first = be[0]
     be_second = be[1]
 
+    alpha = kwargs.pop('alpha', 1)
+
     if plot_mode == 'sigma_deviation':
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
-        cmap = mpl.cm.get_cmap(cmap_str)
+        cmap = _get_cmap(cmap_str, alpha=alpha)
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot ' +
                              'be None while plot_mode=\'sigma_deviation\'')
@@ -369,13 +371,13 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         label = r'Counts per area in each bin'
         ns = _get_count_density(ns, be_first, be_second, data_sample)
         cmap_str = kwargs.pop('cmap', 'viridis')
-        cmap = mpl.cm.get_cmap(cmap_str)
+        cmap = _get_cmap(cmap_str, alpha=alpha)
         vmin = np.min(ns)
         vmax = np.max(ns)
     elif plot_mode == 'num_counts':
         label = r'Number of counts in eace bin'
         cmap_str = kwargs.pop('cmap', 'viridis')
-        cmap = mpl.cm.get_cmap(cmap_str)
+        cmap = _get_cmap(cmap_str, alpha=alpha)
         vmin = np.min(ns)
         vmax = np.max(ns)
     else:
@@ -384,16 +386,19 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
                                 vmax=kwargs.pop('vmax', vmax),
                                 clip=False)
-
+    
+    edgecolor = kwargs.pop('edgecolor', 'k')
     if len(data_sample.shape) == 1:
         i = 0
         bin_edges[0] = xlim[0]
         bin_edges[-1] = xlim[1]
         for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-            rec = Rectangle((low, 0), high - low, 1,
-                            facecolor=cmap(norm(ns[i])),
-                            **kwargs)
-            ax.add_patch(rec)
+            ax.axvspan(low,
+                       high,
+                       facecolor=cmap(norm(ns[i])),
+                       edgecolor=edgecolor,
+                       **kwargs,
+                       )
             i += 1
     else:
         # plot rectangle for each bin
@@ -404,7 +409,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         elif order == [1, 0]:
             be_first[0] = ylim[0]
             be_first[-1] = ylim[1]
-        edgecolor = kwargs.pop('edgecolor', 'k')
         for low_f, high_f in zip(be_first[:-1], be_first[1:]):
             j = 0
             if order == [0, 1]:
@@ -450,7 +454,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
             mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
             ax=ax,
             label=label,
-            extend=extend
+            extend=extend,
         )
     return
 
@@ -478,3 +482,10 @@ def get_plot_limits(data_sample):
 def check_sample_sanity(sample):
     assert ~np.isnan(sample).any(), 'Sample contains NaN entries!'
     assert ~np.isinf(sample).any(), 'Sample contains inf values!'
+
+
+def _get_cmap(cmap_str, alpha=1):
+    _cmap = mpl.cm.get_cmap(cmap_str)
+    cmap = _cmap(np.arange(_cmap.N))
+    cmap[:, -1] = alpha
+    return mpl.colors.LinearSegmentedColormap.from_list("dummy", cmap)
