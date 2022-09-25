@@ -109,9 +109,9 @@ class TestEqpb(unittest.TestCase):
             self.assertEqual(np.shape(n), np.shape(count_density))
             for i in range(0, len(edges[0]) - 1):
                 for j in range(0, len(edges[1][i]) - 1):
-                    if(order == [0, 1]):
+                    if (order == [0, 1]):
                         self.assertAlmostEqual(1, count_density[i][j],
                                                places=12)
-                    elif(order == [1, 0]):
+                    elif (order == [1, 0]):
                         self.assertAlmostEqual(1, count_density[i][j],
                                                places=12)
