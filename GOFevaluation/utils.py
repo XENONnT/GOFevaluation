@@ -31,6 +31,8 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
+    check_dimensionality_for_eqpb(data_sample, reference_sample,
+                                  n_partitions, order)
     bin_edges = _get_equiprobable_binning(
         reference_sample=reference_sample, n_partitions=n_partitions,
         order=order)
@@ -161,13 +163,19 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
                     Physics", Ch. 11.2.3
     """
     if len(reference_sample.shape) == 1:
+        dim = 1
+    elif len(reference_sample.shape) == 2:
+        dim = reference_sample.shape[1]
+    else:
+        raise TypeError(f"reference_sample has unsupported shape {reference_sample.shape}.")
+    if dim == 1:
         enc = KBinsDiscretizer(n_bins=n_partitions, encode='ordinal',
                                strategy='quantile')
         enc.fit(np.vstack(reference_sample.T))
         bin_edges = enc.bin_edges_[0]
         bin_edges[0] = -np.inf
         bin_edges[-1] = np.inf
-    else:
+    elif dim == 2:
         if order is None:
             order = [0, 1]
         # Define data that is binned first and second based on the order argument
@@ -195,6 +203,10 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
             bin_edges_second.append(bin_edges)
         bin_edges_second = np.array(bin_edges_second)
         bin_edges = [bin_edges_first, bin_edges_second]
+    else:
+        raise NotImplementedError("Equiprobable binning is not (yet) "
+                                  f"implemented for {dim}-dimensional"
+                                  " reference samples.")
 
     return bin_edges
 
@@ -437,3 +449,30 @@ def get_plot_limits(data_sample):
 def check_sample_sanity(sample):
     assert ~np.isnan(sample).any(), 'Sample contains NaN entries!'
     assert ~np.isinf(sample).any(), 'Sample contains inf values!'
+
+
+def check_dimensionality_for_eqpb(data_sample, reference_sample,
+                                  n_partitions, order):
+    if len(reference_sample.shape) == 1:
+        assert len(data_sample.shape) == 1, "Shape of data_sample is"\
+            " incompatible with shape of reference_sample"
+        assert isinstance(n_partitions, int), "n_partitions must be an"\
+            " integer for 1-dim. data."
+        assert order is None, "providing a not-None value for order is"\
+            " ambiguous for 1-dim. data."
+    elif len(reference_sample.shape) == 2:
+        assert len(data_sample.shape) == 2, "Shape of data_sample is"\
+            " incompatible with shape of reference_sample."
+        # Check dimensionality is two
+        assert (data_sample.shape[1]
+                == reference_sample.shape[1]
+                == len(n_partitions)), \
+            "Shape of data_sample is incompatible with shape of"\
+            " reference_sample and/or dimensionality of n_partitions."
+        if data_sample.shape[1] > 2:
+            raise NotImplementedError("Equiprobable binning is not (yet) "
+                                      f"implemented for {data_sample.shape[1]}"
+                                      "-dimensional data.")
+    else:
+        raise TypeError("reference_sample has unsupported shape "
+                        f"{reference_sample.shape}.")
