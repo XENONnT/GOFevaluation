@@ -2,6 +2,7 @@ from matplotlib.patches import Rectangle
 from sklearn.preprocessing import KBinsDiscretizer
 import numpy as np
 import matplotlib as mpl
+import warnings
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
@@ -162,6 +163,7 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
+    check_for_ties(reference_sample)
     if len(reference_sample.shape) == 1:
         dim = 1
     elif len(reference_sample.shape) == 2:
@@ -356,7 +358,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
         cmap = mpl.cm.get_cmap(cmap_str)
         if nevents_expected is None:
-            raise ValueError('nevents_expected cannot ' +
+            raise ValueError('nevents_expected cannot '
                              'be None while plot_mode=\'sigma_deviation\'')
 
         n_bins = get_n_bins(bin_edges)
@@ -449,6 +451,13 @@ def get_plot_limits(data_sample):
 def check_sample_sanity(sample):
     assert ~np.isnan(sample).any(), 'Sample contains NaN entries!'
     assert ~np.isinf(sample).any(), 'Sample contains inf values!'
+
+
+def check_for_ties(sample):
+    any_ties = len(np.unique(sample, axis=0)) != len(sample)
+    if any_ties:
+        warnings.warn("reference_sample contains ties, this might "
+                      "cause problems!", stacklevel=2)
 
 
 def check_dimensionality_for_eqpb(data_sample, reference_sample,
