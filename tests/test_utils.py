@@ -170,7 +170,7 @@ class TestEqpb(unittest.TestCase):
         reference_sample = np.linspace(0, 1, 20)
         n_partitions = 4
         order = None
-        
+
         error_raised = False
         try:
             check_dimensionality_for_eqpb(data_sample=data_sample,
