@@ -4,6 +4,7 @@ from sklearn.preprocessing import KBinsDiscretizer
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from copy import deepcopy
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
@@ -75,12 +76,12 @@ def _get_finite_bin_edges(bin_edges, data_sample, order):
     xlim, ylim = get_plot_limits(data_sample)
     be = []
     if len(data_sample.shape) == 1:
-        bin_edges[0] = xlim[0]
-        bin_edges[-1] = xlim[1]
-        be = [bin_edges.copy(), None]
+        be = [deepcopy(bin_edges), None]
+        be[0][0] = xlim[0]
+        be[0][-1] = xlim[1]
     else:
-        be_first = bin_edges[0].copy()
-        be_second = bin_edges[1].copy()
+        be_first = deepcopy(bin_edges[0])
+        be_second = deepcopy(bin_edges[1])
 
         if order == [0, 1]:
             be_first[be_first == -np.inf] = xlim[0]
@@ -399,13 +400,13 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
                                 vmax=kwargs.pop('vmax', vmax),
                                 clip=False)
-    
+
     edgecolor = kwargs.pop('edgecolor', 'k')
     if len(data_sample.shape) == 1:
         i = 0
-        bin_edges[0] = xlim[0]
-        bin_edges[-1] = xlim[1]
-        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+        be_first[0] = xlim[0]
+        be_first[-1] = xlim[1]
+        for low, high in zip(be_first[:-1], be_first[1:]):
             ax.axvspan(low,
                        high,
                        facecolor=cmap(norm(ns[i])),
