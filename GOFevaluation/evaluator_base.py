@@ -175,11 +175,15 @@ class EvaluatorBaseBinned(EvaluatorBase):
         return pvalue, fake_gofs
 
     def get_pvalue(self, n_mc=1000):
-        """p-value is calculated
+        """The approximate p-value is calculated.
 
         Computes the p-value by means of generating toyMCs and calculating
         their GoF. The p-value can then be obtained from the distribution of
         these fake-gofs.
+
+        Note that this is only an approximate method, since the model is not
+        refitted to the toy data. Especially with low statistics and many fit
+        parameters, this can introduce a bias towards larger p-values.
 
         :param n_mc: Number of fake-gofs calculated, defaults to 1000
         :type n_mc: int, optional
@@ -190,12 +194,16 @@ class EvaluatorBaseBinned(EvaluatorBase):
         return pvalue
 
     def get_pvalue_return_fake_gofs(self, n_mc=1000):
-        """p-value is calculated
+        """The approximate p-value is calculated.
 
         Computes the p-value by means of generating toyMCs and calculating
         their GoF. The p-value can then be obtained from the distribution of
         these fake-gofs. The array of fake-gofs is returned together with
         the p-value.
+
+        Note that this is only an approximate method, since the model is not
+        refitted to the toy data. Especially with low statistics and many fit
+        parameters, this can introduce a bias towards larger p-values.
 
         :param n_mc: Number of fake-gofs calculated, defaults to 1000
         :type n_mc: int, optional
@@ -287,12 +295,16 @@ class EvaluatorBaseSample(EvaluatorBase):
         return pvalue, fake_gofs
 
     def get_pvalue(self, n_perm=1000, d_min=None):
-        """p-value is calculated
+        """The approximate p-value is calculated.
 
         Computes the p-value by means of re-sampling data sample
         and reference sample. For each re-sampling, the gof is calculated.
         The p-value can then be obtained from the distribution of these
         fake-gofs.
+
+        Note that this is only an approximate method, since the model is not
+        refitted to the re-sampled data. Especially with low statistics and
+        many fit parameters, this can introduce a bias towards larger p-values.
 
         :param n_perm: Number of fake-gofs calculated, defaults to 1000
         :type n_perm: int, optional
@@ -303,13 +315,17 @@ class EvaluatorBaseSample(EvaluatorBase):
         return pvalue
 
     def get_pvalue_return_fake_gofs(self, n_perm=1000, d_min=None):
-        """p-value is calculated
+        """The approximate p-value is calculated.
 
         Computes the p-value by means of re-sampling data sample
         and reference sample. For each re-sampling, the gof is calculated.
         The p-value can then be obtained from the distribution of these
         fake-gofs. The array of fake-gofs is returned together with
         the p-value.
+
+        Note that this is only an approximate method, since the model is not
+        refitted to the re-sampled. Especially with low statistics and many fit
+        parameters, this can introduce a bias towards larger p-values.
 
         :param n_perm: Number of fake-gofs calculated, defaults to 1000
         :type n_perm: int, optional

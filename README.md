@@ -7,7 +7,7 @@ Evaluate the Goodness-of-Fit (GoF) for binned or unbinned data.
 [![Coverage Status](https://coveralls.io/repos/github/XENONnT/GOFevaluation/badge.svg?branch=master)](https://coveralls.io/github/XENONnT/GOFevaluation?branch=master) 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5626909.svg)](https://doi.org/10.5281/zenodo.5626909)
 
-This GoF suite comprises the possibility to calculate different 1D / nD, binned / two-sample (unbinned) GoF measures and the corresponding p-value. A list of implemented measures is given below. 
+This GoF suite comprises the possibility to calculate different 1D / nD, binned / two-sample (unbinned) GoF measures and the corresponding approximate p-value. A list of implemented measures is given below. 
 
  
 ## Implemented GoF measures

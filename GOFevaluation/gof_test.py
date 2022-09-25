@@ -123,7 +123,7 @@ class GOFTest(object):
         return self.gofs
 
     def get_pvalues(self, **kwargs):
-        """Calculate p-values for individual GoF measures.
+        """Calculate the approximate p-values for individual GoF measures.
 
         :param kwargs: All parameters from a get_pvalue method are viable kwargs.
             gof_list: A list of gof_measures for which p-value should be
