@@ -198,8 +198,10 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None, **kwar
                 weights)
 
             # Get binning in second dimension (for each bin in first dimension):
-            enc = KBinsDiscretizer(n_bins=n_partitions[order[0]], encode='ordinal',
-                                strategy='quantile')
+            enc = KBinsDiscretizer(
+                n_bins=n_partitions[order[0]],
+                encode='ordinal',
+                strategy='quantile')
             bin_edges_second = []
             for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
                 mask = (first > low) & (first <= high)
