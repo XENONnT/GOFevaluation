@@ -1,6 +1,5 @@
 import warnings
 from matplotlib.patches import Rectangle
-from sklearn.preprocessing import KBinsDiscretizer
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -183,70 +182,30 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None, **kwar
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    if 'reference_sample_weights' in kwargs:
-        weights = kwargs.get('reference_sample_weights', np.ones(len(reference_sample)))
-        if len(reference_sample.shape) == 1:
-            bin_edges = _weighted_equi(n_partitions, reference_sample, weights)
-        else:
-            if order is None:
-                order = [0, 1]
-            first = reference_sample.T[order[0]]
-            second = reference_sample.T[order[1]]
-            bin_edges_first = _weighted_equi(
-                n_partitions[order[0]],
-                first,
-                weights)
-
-            # Get binning in second dimension (for each bin in first dimension):
-            enc = KBinsDiscretizer(
-                n_bins=n_partitions[order[0]],
-                encode='ordinal',
-                strategy='quantile')
-            bin_edges_second = []
-            for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
-                mask = (first > low) & (first <= high)
-                bin_edges = _weighted_equi(n_partitions[order[1]], second[mask], weights[mask])
-                bin_edges_second.append(bin_edges)
-            bin_edges_second = np.array(bin_edges_second)
-            bin_edges = [bin_edges_first, bin_edges_second]
-        return bin_edges
-
+    weights = kwargs.get('reference_sample_weights', np.ones(len(reference_sample)))
     if len(reference_sample.shape) == 1:
-        enc = KBinsDiscretizer(n_bins=n_partitions, encode='ordinal',
-                               strategy='quantile')
-        enc.fit(np.vstack(reference_sample.T))
-        bin_edges = enc.bin_edges_[0]
-        bin_edges[0] = -np.inf
-        bin_edges[-1] = np.inf
+        bin_edges = _weighted_equi(n_partitions, reference_sample, weights)
     else:
         if order is None:
             order = [0, 1]
-        # Define data that is binned first and second based on the order argument
-        first = np.vstack(reference_sample.T[order[0]])
-        second = np.vstack(reference_sample.T[order[1]])
-
-        # Get binning in first dimension:
-        enc = KBinsDiscretizer(n_bins=n_partitions[order[0]], encode='ordinal',
-                               strategy='quantile')
-        enc.fit(first)
-        bin_edges_first = enc.bin_edges_[0]
-        bin_edges_first[0] = -np.inf
-        bin_edges_first[-1] = np.inf
+        first = reference_sample.T[order[0]]
+        second = reference_sample.T[order[1]]
+        bin_edges_first = _weighted_equi(
+            n_partitions[order[0]],
+            first,
+            weights)
 
         # Get binning in second dimension (for each bin in first dimension):
-        enc = KBinsDiscretizer(n_bins=n_partitions[order[1]], encode='ordinal',
-                               strategy='quantile')
         bin_edges_second = []
         for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
             mask = (first > low) & (first <= high)
-            enc.fit(np.vstack(second[mask]))
-            bin_edges = enc.bin_edges_[0]
-            bin_edges[0] = -np.inf
-            bin_edges[-1] = np.inf
+            bin_edges = _weighted_equi(
+                n_partitions[order[1]],
+                second[mask],
+                weights[mask])
             bin_edges_second.append(bin_edges)
         bin_edges_second = np.array(bin_edges_second)
         bin_edges = [bin_edges_first, bin_edges_second]
-
     return bin_edges
 
 
