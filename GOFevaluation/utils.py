@@ -151,6 +151,7 @@ def _weighted_equi(n_bins, data, weights):
     weights = weights[data.argsort()]
     data = data[data.argsort()]
     cumsum = np.cumsum(weights)
+    cumsum -= cumsum[0]
     bin_edges = np.interp(np.linspace(0, 1, n_bins + 1)[1:-1], cumsum / cumsum[-1], data)
     bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
     return bin_edges
