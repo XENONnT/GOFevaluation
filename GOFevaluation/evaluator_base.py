@@ -103,7 +103,10 @@ class EvaluatorBaseBinned(EvaluatorBase):
             data_sample=reference_sample,
             reference_sample=reference_sample,
             n_partitions=n_partitions,
-            order=order)
+            order=order,
+            **kwargs)
+        # Have to pop argument not needed by plotting
+        kwargs.pop('reference_sample_weights', None)
         pdf = pdf / np.sum(pdf)
 
         binned_data = apply_irregular_binning(

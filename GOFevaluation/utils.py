@@ -35,7 +35,7 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     """
     bin_edges = _get_equiprobable_binning(
         reference_sample=reference_sample, n_partitions=n_partitions,
-        order=order)
+        order=order, **kwargs)
     n = apply_irregular_binning(data_sample=data_sample,
                                 bin_edges=bin_edges,
                                 order=order)
@@ -136,7 +136,28 @@ def _get_count_density(ns, be_first, be_second, data_sample):
     return ns
 
 
-def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
+def _weighted_equi(n_bins, data, weights):
+    """Perform a 1D equiprobable binning for the reference sample. The binning
+    is defined such that the number of counts in each bin are (almost) equal.
+    Bins are defined based on the ECDF of the reference sample.
+    :param n_bins: number of partitions in this dimension
+    :type n_bins: int
+    :param data: sample of unbinned reference
+    :type data: array_like, 1-Dimensional
+    :param weights: weights of samples
+    :type weights: array_like, 1-Dimensional
+    :return: Returns bin_edges.
+    :rtype: array_like, 1-Dimensional
+    """
+    weights = weights[data.argsort()]
+    data = data[data.argsort()]
+    cumsum = np.cumsum(weights)
+    bin_edges = np.interp(np.linspace(0, 1, n_bins + 1)[1:-1], cumsum / cumsum[-1], data)
+    bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
+    return bin_edges
+
+
+def _get_equiprobable_binning(reference_sample, n_partitions, order=None, **kwargs):
     """Define an equiprobable binning for the reference sample. The binning
     is defined such that the number of counts in each bin are (almost) equal.
     Bins are defined based on the ECDF of the reference sample.
@@ -162,6 +183,32 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
+    if 'reference_sample_weights' in kwargs:
+        weights = kwargs.get('reference_sample_weights', np.ones(len(reference_sample)))
+        if len(reference_sample.shape) == 1:
+            bin_edges = _weighted_equi(n_partitions, reference_sample, weights)
+        else:
+            if order is None:
+                order = [0, 1]
+            first = reference_sample.T[order[0]]
+            second = reference_sample.T[order[1]]
+            bin_edges_first = _weighted_equi(
+                n_partitions[order[0]],
+                first,
+                weights)
+
+            # Get binning in second dimension (for each bin in first dimension):
+            enc = KBinsDiscretizer(n_bins=n_partitions[order[0]], encode='ordinal',
+                                strategy='quantile')
+            bin_edges_second = []
+            for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
+                mask = (first > low) & (first <= high)
+                bin_edges = _weighted_equi(n_partitions[order[1]], second[mask], weights[mask])
+                bin_edges_second.append(bin_edges)
+            bin_edges_second = np.array(bin_edges_second)
+            bin_edges = [bin_edges_first, bin_edges_second]
+        return bin_edges
+
     if len(reference_sample.shape) == 1:
         enc = KBinsDiscretizer(n_bins=n_partitions, encode='ordinal',
                                strategy='quantile')
