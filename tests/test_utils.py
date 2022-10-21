@@ -39,11 +39,12 @@ class TestEqpb(unittest.TestCase):
 
         for reference_sample_weights in reference_sample_weights_l:
             for order in [[0, 1], [1, 0]]:
-                n, bin_edges = equiprobable_histogram(data_sample=data_sample,
-                                                      reference_sample=reference_sample,
-                                                      n_partitions=n_partitions,
-                                                      order=order,
-                                                      reference_sample_weights=reference_sample_weights)
+                n, bin_edges = equiprobable_histogram(
+                    data_sample=data_sample,
+                    reference_sample=reference_sample,
+                    n_partitions=n_partitions,
+                    order=order,
+                    reference_sample_weights=reference_sample_weights)
                 if reference_sample_weights is None:
                     self.assertEqual(np.sum(n), n_data)
                     for expect in n.reshape(-1):
@@ -51,14 +52,16 @@ class TestEqpb(unittest.TestCase):
                 else:
                     self.assertEqual(np.sum(n), reference_sample_weights.sum())
                     for expect in n.reshape(-1):
-                        self.assertEqual(expect, reference_sample_weights.sum() / np.product(n_partitions))
+                        self.assertEqual(
+                            expect,
+                            reference_sample_weights.sum() / np.product(n_partitions))
                 self.assertEqual(
                     np.shape(bin_edges[0])[0] - 1, n_partitions[order[0]])
                 self.assertEqual(np.shape(bin_edges[1])[0], n_partitions[order[0]])
                 self.assertEqual(
                     np.shape(bin_edges[1])[1] - 1, n_partitions[order[1]])
                 self.assertEqual(list(np.shape(n)),
-                                [n_partitions[order[0]], n_partitions[order[1]]])
+                                 [n_partitions[order[0]], n_partitions[order[1]]])
 
     def test__get_finite_bin_edges(self):
         '''Test if get_finite_bin_edges in fact gives the bin edges
