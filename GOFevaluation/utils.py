@@ -136,7 +136,7 @@ def _get_count_density(ns, be_first, be_second, data_sample):
 
 
 def _equi(n_bins, data):
-    """Perform a 1D equiprobable binning for data. 
+    """Perform a 1D equiprobable binning for data.
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
     :param data: sample of unbinned reference
@@ -150,7 +150,7 @@ def _equi(n_bins, data):
 
 
 def _weighted_equi(n_bins, data, weights):
-    """Perform a 1D equiprobable binning for data with weights. 
+    """Perform a 1D equiprobable binning for data with weights.
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
     :param data: sample of unbinned reference
@@ -160,7 +160,6 @@ def _weighted_equi(n_bins, data, weights):
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
     """
-    assert len(data) == len(weights), 'data and their weights should be in the same length'
     weights = weights[data.argsort()]
     data = data[data.argsort()]
     cumsum = np.cumsum(weights)
@@ -171,7 +170,7 @@ def _weighted_equi(n_bins, data, weights):
 
 
 def get_equiprobable_binning(reference_sample, n_partitions,
-                            order=None, reference_sample_weights=None):
+                             order=None, reference_sample_weights=None):
     """Define an equiprobable binning for the reference sample. The binning
     is defined such that the number of counts in each bin are (almost) equal.
     Bins are defined based on the ECDF of the reference sample.
@@ -201,6 +200,9 @@ def get_equiprobable_binning(reference_sample, n_partitions,
     """
     if reference_sample_weights is None:
         weights_flag = 0
+    else:
+        mesg = 'data and their weights should be in the same length'
+        assert len(reference_sample) == len(reference_sample_weights), mesg
     if len(reference_sample.shape) == 1:
         if weights_flag:
             bin_edges = _weighted_equi(
