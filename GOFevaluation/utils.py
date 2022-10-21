@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
-                           order=None, plot=False, **kwargs):
+                           order=None, plot=False, reference_sample_weights=None, **kwargs):
     """Define equiprobable histogram based on the reference sample and
     bin the data sample according to it.
     :param data_sample: Sample of unbinned data.
@@ -32,9 +32,9 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    bin_edges = _get_equiprobable_binning(
+    bin_edges = get_equiprobable_binning(
         reference_sample=reference_sample, n_partitions=n_partitions,
-        order=order, **kwargs)
+        order=order, reference_sample_weights=reference_sample_weights)
     n = apply_irregular_binning(data_sample=data_sample,
                                 bin_edges=bin_edges,
                                 order=order)
@@ -52,7 +52,7 @@ def _get_finite_bin_edges(bin_edges, data_sample, order):
     the counts in data_sample. Necessary for plotting
     and for determining bin area.
     :param bin_edges: list of bin_edges,
-    probably form _get_equiprobable_binning
+    probably form get_equiprobable_binning
     :type bin_edges: array
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
@@ -135,10 +135,22 @@ def _get_count_density(ns, be_first, be_second, data_sample):
     return ns
 
 
+def _equi(n_bins, data):
+    """Perform a 1D equiprobable binning for data. 
+    :param n_bins: number of partitions in this dimension
+    :type n_bins: int
+    :param data: sample of unbinned reference
+    :type data: array_like, 1-Dimensional
+    :return: Returns bin_edges.
+    :rtype: array_like, 1-Dimensional
+    """
+    bin_edges = np.quantile(data, np.linspace(0, 1, n_bins + 1)[1:-1])
+    bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
+    return bin_edges
+
+
 def _weighted_equi(n_bins, data, weights):
-    """Perform a 1D equiprobable binning for the reference sample. The binning
-    is defined such that the number of counts in each bin are (almost) equal.
-    Bins are defined based on the ECDF of the reference sample.
+    """Perform a 1D equiprobable binning for data with weights. 
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
     :param data: sample of unbinned reference
@@ -148,6 +160,7 @@ def _weighted_equi(n_bins, data, weights):
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
     """
+    assert len(data) == len(weights), 'data and their weights should be in the same length'
     weights = weights[data.argsort()]
     data = data[data.argsort()]
     cumsum = np.cumsum(weights)
@@ -157,7 +170,8 @@ def _weighted_equi(n_bins, data, weights):
     return bin_edges
 
 
-def _get_equiprobable_binning(reference_sample, n_partitions, order=None, **kwargs):
+def get_equiprobable_binning(reference_sample, n_partitions,
+                            order=None, reference_sample_weights=None):
     """Define an equiprobable binning for the reference sample. The binning
     is defined such that the number of counts in each bin are (almost) equal.
     Bins are defined based on the ECDF of the reference sample.
@@ -172,6 +186,8 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None, **kwar
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
+    :param reference_sample_weights: reference_sample_weights of reference_sample
+    :type reference_sample_weights: array_like, n-Dimensional
     :return: Returns bin_edges.
         1D: list of bin edges
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
@@ -183,27 +199,42 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None, **kwar
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    weights = kwargs.get('reference_sample_weights', np.ones(len(reference_sample)))
+    if reference_sample_weights is None:
+        weights_flag = 0
     if len(reference_sample.shape) == 1:
-        bin_edges = _weighted_equi(n_partitions, reference_sample, weights)
+        if weights_flag:
+            bin_edges = _weighted_equi(
+                n_partitions,
+                reference_sample,
+                reference_sample_weights)
+        else:
+            bin_edges = _equi(n_partitions, reference_sample)
     else:
         if order is None:
             order = [0, 1]
         first = reference_sample.T[order[0]]
         second = reference_sample.T[order[1]]
-        bin_edges_first = _weighted_equi(
-            n_partitions[order[0]],
-            first,
-            weights)
+        if weights_flag:
+            bin_edges_first = _weighted_equi(
+                n_partitions[order[0]],
+                first,
+                reference_sample_weights)
+        else:
+            bin_edges_first = _equi(n_partitions[order[0]], first)
 
         # Get binning in second dimension (for each bin in first dimension):
         bin_edges_second = []
         for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
             mask = (first > low) & (first <= high)
-            bin_edges = _weighted_equi(
-                n_partitions[order[1]],
-                second[mask],
-                weights[mask])
+            if weights_flag:
+                bin_edges = _weighted_equi(
+                    n_partitions[order[1]],
+                    second[mask],
+                    reference_sample_weights[mask])
+            else:
+                bin_edges = _equi(
+                    n_partitions[order[1]],
+                    second[mask])
             bin_edges_second.append(bin_edges)
         bin_edges_second = np.array(bin_edges_second)
         bin_edges = [bin_edges_first, bin_edges_second]
