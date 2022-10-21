@@ -40,10 +40,10 @@ class TestEqpb(unittest.TestCase):
         for reference_sample_weights in reference_sample_weights_l:
             for order in [[0, 1], [1, 0]]:
                 n, bin_edges = equiprobable_histogram(data_sample=data_sample,
-                                                    reference_sample=reference_sample,
-                                                    n_partitions=n_partitions,
-                                                    order=order,
-                                                    reference_sample_weights=reference_sample_weights)
+                                                      reference_sample=reference_sample,
+                                                      n_partitions=n_partitions,
+                                                      order=order,
+                                                      reference_sample_weights=reference_sample_weights)
                 if reference_sample_weights is None:
                     self.assertEqual(np.sum(n), n_data)
                     for expect in n.reshape(-1):
