@@ -35,22 +35,30 @@ class TestEqpb(unittest.TestCase):
         data_sample = np.vstack([data_sample for i in range(2)]).T
         reference_sample = np.linspace(0, 1, int(10 * n_data))
         reference_sample = np.vstack([reference_sample for i in range(2)]).T
+        reference_sample_weights_l = [None, np.ones(n_data), np.random.uniform(size=n_data)]
 
-        for order in [[0, 1], [1, 0]]:
-            n, bin_edges = equiprobable_histogram(data_sample=data_sample,
-                                                  reference_sample=reference_sample,
-                                                  n_partitions=n_partitions,
-                                                  order=order)
-            self.assertEqual(np.sum(n), n_data)
-            for expect in n.reshape(-1):
-                self.assertEqual(expect, n_data / np.product(n_partitions))
-            self.assertEqual(
-                np.shape(bin_edges[0])[0] - 1, n_partitions[order[0]])
-            self.assertEqual(np.shape(bin_edges[1])[0], n_partitions[order[0]])
-            self.assertEqual(
-                np.shape(bin_edges[1])[1] - 1, n_partitions[order[1]])
-            self.assertEqual(list(np.shape(n)),
-                             [n_partitions[order[0]], n_partitions[order[1]]])
+        for reference_sample_weights in reference_sample_weights_l:
+            for order in [[0, 1], [1, 0]]:
+                n, bin_edges = equiprobable_histogram(data_sample=data_sample,
+                                                    reference_sample=reference_sample,
+                                                    n_partitions=n_partitions,
+                                                    order=order,
+                                                    reference_sample_weights=reference_sample_weights)
+                if reference_sample_weights is None:
+                    self.assertEqual(np.sum(n), n_data)
+                    for expect in n.reshape(-1):
+                        self.assertEqual(np.sum(n), n_data / np.product(n_partitions))
+                else:
+                    self.assertEqual(np.sum(n), reference_sample_weights.sum())
+                    for expect in n.reshape(-1):
+                        self.assertEqual(expect, reference_sample_weights.sum() / np.product(n_partitions))
+                self.assertEqual(
+                    np.shape(bin_edges[0])[0] - 1, n_partitions[order[0]])
+                self.assertEqual(np.shape(bin_edges[1])[0], n_partitions[order[0]])
+                self.assertEqual(
+                    np.shape(bin_edges[1])[1] - 1, n_partitions[order[1]])
+                self.assertEqual(list(np.shape(n)),
+                                [n_partitions[order[0]], n_partitions[order[1]]])
 
     def test__get_finite_bin_edges(self):
         '''Test if get_finite_bin_edges in fact gives the bin edges
