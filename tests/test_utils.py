@@ -66,9 +66,10 @@ class TestEqpb(unittest.TestCase):
                         np.shape(bin_edges[1])[0], n_partitions[order[0]])
                     self.assertEqual(
                         np.shape(bin_edges[1])[1] - 1, n_partitions[order[1]])
-                    self.assertEqual(list(np.shape(n)),
-                                    [n_partitions[order[0]],
-                                    n_partitions[order[1]]])
+                    self.assertEqual(
+                        list(np.shape(n)),
+                        [n_partitions[order[0]],
+                        n_partitions[order[1]]])
 
     def test__get_finite_bin_edges(self):
         '''Test if get_finite_bin_edges in fact gives the bin edges
