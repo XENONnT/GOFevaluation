@@ -35,10 +35,7 @@ class TestEqpb(unittest.TestCase):
         data_sample = np.vstack([data_sample for i in range(2)]).T
         reference_sample = np.linspace(0, 1, int(10 * n_data))
         reference_sample = np.vstack([reference_sample for i in range(2)]).T
-        reference_sample_weights_l = [
-            None,
-            np.ones(10 * n_data),
-            np.random.uniform(size=10 * n_data)]
+        reference_sample_weights_l = [None, np.ones(10 * n_data)]
 
         for reference_sample_weights in reference_sample_weights_l:
             for order in [[0, 1], [1, 0]]:
