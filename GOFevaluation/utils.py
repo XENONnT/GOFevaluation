@@ -203,6 +203,7 @@ def get_equiprobable_binning(reference_sample, n_partitions,
     else:
         mesg = 'data and their weights should be in the same length'
         assert len(reference_sample) == len(reference_sample_weights), mesg
+        weights_flag = 1
     if len(reference_sample.shape) == 1:
         if weights_flag:
             bin_edges = _weighted_equi(
