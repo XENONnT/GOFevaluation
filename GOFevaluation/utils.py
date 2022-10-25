@@ -314,7 +314,9 @@ def apply_irregular_binning(data_sample, bin_edges,
         mesg = (f'Sum of binned data {np.sum(ns)}'
                 + ' unequal to sum of data weights'
                 + f' {np.sum(data_sample_weights)}')
-        assert np.sum(data_sample_weights) == np.sum(ns), mesg
+        assert np.isclose(
+            np.sum(data_sample_weights),
+            np.sum(ns), rtol=1e-3), mesg
     else:
         mesg = (f'Sum of binned data {np.sum(ns)}'
                 + ' unequal to size of data sample'
