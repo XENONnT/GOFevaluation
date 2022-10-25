@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
-                           order=None, plot=False, reference_sample_weights=None, **kwargs):
+                           order=None, plot=False, reference_sample_weights=None,
+                           data_sample_weights=None, **kwargs):
     """Define equiprobable histogram based on the reference sample and
     bin the data sample according to it.
     :param data_sample: Sample of unbinned data.
@@ -37,7 +38,8 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
         order=order, reference_sample_weights=reference_sample_weights)
     n = apply_irregular_binning(data_sample=data_sample,
                                 bin_edges=bin_edges,
-                                order=order)
+                                order=order,
+                                data_sample_weights=data_sample_weights)
     if plot:
         plot_equiprobable_histogram(data_sample=data_sample,
                                     bin_edges=bin_edges,

@@ -105,6 +105,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
             reference_sample=reference_sample,
             n_partitions=n_partitions,
             order=order,
+            data_sample_weights=reference_sample_weights,
             reference_sample_weights=reference_sample_weights,
             **kwargs)
         # Have to pop argument not needed by plotting
@@ -113,8 +114,7 @@ class EvaluatorBaseBinned(EvaluatorBase):
         binned_data = apply_irregular_binning(
             data_sample=data_sample,
             bin_edges=bin_edges,
-            order=order,
-            reference_sample_weights=reference_sample_weights)
+            order=order)
 
         if plot:
             plot_equiprobable_histogram(data_sample=data_sample,
