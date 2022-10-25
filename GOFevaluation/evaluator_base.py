@@ -113,7 +113,8 @@ class EvaluatorBaseBinned(EvaluatorBase):
         binned_data = apply_irregular_binning(
             data_sample=data_sample,
             bin_edges=bin_edges,
-            order=order)
+            order=order,
+            reference_sample_weights=reference_sample_weights)
 
         if plot:
             plot_equiprobable_histogram(data_sample=data_sample,

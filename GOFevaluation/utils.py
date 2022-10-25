@@ -189,7 +189,7 @@ def get_equiprobable_binning(reference_sample, n_partitions,
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
-    :param reference_sample_weights: reference_sample_weights of reference_sample
+    :param reference_sample_weights: weights of reference_sample
     :type reference_sample_weights: array_like, n-Dimensional
     :return: Returns bin_edges.
         1D: list of bin edges
@@ -260,7 +260,8 @@ def _check_weight_sanity(reference_sample, reference_sample_weights):
     assert np.all(reference_sample_weights >= 0), mesg
 
 
-def apply_irregular_binning(data_sample, bin_edges, order=None):
+def apply_irregular_binning(data_sample, bin_edges,
+                            order=None, data_sample_weights=None):
     """Apply irregular binning to data sample.
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
@@ -271,11 +272,21 @@ def apply_irregular_binning(data_sample, bin_edges, order=None):
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
+    :param data_sample_weights: weights of reference_sample
+    :type data_sample_weights: array_like, n-Dimensional
     :return: binned data. Number of counts in each bin.
     :rtype: array
     """
+    if data_sample_weights is None:
+        weights_flag = 0
+    else:
+        _check_weight_sanity(data_sample, data_sample_weights)
+        weights_flag = 1
     if len(data_sample.shape) == 1:
-        ns, _ = np.histogram(data_sample, bins=bin_edges)
+        ns, _ = np.histogram(
+            data_sample,
+            bins=bin_edges,
+            weights=data_sample_weights)
     else:
         if order is None:
             order = [0, 1]
@@ -286,12 +297,27 @@ def apply_irregular_binning(data_sample, bin_edges, order=None):
         i = 0
         for low, high in zip(bin_edges[0][:-1], bin_edges[0][1:]):
             mask = (first > low) & (first <= high)
-            n, _ = np.histogram(second[mask], bins=bin_edges[1][i])
+            if weights_flag:
+                n, _ = np.histogram(
+                    second[mask],
+                    bins=bin_edges[1][i],
+                    weights=data_sample_weights[mask])
+            else:
+                n, _ = np.histogram(
+                    second[mask],
+                    bins=bin_edges[1][i])
             ns.append(n)
             i += 1
-    assert len(data_sample) == np.sum(ns), (f'Sum of binned data {np.sum(ns)}'
-                                            + ' unequal to size of data sample'
-                                            + f' {len(data_sample)}')
+    if weights_flag:
+        mesg = (f'Sum of binned data {np.sum(ns)}'
+                + ' unequal to sum of data weights'
+                + f' {np.sum(data_sample_weights)}')
+        assert np.sum(data_sample_weights) == np.sum(ns), mesg
+    else:
+        mesg = (f'Sum of binned data {np.sum(ns)}'
+                + ' unequal to size of data sample'
+                + f' {len(data_sample)}')
+        assert len(data_sample) == np.sum(ns), mesg
     return np.array(ns, dtype=float)
 
 

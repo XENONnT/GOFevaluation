@@ -28,7 +28,7 @@ class TestEqpb(unittest.TestCase):
     def test_eqpb_2d_lin(self):
         '''Test if 2d eqpb in fact gives an equiprobable binning
         that conserves the number of data points and has the correct
-        number of bin edges.'''
+        number of bin edges. Weights are in uniform histogram. '''
         n_data = 12
         n_partitions = [2, 3]
         data_sample = np.linspace(0, 1, n_data)
@@ -48,7 +48,7 @@ class TestEqpb(unittest.TestCase):
     def test_eqpb_2d_log(self):
         '''Test if 2d eqpb in fact gives an equiprobable binning
         that conserves the number of data points and has the correct
-        number of bin edges.'''
+        number of bin edges. Weights are in log-like histogram. '''
         n_data = 12
         n_partitions = [2, 3]
         data_sample = np.logspace(0, 1, n_data)
