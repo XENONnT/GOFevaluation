@@ -192,7 +192,7 @@ def get_equiprobable_binning(reference_sample, n_partitions,
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :param reference_sample_weights: weights of reference_sample
-    :type reference_sample_weights: array_like, n-Dimensional
+    :type reference_sample_weights: array_like, 1-Dimensional
     :return: Returns bin_edges.
         1D: list of bin edges
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
@@ -275,7 +275,7 @@ def apply_irregular_binning(data_sample, bin_edges,
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
     :param data_sample_weights: weights of reference_sample
-    :type data_sample_weights: array_like, n-Dimensional
+    :type data_sample_weights: array_like, 1-Dimensional
     :return: binned data. Number of counts in each bin.
     :rtype: array
     """
@@ -303,7 +303,7 @@ def apply_irregular_binning(data_sample, bin_edges,
                 n, _ = np.histogram(
                     second[mask],
                     bins=bin_edges[1][i],
-                    weights=data_sample_weights[mask])
+                    weights=data_sample_weights[mask.flatten()])
             else:
                 n, _ = np.histogram(
                     second[mask],
