@@ -135,36 +135,40 @@ def _get_count_density(ns, be_first, be_second, data_sample):
     return ns
 
 
-def _equi(n_bins, data):
-    """Perform a 1D equiprobable binning for data.
+def _equi(n_bins, reference_sample):
+    """Perform a 1D equiprobable binning for reference_sample.
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
-    :param data: sample of unbinned reference
-    :type data: array_like, 1-Dimensional
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, 1-Dimensional
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
     """
-    bin_edges = np.quantile(data, np.linspace(0, 1, n_bins + 1)[1:-1])
+    bin_edges = np.quantile(reference_sample, np.linspace(0, 1, n_bins + 1)[1:-1])
     bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
     return bin_edges
 
 
-def _weighted_equi(n_bins, data, weights):
-    """Perform a 1D equiprobable binning for data with weights.
+def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
+    """Perform a 1D equiprobable binning for reference_sample with weights.
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
-    :param data: sample of unbinned reference
-    :type data: array_like, 1-Dimensional
-    :param weights: weights of samples
-    :type weights: array_like, 1-Dimensional
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, 1-Dimensional
+    :param reference_sample_weights: weights of samples
+    :type reference_sample_weights: array_like, 1-Dimensional
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
     """
-    weights = weights[data.argsort()]
-    data = data[data.argsort()]
-    cumsum = np.cumsum(weights)
+    argsort = reference_sample.argsort()
+    reference_sample_weights = reference_sample_weights[argsort]
+    reference_sample = reference_sample[argsort]
+    cumsum = np.cumsum(reference_sample_weights)
     cumsum -= cumsum[0]
-    bin_edges = np.interp(np.linspace(0, 1, n_bins + 1)[1:-1], cumsum / cumsum[-1], data)
+    bin_edges = np.interp(
+        np.linspace(0, 1, n_bins + 1)[1:-1],
+        cumsum / cumsum[-1],
+        reference_sample)
     bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
     return bin_edges
 
@@ -201,8 +205,7 @@ def get_equiprobable_binning(reference_sample, n_partitions,
     if reference_sample_weights is None:
         weights_flag = 0
     else:
-        mesg = 'data and their weights should be in the same length'
-        assert len(reference_sample) == len(reference_sample_weights), mesg
+        _check_weight_sanity(reference_sample, reference_sample_weights)
         weights_flag = 1
     if len(reference_sample.shape) == 1:
         if weights_flag:
@@ -242,6 +245,19 @@ def get_equiprobable_binning(reference_sample, n_partitions,
         bin_edges_second = np.array(bin_edges_second)
         bin_edges = [bin_edges_first, bin_edges_second]
     return bin_edges
+
+
+def _check_weight_sanity(reference_sample, reference_sample_weights):
+    """Check if the weights are larger than 0,
+    and if reference has the same shape to the weights"""
+    mesg = 'data and their weights should be in the same length'
+    assert len(reference_sample) == len(reference_sample_weights), mesg
+
+    mesg = 'weights should be 1D array'
+    assert len(reference_sample_weights.shape) == 1, mesg
+
+    mesg = 'all weights should be non-negative'
+    assert np.all(reference_sample_weights > 0), mesg
 
 
 def apply_irregular_binning(data_sample, bin_edges, order=None):
