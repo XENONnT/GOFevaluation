@@ -257,7 +257,7 @@ def _check_weight_sanity(reference_sample, reference_sample_weights):
     assert len(reference_sample_weights.shape) == 1, mesg
 
     mesg = 'all weights should be non-negative'
-    assert np.all(reference_sample_weights > 0), mesg
+    assert np.all(reference_sample_weights >= 0), mesg
 
 
 def apply_irregular_binning(data_sample, bin_edges, order=None):
