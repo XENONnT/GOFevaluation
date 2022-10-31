@@ -108,7 +108,6 @@ class EvaluatorBaseBinned(EvaluatorBase):
             data_sample_weights=reference_sample_weights,
             reference_sample_weights=reference_sample_weights,
             **kwargs)
-        # Have to pop argument not needed by plotting
         pdf = pdf / np.sum(pdf)
 
         binned_data = apply_irregular_binning(
