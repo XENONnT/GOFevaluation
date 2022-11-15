@@ -85,7 +85,8 @@ class EvaluatorBaseBinned(EvaluatorBase):
     @classmethod
     def bin_equiprobable(cls, data_sample, reference_sample, nevents_expected,
                          n_partitions, order=None, plot=False,
-                         plot_mode='sigma_deviation', **kwargs):
+                         plot_mode='sigma_deviation',
+                         reference_sample_weights=None, **kwargs):
         """Initialize with data and reference sample that are binned
         such that the expectation value is the same in each bin.
         kwargs are passed to `plot_equiprobable_histogram` if plot is True.
@@ -103,7 +104,10 @@ class EvaluatorBaseBinned(EvaluatorBase):
             data_sample=reference_sample,
             reference_sample=reference_sample,
             n_partitions=n_partitions,
-            order=order)
+            order=order,
+            data_sample_weights=reference_sample_weights,
+            reference_sample_weights=reference_sample_weights,
+            **kwargs)
         pdf = pdf / np.sum(pdf)
 
         binned_data = apply_irregular_binning(
