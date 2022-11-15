@@ -23,6 +23,10 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     :type order: list, optional
     :param plot: if True, histogram of data sample is plotted, defaults to False
     :type plot: bool, optional
+    :param reference_sample_weights: weights of reference_sample
+    :type reference_sample_weights: array_like, 1-Dimensional
+    :param data_sample_weights: weights of data_sample
+    :type data_sample_weights: array_like, 1-Dimensional
     :return: n, bin_edges
         n: number of counts of data sample in each bin
         bin_edges: For order [0, 1]([1, 0])
@@ -157,7 +161,7 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
     :type n_bins: int
     :param reference_sample: sample of unbinned reference
     :type reference_sample: array_like, 1-Dimensional
-    :param reference_sample_weights: weights of samples
+    :param reference_sample_weights: weights of reference_sample
     :type reference_sample_weights: array_like, 1-Dimensional
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
@@ -274,7 +278,7 @@ def apply_irregular_binning(data_sample, bin_edges,
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
-    :param data_sample_weights: weights of reference_sample
+    :param data_sample_weights: weights of data_sample
     :type data_sample_weights: array_like, 1-Dimensional
     :return: binned data. Number of counts in each bin.
     :rtype: array
