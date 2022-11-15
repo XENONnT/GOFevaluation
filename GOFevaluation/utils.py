@@ -40,7 +40,7 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     """
     check_dimensionality_for_eqpb(data_sample, reference_sample,
                                   n_partitions, order)
-    bin_edges = _get_equiprobable_binning(
+    bin_edges = get_equiprobable_binning(
         reference_sample=reference_sample, n_partitions=n_partitions,
         order=order, reference_sample_weights=reference_sample_weights)
     n = apply_irregular_binning(data_sample=data_sample,
@@ -261,7 +261,6 @@ def get_equiprobable_binning(reference_sample, n_partitions,
             bin_edges_second.append(bin_edges)
         bin_edges_second = np.array(bin_edges_second)
         bin_edges = [bin_edges_first, bin_edges_second]
-
     return bin_edges
 
 
