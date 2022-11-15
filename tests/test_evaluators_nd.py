@@ -99,6 +99,15 @@ class TestBinnedPoissonChi2GOF(unittest.TestCase):
                 n_partitions=n_partitions, order=order)
             gof_bin_equiprobable = gofclass_bin_equiprobable.get_gof()
             self.assertAlmostEqual(gof_bin_equiprobable, gof_from_binned, 10)
+        # Test if equiprobable binning with weights=None
+        # and weights=np.ones give the same result
+        gofclass_bin_equiprobable = BinnedPoissonChi2GOF.bin_equiprobable(
+            data_sample, reference_sample, nevents_expected=n_expected,
+            n_partitions=n_partitions,
+            reference_sample_weights=np.ones(len(reference_sample)))
+        gof_bin_equiprobable_weighted = gofclass_bin_equiprobable.get_gof()
+        self.assertAlmostEqual(
+            gof_bin_equiprobable_weighted, gof_bin_equiprobable, 10)
 
 
 class TestPointToPointGOF(unittest.TestCase):
@@ -290,6 +299,15 @@ class TestBinnedChi2GOF(unittest.TestCase):
                 n_partitions=n_partitions, order=order)
             gof_bin_equiprobable = gofclass_bin_equiprobable.get_gof()
             self.assertAlmostEqual(gof_bin_equiprobable, gof_from_binned, 10)
+        # Test if equiprobable binning with weights=None
+        # and weights=np.ones give the same result
+        gofclass_bin_equiprobable = BinnedChi2GOF.bin_equiprobable(
+            data_sample, reference_sample, nevents_expected=n_expected,
+            n_partitions=n_partitions,
+            reference_sample_weights=np.ones(len(reference_sample)))
+        gof_bin_equiprobable_weighted = gofclass_bin_equiprobable.get_gof()
+        self.assertAlmostEqual(
+            gof_bin_equiprobable_weighted, gof_bin_equiprobable, 10)
 
 
 class TestPvalue(unittest.TestCase):

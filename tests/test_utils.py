@@ -28,32 +28,107 @@ class TestEqpb(unittest.TestCase):
         self.assertEqual(len(bin_edges) - 1, n_partitions)
         self.assertEqual(len(n), n_partitions)
 
-    def test_eqpb_2d(self):
+    def test_eqpb_2d_lin(self):
         '''Test if 2d eqpb in fact gives an equiprobable binning
         that conserves the number of data points and has the correct
-        number of bin edges. Test this for both orderings.'''
+        number of bin edges. Weights are in uniform histogram. '''
         n_data = 12
         n_partitions = [2, 3]
         data_sample = np.linspace(0, 1, n_data)
-        data_sample = np.vstack([data_sample for i in range(2)]).T
         reference_sample = np.linspace(0, 1, int(10 * n_data))
+        reference_sample_weights_l = [None, np.ones(10 * n_data)]
+        data_sample = np.vstack([data_sample for i in range(2)]).T
         reference_sample = np.vstack([reference_sample for i in range(2)]).T
 
+        for reference_sample_weights in reference_sample_weights_l:
+            self.eqpb_2d(
+                data_sample,
+                reference_sample,
+                n_partitions,
+                reference_sample_weights,
+                n_data)
+
+    def test_eqpb_2d_log(self):
+        '''Test if 2d eqpb in fact gives an equiprobable binning
+        that conserves the number of data points and has the correct
+        number of bin edges. Weights are in log-like histogram. '''
+        n_data = 12
+        n_partitions = [2, 3]
+        data_sample = np.logspace(0, 1, n_data)
+        reference_sample = np.linspace(1, 10, int(10 * n_data))
+        weights = np.log(np.linspace(1, 10, int(10 * n_data)))
+        reference_sample_weights = np.hstack([0, np.diff(weights)])
+        reference_sample_weights_l = [reference_sample_weights]
+        data_sample = np.vstack([data_sample for i in range(2)]).T
+        reference_sample = np.vstack([reference_sample for i in range(2)]).T
+
+        for reference_sample_weights in reference_sample_weights_l:
+            self.eqpb_2d(
+                data_sample,
+                reference_sample,
+                n_partitions,
+                reference_sample_weights,
+                n_data)
+
+    def eqpb_2d(self, data_sample,
+                reference_sample, n_partitions,
+                reference_sample_weights, n_data):
+        '''Test 2d equiprobable binning. Test this for both orderings.'''
         for order in [[0, 1], [1, 0]]:
-            n, bin_edges = equiprobable_histogram(data_sample=data_sample,
-                                                  reference_sample=reference_sample,
-                                                  n_partitions=n_partitions,
-                                                  order=order)
+            n, bin_edges = equiprobable_histogram(
+                data_sample=data_sample,
+                reference_sample=reference_sample,
+                n_partitions=n_partitions,
+                order=order,
+                reference_sample_weights=reference_sample_weights)
             self.assertEqual(np.sum(n), n_data)
             for expect in n.reshape(-1):
                 self.assertEqual(expect, n_data / np.product(n_partitions))
             self.assertEqual(
                 np.shape(bin_edges[0])[0] - 1, n_partitions[order[0]])
-            self.assertEqual(np.shape(bin_edges[1])[0], n_partitions[order[0]])
+            self.assertEqual(
+                np.shape(bin_edges[1])[0], n_partitions[order[0]])
             self.assertEqual(
                 np.shape(bin_edges[1])[1] - 1, n_partitions[order[1]])
-            self.assertEqual(list(np.shape(n)),
-                             [n_partitions[order[0]], n_partitions[order[1]]])
+            self.assertEqual(
+                list(np.shape(n)),
+                [n_partitions[order[0]], n_partitions[order[1]]])
+
+    def test_eqpb_2d_none(self):
+        '''Test if equiprobable binning with weights=None and weights=np.ones
+        give the same result'''
+        n_data = 12
+        n_partitions = [2, 3]
+        data_sample = np.linspace(0, 1, n_data)
+        reference_sample = np.linspace(0, 1, int(10 * n_data))
+        data_sample = np.vstack([data_sample for i in range(2)]).T
+        reference_sample = np.vstack([reference_sample for i in range(2)]).T
+        order = [0, 1]
+
+        _, bin_edges_none = equiprobable_histogram(
+            data_sample=data_sample,
+            reference_sample=reference_sample,
+            n_partitions=n_partitions,
+            order=order,
+            reference_sample_weights=None)
+
+        _, bin_edges_ones = equiprobable_histogram(
+            data_sample=data_sample,
+            reference_sample=reference_sample,
+            n_partitions=n_partitions,
+            order=order,
+            reference_sample_weights=np.ones(10 * n_data))
+
+        self.assertEqual(len(bin_edges_none[0]), len(bin_edges_ones[0]))
+        for i in range(bin_edges_none[0].shape[0]):
+            self.assertAlmostEqual(
+                bin_edges_none[0][i],
+                bin_edges_ones[0][i], places=12)
+        for i in range(bin_edges_none[1].shape[0]):
+            for j in range(bin_edges_none[1].shape[1]):
+                self.assertAlmostEqual(
+                    bin_edges_none[1][i][j],
+                    bin_edges_ones[1][i][j], places=12)
 
     def test__get_finite_bin_edges(self):
         '''Test if get_finite_bin_edges in fact gives the bin edges

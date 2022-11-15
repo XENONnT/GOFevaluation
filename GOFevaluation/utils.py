@@ -1,6 +1,5 @@
 import warnings
 from matplotlib.patches import Rectangle
-from sklearn.preprocessing import KBinsDiscretizer
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -8,7 +7,8 @@ from copy import deepcopy
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
-                           order=None, plot=False, **kwargs):
+                           order=None, plot=False, reference_sample_weights=None,
+                           data_sample_weights=None, **kwargs):
     """Define equiprobable histogram based on the reference sample and
     bin the data sample according to it.
     :param data_sample: Sample of unbinned data.
@@ -24,6 +24,10 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     :type order: list, optional
     :param plot: if True, histogram of data sample is plotted, defaults to False
     :type plot: bool, optional
+    :param reference_sample_weights: weights of reference_sample
+    :type reference_sample_weights: array_like, 1-Dimensional
+    :param data_sample_weights: weights of data_sample
+    :type data_sample_weights: array_like, 1-Dimensional
     :return: n, bin_edges
         n: number of counts of data sample in each bin
         bin_edges: For order [0, 1]([1, 0])
@@ -38,10 +42,11 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
                                   n_partitions, order)
     bin_edges = _get_equiprobable_binning(
         reference_sample=reference_sample, n_partitions=n_partitions,
-        order=order)
+        order=order, reference_sample_weights=reference_sample_weights)
     n = apply_irregular_binning(data_sample=data_sample,
                                 bin_edges=bin_edges,
-                                order=order)
+                                order=order,
+                                data_sample_weights=data_sample_weights)
     if plot:
         plot_equiprobable_histogram(data_sample=data_sample,
                                     bin_edges=bin_edges,
@@ -56,7 +61,7 @@ def _get_finite_bin_edges(bin_edges, data_sample, order):
     the counts in data_sample. Necessary for plotting
     and for determining bin area.
     :param bin_edges: list of bin_edges,
-    probably form _get_equiprobable_binning
+    probably form get_equiprobable_binning
     :type bin_edges: array
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
@@ -139,7 +144,46 @@ def _get_count_density(ns, be_first, be_second, data_sample):
     return ns
 
 
-def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
+def _equi(n_bins, reference_sample):
+    """Perform a 1D equiprobable binning for reference_sample.
+    :param n_bins: number of partitions in this dimension
+    :type n_bins: int
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, 1-Dimensional
+    :return: Returns bin_edges.
+    :rtype: array_like, 1-Dimensional
+    """
+    bin_edges = np.quantile(reference_sample, np.linspace(0, 1, n_bins + 1)[1:-1])
+    bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
+    return bin_edges
+
+
+def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
+    """Perform a 1D equiprobable binning for reference_sample with weights.
+    :param n_bins: number of partitions in this dimension
+    :type n_bins: int
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, 1-Dimensional
+    :param reference_sample_weights: weights of reference_sample
+    :type reference_sample_weights: array_like, 1-Dimensional
+    :return: Returns bin_edges.
+    :rtype: array_like, 1-Dimensional
+    """
+    argsort = reference_sample.argsort()
+    reference_sample_weights = reference_sample_weights[argsort]
+    reference_sample = reference_sample[argsort]
+    cumsum = np.cumsum(reference_sample_weights)
+    cumsum -= cumsum[0]
+    bin_edges = np.interp(
+        np.linspace(0, 1, n_bins + 1)[1:-1],
+        cumsum / cumsum[-1],
+        reference_sample)
+    bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
+    return bin_edges
+
+
+def get_equiprobable_binning(reference_sample, n_partitions,
+                             order=None, reference_sample_weights=None):
     """Define an equiprobable binning for the reference sample. The binning
     is defined such that the number of counts in each bin are (almost) equal.
     Bins are defined based on the ECDF of the reference sample.
@@ -154,6 +198,8 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
+    :param reference_sample_weights: weights of reference_sample
+    :type reference_sample_weights: array_like, 1-Dimensional
     :return: Returns bin_edges.
         1D: list of bin edges
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
@@ -169,53 +215,71 @@ def _get_equiprobable_binning(reference_sample, n_partitions, order=None):
     if len(reference_sample.shape) == 1:
         dim = 1
     elif len(reference_sample.shape) == 2:
-        dim = reference_sample.shape[1]
+        dim = 2
     else:
         raise TypeError(f"reference_sample has unsupported shape {reference_sample.shape}.")
+
+    if reference_sample_weights is None:
+        weights_flag = 0
+    else:
+        _check_weight_sanity(reference_sample, reference_sample_weights)
+        weights_flag = 1
     if dim == 1:
-        enc = KBinsDiscretizer(n_bins=n_partitions, encode='ordinal',
-                               strategy='quantile')
-        enc.fit(np.vstack(reference_sample.T))
-        bin_edges = enc.bin_edges_[0]
-        bin_edges[0] = -np.inf
-        bin_edges[-1] = np.inf
+        if weights_flag:
+            bin_edges = _weighted_equi(
+                n_partitions,
+                reference_sample,
+                reference_sample_weights)
+        else:
+            bin_edges = _equi(n_partitions, reference_sample)
     elif dim == 2:
         if order is None:
             order = [0, 1]
-        # Define data that is binned first and second based on the order argument
-        first = np.vstack(reference_sample.T[order[0]])
-        second = np.vstack(reference_sample.T[order[1]])
-
-        # Get binning in first dimension:
-        enc = KBinsDiscretizer(n_bins=n_partitions[order[0]], encode='ordinal',
-                               strategy='quantile')
-        enc.fit(first)
-        bin_edges_first = enc.bin_edges_[0]
-        bin_edges_first[0] = -np.inf
-        bin_edges_first[-1] = np.inf
+        first = reference_sample.T[order[0]]
+        second = reference_sample.T[order[1]]
+        if weights_flag:
+            bin_edges_first = _weighted_equi(
+                n_partitions[order[0]],
+                first,
+                reference_sample_weights)
+        else:
+            bin_edges_first = _equi(n_partitions[order[0]], first)
 
         # Get binning in second dimension (for each bin in first dimension):
-        enc = KBinsDiscretizer(n_bins=n_partitions[order[1]], encode='ordinal',
-                               strategy='quantile')
         bin_edges_second = []
         for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
             mask = (first > low) & (first <= high)
-            enc.fit(np.vstack(second[mask]))
-            bin_edges = enc.bin_edges_[0]
-            bin_edges[0] = -np.inf
-            bin_edges[-1] = np.inf
+            if weights_flag:
+                bin_edges = _weighted_equi(
+                    n_partitions[order[1]],
+                    second[mask],
+                    reference_sample_weights[mask])
+            else:
+                bin_edges = _equi(
+                    n_partitions[order[1]],
+                    second[mask])
             bin_edges_second.append(bin_edges)
         bin_edges_second = np.array(bin_edges_second)
         bin_edges = [bin_edges_first, bin_edges_second]
-    else:
-        raise NotImplementedError("Equiprobable binning is not (yet) "
-                                  f"implemented for {dim}-dimensional"
-                                  " reference samples.")
 
     return bin_edges
 
 
-def apply_irregular_binning(data_sample, bin_edges, order=None):
+def _check_weight_sanity(reference_sample, reference_sample_weights):
+    """Check if the weights are larger than 0,
+    and if reference has the same shape to the weights"""
+    mesg = 'data and their weights should be in the same length'
+    assert len(reference_sample) == len(reference_sample_weights), mesg
+
+    mesg = 'weights should be 1D array'
+    assert len(reference_sample_weights.shape) == 1, mesg
+
+    mesg = 'all weights should be non-negative'
+    assert np.all(reference_sample_weights >= 0), mesg
+
+
+def apply_irregular_binning(data_sample, bin_edges,
+                            order=None, data_sample_weights=None):
     """Apply irregular binning to data sample.
     :param data_sample: Sample of unbinned data.
     :type data_sample: array
@@ -226,11 +290,21 @@ def apply_irregular_binning(data_sample, bin_edges, order=None):
         [1, 0] : first bin y then bin x for each partition in y
         if None, the natural order, i.e. [0, 1] is used. For 1D just put None.
     :type order: list, optional
+    :param data_sample_weights: weights of data_sample
+    :type data_sample_weights: array_like, 1-Dimensional
     :return: binned data. Number of counts in each bin.
     :rtype: array
     """
+    if data_sample_weights is None:
+        weights_flag = 0
+    else:
+        _check_weight_sanity(data_sample, data_sample_weights)
+        weights_flag = 1
     if len(data_sample.shape) == 1:
-        ns, _ = np.histogram(data_sample, bins=bin_edges)
+        ns, _ = np.histogram(
+            data_sample,
+            bins=bin_edges,
+            weights=data_sample_weights)
     else:
         if order is None:
             order = [0, 1]
@@ -241,12 +315,29 @@ def apply_irregular_binning(data_sample, bin_edges, order=None):
         i = 0
         for low, high in zip(bin_edges[0][:-1], bin_edges[0][1:]):
             mask = (first > low) & (first <= high)
-            n, _ = np.histogram(second[mask], bins=bin_edges[1][i])
+            if weights_flag:
+                n, _ = np.histogram(
+                    second[mask],
+                    bins=bin_edges[1][i],
+                    weights=data_sample_weights[mask.flatten()])
+            else:
+                n, _ = np.histogram(
+                    second[mask],
+                    bins=bin_edges[1][i])
             ns.append(n)
             i += 1
-    assert len(data_sample) == np.sum(ns), (f'Sum of binned data {np.sum(ns)}'
-                                            + ' unequal to size of data sample'
-                                            + f' {len(data_sample)}')
+    if weights_flag:
+        mesg = (f'Sum of binned data {np.sum(ns)}'
+                + ' unequal to sum of data weights'
+                + f' {np.sum(data_sample_weights)}')
+        assert np.isclose(
+            np.sum(data_sample_weights),
+            np.sum(ns), rtol=1e-3), mesg
+    else:
+        mesg = (f'Sum of binned data {np.sum(ns)}'
+                + ' unequal to size of data sample'
+                + f' {len(data_sample)}')
+        assert len(data_sample) == np.sum(ns), mesg
     return np.array(ns, dtype=float)
 
 
