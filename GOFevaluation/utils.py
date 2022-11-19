@@ -442,24 +442,34 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
 
     alpha = kwargs.pop('alpha', 1)
 
-    if plot_mode == 'sigma_deviation':
+    if plot_mode == 'sigma_deviation' or plot_mode == 'pdf_sigma_deviation':
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
         cmap = _get_cmap(cmap_str, alpha=alpha)
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot ' +
                              'be None while plot_mode=\'sigma_deviation\'')
         n_bins = get_n_bins(bin_edges)
-        midpoint = nevents_expected / n_bins
-        delta = max(midpoint - ns.min(), ns.max() - midpoint)
-        sigma_deviation = delta / np.sqrt(midpoint)
-        ns = (ns - midpoint) / np.sqrt(midpoint)
+        if plot_mode == 'sigma_deviation':
+            midpoint = nevents_expected / n_bins
+            delta = max(midpoint - ns.min(), ns.max() - midpoint)
+            sigma_deviation = delta / np.sqrt(midpoint)
+            ns = (ns - midpoint) / np.sqrt(midpoint)
+            label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
+                     + f'{midpoint:.1f} counts')
+        elif plot_mode == 'pdf_sigma_deviation':
+            pdf = kwargs.pop('pdf', None)
+            if pdf is None:
+                raise ValueError(f'pdf in plot_mode {plot_mode} is not found.')
+            n_bins = get_n_bins(bin_edges)
+            expected_count = pdf * nevents_expected
+            ns = (ns - expected_count) / np.sqrt(expected_count)
+            sigma_deviation = ns.max()
+            label = (r'$\sigma$-deviation')
         vmin = -sigma_deviation
         vmax = sigma_deviation
         if abs(kwargs.get('vmin', vmin)) != abs(kwargs.get('vmax', vmax)):
             warnings.warn('You are specifying different `vmin` and `vmax`!',
                           stacklevel=2)
-        label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
-                 + f'{midpoint:.1f} counts')
     elif plot_mode == 'count_density':
         label = r'Counts per area in each bin'
         ns = _get_count_density(ns, be_first, be_second, data_sample)
