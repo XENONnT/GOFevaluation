@@ -446,10 +446,16 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if plot_ylim is not None:
         ylim = plot_ylim
 
-    ns = apply_irregular_binning(data_sample, bin_edges, order=order)
+    if data_sample.size == 0:
+        ns = np.zeros(
+            (bin_edges[0].shape[-1] - 1, bin_edges[1].shape[-1] - 1),
+            dtype=float)
+    else:
+        ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
     be = _get_finite_bin_edges(
-        bin_edges, data_sample, order, plot_xlim=plot_xlim, plot_ylim=plot_ylim)
+        bin_edges, data_sample, order,
+        plot_xlim=plot_xlim, plot_ylim=plot_ylim)
     be_first = be[0]
     be_second = be[1]
 
