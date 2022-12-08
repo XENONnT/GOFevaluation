@@ -300,6 +300,16 @@ def apply_irregular_binning(data_sample, bin_edges,
     else:
         _check_weight_sanity(data_sample, data_sample_weights)
         weights_flag = 1
+
+    if data_sample.size == 0:
+        if len(data_sample.shape) == 1:
+            ns = np.zeros(len(bin_edges) - 1, dtype=float)
+        else:
+            ns = np.zeros(
+                (bin_edges[0].shape[-1] - 1, bin_edges[1].shape[-1] - 1),
+                dtype=float)
+        return ns
+
     if len(data_sample.shape) == 1:
         ns, _ = np.histogram(
             data_sample,
@@ -446,12 +456,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if plot_ylim is not None:
         ylim = plot_ylim
 
-    if data_sample.size == 0:
-        ns = np.zeros(
-            (bin_edges[0].shape[-1] - 1, bin_edges[1].shape[-1] - 1),
-            dtype=float)
-    else:
-        ns = apply_irregular_binning(data_sample, bin_edges, order=order)
+    ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
     be = _get_finite_bin_edges(
         bin_edges, data_sample, order,
