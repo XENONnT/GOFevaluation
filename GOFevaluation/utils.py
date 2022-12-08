@@ -52,7 +52,8 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
     return n, bin_edges
 
 
-def _get_finite_bin_edges(bin_edges, data_sample, order):
+def _get_finite_bin_edges(bin_edges, data_sample, order,
+                          plot_xlim=None, plot_ylim=None,):
     """Replaces infinite values in bin_edges with finite
     values determined such that the bins encompass all
     the counts in data_sample. Necessary for plotting
@@ -73,9 +74,20 @@ def _get_finite_bin_edges(bin_edges, data_sample, order):
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
         respectively. bin_edges[1] is a list of bin edges corresponding to the
         partitions defined in bin_edges[0].
+    :param plot_xlim: xlim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_xlim: tuple, optional
+    :param plot_ylim: ylim to use for the plot. If None is passed, take min and
+        max values of the data sample. Defaults to None.
+    :type plot_ylim: tuple, optional
     :rtype: list of arrays
     """
-    xlim, ylim = get_plot_limits(data_sample)
+    if (plot_xlim is None) or (plot_ylim is None):
+        xlim, ylim = get_plot_limits(data_sample)
+    if plot_xlim is not None:
+        xlim = plot_xlim
+    if plot_ylim is not None:
+        ylim = plot_ylim
     be = []
     if len(data_sample.shape) == 1:
         bin_edges[0] = xlim[0]
@@ -436,7 +448,8 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
 
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
-    be = _get_finite_bin_edges(bin_edges, data_sample, order)
+    be = _get_finite_bin_edges(
+        bin_edges, data_sample, order, plot_xlim=plot_xlim, plot_ylim=plot_xlim)
     be_first = be[0]
     be_second = be[1]
 
