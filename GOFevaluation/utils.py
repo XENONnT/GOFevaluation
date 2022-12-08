@@ -449,7 +449,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     ns = apply_irregular_binning(data_sample, bin_edges, order=order)
 
     be = _get_finite_bin_edges(
-        bin_edges, data_sample, order, plot_xlim=plot_xlim, plot_ylim=plot_xlim)
+        bin_edges, data_sample, order, plot_xlim=plot_xlim, plot_ylim=plot_ylim)
     be_first = be[0]
     be_second = be[1]
 
