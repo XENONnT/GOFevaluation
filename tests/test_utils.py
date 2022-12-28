@@ -1,10 +1,13 @@
 # import scipy.stats as sps
 import numpy as np
 import unittest
+import warnings
 
 from GOFevaluation.utils import equiprobable_histogram
 from GOFevaluation.utils import _get_finite_bin_edges
 from GOFevaluation.utils import _get_count_density
+from GOFevaluation.utils import check_for_ties
+from GOFevaluation.utils import check_dimensionality_for_eqpb
 
 
 class TestEqpb(unittest.TestCase):
@@ -190,3 +193,108 @@ class TestEqpb(unittest.TestCase):
                     elif order == [1, 0]:
                         self.assertAlmostEqual(1, count_density[i][j],
                                                places=12)
+
+    def test_check_for_ties_1d(self):
+        a = np.linspace(0, 1, 10)
+
+        sample = np.concatenate((a, a))
+        warning_raised = False
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            try:
+                check_for_ties(sample)
+            except Warning:
+                warning_raised = True
+        self.assertTrue(warning_raised)
+
+        sample = a
+        warning_raised = False
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            try:
+                check_for_ties(sample)
+            except Warning:
+                warning_raised = True
+        self.assertFalse(warning_raised)
+
+    def test_check_for_ties_2d(self):
+        a = np.vstack((np.linspace(0, 1, 10), np.linspace(0, 1, 10))).T
+
+        sample = np.concatenate((a, a))
+        warning_raised = False
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            try:
+                check_for_ties(sample)
+            except Warning:
+                warning_raised = True
+        self.assertTrue(warning_raised)
+
+        sample = a
+        warning_raised = False
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            try:
+                check_for_ties(sample)
+            except Warning:
+                warning_raised = True
+        self.assertFalse(warning_raised)
+
+    def test_check_dimensionality_for_eqpb_1d(self):
+        data_sample = np.linspace(0, 1, 10)
+        reference_sample = np.linspace(0, 1, 20)
+        n_partitions = 4
+        order = None
+
+        error_raised = False
+        try:
+            check_dimensionality_for_eqpb(data_sample=data_sample,
+                                          reference_sample=reference_sample,
+                                          n_partitions=n_partitions,
+                                          order=order)
+        except AssertionError:
+            error_raised = True
+        self.assertFalse(error_raised)
+
+        error_raised = False
+        reference_sample = np.vstack((np.linspace(0, 1, 20),
+                                      np.linspace(0, 1, 20))).T
+        try:
+            check_dimensionality_for_eqpb(data_sample=data_sample,
+                                          reference_sample=reference_sample,
+                                          n_partitions=n_partitions,
+                                          order=order)
+        except AssertionError:
+            error_raised = True
+        self.assertTrue(error_raised)
+
+    def test_check_dimensionality_for_eqpb_2d(self):
+        data_sample = np.vstack((np.linspace(0, 1, 10),
+                                 np.linspace(0, 1, 10))).T
+        reference_sample = np.vstack((np.linspace(0, 1, 20),
+                                      np.linspace(0, 1, 20))).T
+        n_partitions = [2, 2]
+        order = None
+
+        error_raised = False
+        try:
+            check_dimensionality_for_eqpb(data_sample=data_sample,
+                                          reference_sample=reference_sample,
+                                          n_partitions=n_partitions,
+                                          order=order)
+        except AssertionError:
+            error_raised = True
+        self.assertFalse(error_raised)
+
+        error_raised = False
+        reference_sample = np.vstack((np.linspace(0, 1, 20),
+                                      np.linspace(0, 1, 20),
+                                      np.linspace(0, 1, 20))).T
+        try:
+            check_dimensionality_for_eqpb(data_sample=data_sample,
+                                          reference_sample=reference_sample,
+                                          n_partitions=n_partitions,
+                                          order=order)
+        except AssertionError:
+            error_raised = True
+        self.assertTrue(error_raised)
