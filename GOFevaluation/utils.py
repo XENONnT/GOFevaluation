@@ -3,6 +3,7 @@ from matplotlib.patches import Rectangle
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from copy import deepcopy
 
 
 def equiprobable_histogram(data_sample, reference_sample, n_partitions,
@@ -37,6 +38,8 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
+    check_dimensionality_for_eqpb(data_sample, reference_sample,
+                                  n_partitions, order)
     bin_edges = get_equiprobable_binning(
         reference_sample=reference_sample, n_partitions=n_partitions,
         order=order, reference_sample_weights=reference_sample_weights)
@@ -78,12 +81,12 @@ def _get_finite_bin_edges(bin_edges, data_sample, order):
     xlim, ylim = get_plot_limits(data_sample)
     be = []
     if len(data_sample.shape) == 1:
-        bin_edges[0] = xlim[0]
-        bin_edges[-1] = xlim[1]
-        be = [bin_edges.copy(), None]
+        be = [deepcopy(bin_edges), None]
+        be[0][0] = xlim[0]
+        be[0][-1] = xlim[1]
     else:
-        be_first = bin_edges[0].copy()
-        be_second = bin_edges[1].copy()
+        be_first = deepcopy(bin_edges[0])
+        be_second = deepcopy(bin_edges[1])
 
         if order == [0, 1]:
             be_first[be_first == -np.inf] = xlim[0]
@@ -208,12 +211,20 @@ def get_equiprobable_binning(reference_sample, n_partitions,
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
+    check_for_ties(reference_sample)
+    if len(reference_sample.shape) == 1:
+        dim = 1
+    elif len(reference_sample.shape) == 2:
+        dim = 2
+    else:
+        raise TypeError(f"reference_sample has unsupported shape {reference_sample.shape}.")
+
     if reference_sample_weights is None:
         weights_flag = 0
     else:
         _check_weight_sanity(reference_sample, reference_sample_weights)
         weights_flag = 1
-    if len(reference_sample.shape) == 1:
+    if dim == 1:
         if weights_flag:
             bin_edges = _weighted_equi(
                 n_partitions,
@@ -221,7 +232,7 @@ def get_equiprobable_binning(reference_sample, n_partitions,
                 reference_sample_weights)
         else:
             bin_edges = _equi(n_partitions, reference_sample)
-    else:
+    elif dim == 2:
         if order is None:
             order = [0, 1]
         first = reference_sample.T[order[0]]
@@ -446,7 +457,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
         cmap = _get_cmap(cmap_str, alpha=alpha)
         if nevents_expected is None:
-            raise ValueError('nevents_expected cannot ' +
+            raise ValueError('nevents_expected cannot '
                              'be None while plot_mode=\'sigma_deviation\'')
         n_bins = get_n_bins(bin_edges)
         if plot_mode == 'sigma_deviation':
@@ -489,13 +500,13 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
                                 vmax=kwargs.pop('vmax', vmax),
                                 clip=False)
-    
+
     edgecolor = kwargs.pop('edgecolor', 'k')
     if len(data_sample.shape) == 1:
         i = 0
-        bin_edges[0] = xlim[0]
-        bin_edges[-1] = xlim[1]
-        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+        be_first[0] = xlim[0]
+        be_first[-1] = xlim[1]
+        for low, high in zip(be_first[:-1], be_first[1:]):
             ax.axvspan(low,
                        high,
                        facecolor=cmap(norm(ns[i])),
@@ -585,6 +596,40 @@ def get_plot_limits(data_sample):
 def check_sample_sanity(sample):
     assert ~np.isnan(sample).any(), 'Sample contains NaN entries!'
     assert ~np.isinf(sample).any(), 'Sample contains inf values!'
+
+
+def check_for_ties(sample):
+    any_ties = len(np.unique(sample, axis=0)) != len(sample)
+    if any_ties:
+        warnings.warn("reference_sample contains ties, this might "
+                      "cause problems!", stacklevel=2)
+
+
+def check_dimensionality_for_eqpb(data_sample, reference_sample,
+                                  n_partitions, order):
+    if len(reference_sample.shape) == 1:
+        assert len(data_sample.shape) == 1, "Shape of data_sample is"\
+            " incompatible with shape of reference_sample"
+        assert isinstance(n_partitions, int), "n_partitions must be an"\
+            " integer for 1-dim. data."
+        assert order is None, "providing a not-None value for order is"\
+            " ambiguous for 1-dim. data."
+    elif len(reference_sample.shape) == 2:
+        assert len(data_sample.shape) == 2, "Shape of data_sample is"\
+            " incompatible with shape of reference_sample."
+        # Check dimensionality is two
+        assert (data_sample.shape[1]
+                == reference_sample.shape[1]
+                == len(n_partitions)), \
+            "Shape of data_sample is incompatible with shape of"\
+            " reference_sample and/or dimensionality of n_partitions."
+        if data_sample.shape[1] > 2:
+            raise NotImplementedError("Equiprobable binning is not (yet) "
+                                      f"implemented for {data_sample.shape[1]}"
+                                      "-dimensional data.")
+    else:
+        raise TypeError("reference_sample has unsupported shape "
+                        f"{reference_sample.shape}.")
 
 
 def _get_cmap(cmap_str, alpha=1):

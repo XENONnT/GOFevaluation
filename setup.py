@@ -26,11 +26,10 @@ setuptools.setup(
         'pytest',
         'flake8',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     url="https://github.com/XENONnT/GOFevaluation",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",

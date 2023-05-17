@@ -2,11 +2,11 @@ from collections import OrderedDict
 from inspect import signature
 import warnings
 
-from GOFevaluation.evaluators_1d import ADTestTwoSampleGOF
-from GOFevaluation.evaluators_1d import KSTestTwoSampleGOF
-from GOFevaluation.evaluators_nd import BinnedPoissonChi2GOF
-from GOFevaluation.evaluators_nd import BinnedChi2GOF
-from GOFevaluation.evaluators_nd import PointToPointGOF
+from GOFevaluation.evaluators_1d import ADTestTwoSampleGOF  # noqa: F401
+from GOFevaluation.evaluators_1d import KSTestTwoSampleGOF  # noqa: F401
+from GOFevaluation.evaluators_nd import BinnedPoissonChi2GOF  # noqa: F401
+from GOFevaluation.evaluators_nd import BinnedChi2GOF  # noqa: F401
+from GOFevaluation.evaluators_nd import PointToPointGOF  # noqa: F401
 
 
 class GOFTest(object):
@@ -123,7 +123,7 @@ class GOFTest(object):
         return self.gofs
 
     def get_pvalues(self, **kwargs):
-        """Calculate p-values for individual GoF measures.
+        """Calculate the approximate p-values for individual GoF measures.
 
         :param kwargs: All parameters from a get_pvalue method are viable kwargs.
             gof_list: A list of gof_measures for which p-value should be

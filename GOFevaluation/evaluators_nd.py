@@ -29,8 +29,8 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param reference_sample: sample of unbinned reference
-                (should have >50 samples than the data sample so that
-                statistical fluctuations are negligible.)
+                (should have at least 50 times larger than the data sample
+                to ensure that statistical fluctuations are negligible.)
             :type reference_sample: array_like, n-Dimensional
             :param nevents_expected: total number of expected events
             :type nevents_expected: float
@@ -92,7 +92,7 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
 
 
 class BinnedChi2GOF(EvaluatorBaseBinned):
-    """Compoutes the binned chi2 GoF based on Pearson's chi2.
+    """Computes the binned chi2 GoF based on Pearson's chi2.
 
         - **unbinned data, bin with regular binning**
             :param data_sample: sample of unbinned data
@@ -109,8 +109,8 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
             :param data_sample: sample of unbinned data
             :type data_sample: array_like, n-Dimensional
             :param reference_sample: sample of unbinned reference
-                (should have >50 samples than the data sample so that
-                statistical fluctuations are negligible.)
+                (should have at least 50 times larger than the data sample
+                to ensure that statistical fluctuations are negligible.)
             :type reference_sample: array_like, n-Dimensional
             :param nevents_expected: total number of expected events
             :type nevents_expected: float
@@ -305,12 +305,16 @@ class PointToPointGOF(EvaluatorBaseSample):
         return gof
 
     def get_pvalue(self, n_perm=1000, d_min=None):
-        """p-value is calculated
+        """The approximate p-value is calculated.
 
         Computes the p-value by means of re-sampling data sample
         and reference sample. For each re-sampling, the gof is calculated.
         The p-value can then be obtained from the distribution of these
         fake-gofs.
+
+        Note that this is only an approximate method, since the model is not
+        refitted to the re-sampled data. Especially with low statistics and
+        many fit parameters, this can introduce a bias towards larger p-values.
 
         :param n_perm: Number of fake-gofs calculated, defaults to 1000
         :type n_perm: int, optional
