@@ -471,7 +471,6 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
             pdf = kwargs.pop('pdf', None)
             if pdf is None:
                 raise ValueError(f'pdf in plot_mode {plot_mode} is not found.')
-            n_bins = get_n_bins(bin_edges)
             expected_count = pdf * nevents_expected
             ns = (ns - expected_count) / np.sqrt(expected_count)
             sigma_deviation = ns.max()
