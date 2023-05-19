@@ -1,3 +1,11 @@
+v0.1.2
+==================
+* Add colorbar switch, set 2D histogram x&y limit by @dachengx in #39
+* Some plotting bug fixes by @hoetzsch in #41
+* Homemade equiprobable_binning, still based on ECDF by @dachengx in #43
+* a few patches by @hammannr in #38
+* Exercise notebook by @hammannr in #44
+
 v0.1.1
 ===================
 * Add an example notebook that can be used as a guide when using the package for the first time (#29)
