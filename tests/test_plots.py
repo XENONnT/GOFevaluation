@@ -100,6 +100,9 @@ class TestPlotEqualProbable(unittest.TestCase):
                                         **kwargs)
             error_raised = False
         except Exception:
+            print('Error correctly raised when count_density'
+                  'mode with x or y limit specified')
+        else:
             if not error_raised:
                 raise RuntimeError('Should raise error when count_density'
                                    'mode with x or y limit specified')
