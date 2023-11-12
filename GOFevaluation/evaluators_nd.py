@@ -1,6 +1,6 @@
 import scipy.stats as sps
 import numpy as np
-from sklearn.neighbors import DistanceMetric
+from sklearn.metrics import DistanceMetric
 import warnings
 
 from GOFevaluation.evaluator_base import EvaluatorBaseBinned
