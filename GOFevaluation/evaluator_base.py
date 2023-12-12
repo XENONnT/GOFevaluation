@@ -341,7 +341,7 @@ class EvaluatorBaseSample(EvaluatorBase):
         return pvalue, fake_gofs
 
 
-class EvaluatorBaseMcUnbinned(EvaluatorBase):
+class EvaluatorBaseMCUnbinned(EvaluatorBase):
     """
     Base for MC-based unbinned GOF tests, takes 3 things:
     - data: array of data coordinates
@@ -356,22 +356,23 @@ class EvaluatorBaseMcUnbinned(EvaluatorBase):
 
     def get_pvalue(self, n_toys = 10000, generator_kwargs = {}, distance_measure_kwargs = {}):
         self.gof = self.distance_measure(self.data, **distance_measure_kwargs)
-        fake_gofs = np.zeros(len(n_toys))
+        fake_gofs = np.zeros(n_toys)
         for i in range(n_toys):
             fake_data = self.data_generator(**generator_kwargs)
             fake_gofs[i] = self.distance_measure(fake_data, **distance_measure_kwargs)
 
+        self.fake_gofs = fake_gofs
         percentile = sps.percentileofscore(fake_gofs, self.gof, kind='strict')
         pvalue = 1 - percentile / 100
 
         if pvalue == 0:
             warnings.warn(f'p-value is 0.0. (Observed GoF: '
                 f'{self.gof:.2e}, maximum of simulated GoFs: '
-                f'{max(ds):.2e}). For a more '
+                f'{max(fake_gofs):.2e}). For a more '
                 f'precise result, increase n_perm!', stacklevel=2)
         elif pvalue == 1:
             warnings.warn(f'p-value is 1.0. (Observed GoF '
                 f'{self.gof:.2e}, minimum of simulated GoFs: '
-                f'{min(ds):.2e}). For a more '
+                f'{min(fake_gofs):.2e}). For a more '
                 f'precise result, increase n_perm!', stacklevel=2)
-            self.pvalue = pvalue
+        return pvalue
