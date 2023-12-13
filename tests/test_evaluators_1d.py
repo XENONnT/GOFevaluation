@@ -175,6 +175,7 @@ class TestUnbinnedMCSampler(unittest.TestCase):
         """should return data-- we're testing the GOF of observing one event<data given uniform"""
         data = np.array([sps.uniform.rvs()])
         data_generator = sps.uniform.rvs
+
         def distance_measure(x):
             return np.mean(x <= data[0])
 
