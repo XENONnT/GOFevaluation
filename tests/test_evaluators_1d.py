@@ -181,7 +181,7 @@ class TestUnbinnedMCSampler(unittest.TestCase):
 
         e = EvaluatorBaseMCUnbinned(data, data_generator, distance_measure)
 
-        self.assertAlmostEqual(e.get_pvalue, data[0], places=2)
+        self.assertAlmostEqual(e.get_pvalue(), data[0], places=2)
 
 
 if __name__ == "__main__":
