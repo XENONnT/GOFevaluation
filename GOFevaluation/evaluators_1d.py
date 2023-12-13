@@ -157,7 +157,7 @@ class FractionInSlice(EvaluatorBaseMCUnbinned):
             def get_uniform_thetas():
                 return sps.uniform(-np.pi, 2 * np.pi).rvs(mu)
         else:
-            def get_uniform_thetas()
+            def get_uniform_thetas():
                 return sps.uniform(-np.pi, 2 * np.pi).rvs(sps.poisson(mu).rvs())
         distance = self.get_best_partition
         super().__init__(data, get_uniform_thetas, distance)
