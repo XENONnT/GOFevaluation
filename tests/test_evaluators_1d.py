@@ -171,14 +171,16 @@ class TestBinnedChi2GOF(unittest.TestCase):
 
 
 class TestUnbinnedMCSampler(unittest.TestCase):
-    """should return data-- we're testing the GOF of observing one event<data given uniform"""
-    data = np.array([sps.uniform.rvs()])
-    data_generator = sps.uniform.rvs
-    distance_measure = lambda x: np.mean(x <= data[0])
+    def test_unbinnedMCSampler(self):
+        """should return data-- we're testing the GOF of observing one event<data given uniform"""
+        data = np.array([sps.uniform.rvs()])
+        data_generator = sps.uniform.rvs
+        def distance_measure(x):
+            return np.mean(x <= data[0])
 
-    e = EvaluatorBaseMCUnbinned(data, data_generator, distance_measure)
+        e = EvaluatorBaseMCUnbinned(data, data_generator, distance_measure)
 
-    self.assertAlmostEqual(e.get_pvalue, data[0], decimal=2)
+        self.assertAlmostEqual(e.get_pvalue, data[0], decimal=2)
 
 
 if __name__ == "__main__":
