@@ -12,7 +12,7 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
     """Goodness of Fit based on the two-sample Anderson-Darling Test
 
     The test is described in https://www.doi.org/10.1214/aoms/1177706788
-    and https://www.doi.org/10.2307/2288805. It test if two samples
+    and https://www.doi.org/10.2307/2288805. test if two samples
     come from the same pdf. Similar to :class:`KSTestTwoSampleGOF` but more
     weight is given on tail differences due to a different weighting function.
 
@@ -150,9 +150,9 @@ class FractionInSlice(EvaluatorBaseMCUnbinned):
     an equal or greater portion in a slice set in the generator
     angles in radians
     """
-    def __init__(self, data, opening_angle = np.pi,fixed_length = True):
+    def __init__(self, data, opening_angle=np.pi, fixed_length=True):
         mu = len(data)
-        assert 0<mu #otherwise, pointless
+        assert 0 < mu  # otherwise, pointless
         if fixed_length:
             get_uniform_thetas = lambda: sps.uniform(-np.pi, 2*np.pi).rvs(mu)
         else:
@@ -160,14 +160,13 @@ class FractionInSlice(EvaluatorBaseMCUnbinned):
         distance = self.get_best_partition
         super().__init__(data, get_uniform_thetas, distance)
 
-
     @staticmethod
     def dtheta(t0, t1):
         """Compute smallest angle between two directions"""
         return np.abs((t0 - t1 + np.pi) % (2 * np.pi) - np.pi)
 
     @staticmethod
-    def get_best_partition(data_t, opening_angle = np.pi, test_angles = None, return_best_angle = False):
+    def get_best_partition(data_t, opening_angle=np.pi, test_angles=None, return_best_angle=False):
         """
         Find the angle and number of events that is the most events you can fit into opening_angle
         If test_angles = None, the direction of all data-points will be tried, but if there are many 1000s of points,

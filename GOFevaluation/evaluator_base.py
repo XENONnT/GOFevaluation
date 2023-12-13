@@ -98,7 +98,8 @@ class EvaluatorBaseBinned(EvaluatorBase):
                 f'Number of reference samples ({len(reference_sample)}) '
                 + 'should be much larger than number of data samples '
                 + f'({len(data_sample)}) to ensure negligible statistical '
-                + 'fluctuations for the equiprobable binning.', stacklevel=2)
+                + 'fluctuations for the equiprobable binning.',
+                stacklevel=2)
 
         pdf, bin_edges = equiprobable_histogram(
             data_sample=reference_sample,
@@ -354,7 +355,7 @@ class EvaluatorBaseMCUnbinned(EvaluatorBase):
         self.data_generator = data_generator
         self.distance_measure = distance_measure
 
-    def get_pvalue(self, n_toys = 10000, generator_kwargs = {}, distance_measure_kwargs = {}):
+    def get_pvalue(self, n_toys=10000, generator_kwargs={}, distance_measure_kwargs={}):
         self.gof = self.distance_measure(self.data, **distance_measure_kwargs)
         fake_gofs = np.zeros(n_toys)
         for i in range(n_toys):
@@ -367,12 +368,12 @@ class EvaluatorBaseMCUnbinned(EvaluatorBase):
 
         if pvalue == 0:
             warnings.warn(f'p-value is 0.0. (Observed GoF: '
-                f'{self.gof:.2e}, maximum of simulated GoFs: '
-                f'{max(fake_gofs):.2e}). For a more '
-                f'precise result, increase n_perm!', stacklevel=2)
+                          f'{self.gof:.2e}, maximum of simulated GoFs: '
+                          f'{max(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_perm!', stacklevel=2)
         elif pvalue == 1:
             warnings.warn(f'p-value is 1.0. (Observed GoF '
-                f'{self.gof:.2e}, minimum of simulated GoFs: '
-                f'{min(fake_gofs):.2e}). For a more '
-                f'precise result, increase n_perm!', stacklevel=2)
+                          f'{self.gof:.2e}, minimum of simulated GoFs: '
+                          f'{min(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_perm!', stacklevel=2)
         return pvalue
