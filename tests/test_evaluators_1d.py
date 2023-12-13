@@ -4,7 +4,7 @@ from scipy.interpolate import interp1d
 import unittest
 import warnings
 
-from GOFevaluation.evaluator_base import  import EvaluatorBaseMCUnbinned
+from GOFevaluation.evaluator_base import EvaluatorBaseMCUnbinned
 from GOFevaluation.evaluators_1d import KSTestGOF
 from GOFevaluation.evaluators_1d import KSTestTwoSampleGOF
 from GOFevaluation.evaluators_1d import ADTestTwoSampleGOF

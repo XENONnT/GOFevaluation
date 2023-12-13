@@ -347,7 +347,8 @@ class EvaluatorBaseMCUnbinned(EvaluatorBase):
     Base for MC-based unbinned GOF tests, takes 3 things:
     - data: array of data coordinates
     - data_generator: a function that generates toy samples from the tested model
-    - distance_measure: a function that evaluates how extreme a data sample is given the tested model
+    - distance_measure: a function that evaluates how extreme
+       a data sample is given the tested model
     """
     def __init__(self, data, data_generator, distance_measure):
         super().__init__()

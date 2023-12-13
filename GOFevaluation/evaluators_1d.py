@@ -154,9 +154,11 @@ class FractionInSlice(EvaluatorBaseMCUnbinned):
         mu = len(data)
         assert 0 < mu  # otherwise, pointless
         if fixed_length:
-            get_uniform_thetas = lambda: sps.uniform(-np.pi, 2*np.pi).rvs(mu)
+            def get_uniform_thetas():
+                return sps.uniform(-np.pi, 2 * np.pi).rvs(mu)
         else:
-            get_uniform_thetas = lambda: sps.uniform(-np.pi, 2*np.pi).rvs(sps.poisson(mu).rvs())
+            def get_uniform_thetas()
+                return sps.uniform(-np.pi, 2 * np.pi).rvs(sps.poisson(mu).rvs())
         distance = self.get_best_partition
         super().__init__(data, get_uniform_thetas, distance)
 
@@ -169,8 +171,10 @@ class FractionInSlice(EvaluatorBaseMCUnbinned):
     def get_best_partition(data_t, opening_angle=np.pi, test_angles=None, return_best_angle=False):
         """
         Find the angle and number of events that is the most events you can fit into opening_angle
-        If test_angles = None, the direction of all data-points will be tried, but if there are many 1000s of points,
-        it can be more performant and good enough to just pass np.linspace(0, 2*np.pi, 100) instead
+        If test_angles = None, the direction of all data-points will be tried,
+        but if there are many 1000s of points,
+        it can be more performant and good enough to
+        just pass np.linspace(0, 2*np.pi, 100) instead
         """
         if len(data_t) == 0:
             if return_best_angle:
