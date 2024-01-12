@@ -1,3 +1,8 @@
+v0.1.3
+==================
+* Should throw error when count_density mode with x or y limit specified by @dachengx in #46
+* Fix location of sklearn's DistanceMetric by @dachengx in #48
+
 v0.1.2
 ==================
 * Add colorbar switch, set 2D histogram x&y limit by @dachengx in #39
