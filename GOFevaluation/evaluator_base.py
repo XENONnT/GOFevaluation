@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
+from tqdm import tqdm
 from GOFevaluation.utils import equiprobable_histogram
 from GOFevaluation.utils import apply_irregular_binning
 from GOFevaluation.utils import plot_equiprobable_histogram
@@ -360,10 +361,10 @@ class EvaluatorBaseMCUnbinned(EvaluatorBase):
         #wrapper solely to conform to some other cases
         return self.distance_measure(self.data, **distance_measure_kwargs)
 
-    def get_pvalue(self, n_toys=10000, generator_kwargs={}, distance_measure_kwargs={}):
+    def get_pvalue(self, n_toys=10000, generator_kwargs={}, distance_measure_kwargs={}, disable_tqdm = True):
         self.gof = self.get_gof( **distance_measure_kwargs)
         fake_gofs = np.zeros(n_toys)
-        for i in range(n_toys):
+        for i in tqdm(range(n_toys), disable = disable_tqdm):
             fake_data = self.data_generator(**generator_kwargs)
             fake_gofs[i] = self.distance_measure(fake_data, **distance_measure_kwargs)
 
