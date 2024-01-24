@@ -4,6 +4,7 @@ from scipy.interpolate import interp1d
 import unittest
 import warnings
 
+from GOFevaluation.evaluator_base import EvaluatorBaseMCUnbinned
 from GOFevaluation.evaluators_1d import KSTestGOF
 from GOFevaluation.evaluators_1d import KSTestTwoSampleGOF
 from GOFevaluation.evaluators_1d import ADTestTwoSampleGOF
@@ -167,6 +168,20 @@ class TestBinnedChi2GOF(unittest.TestCase):
             n_partitions=n_partitions)
         gof_bin_equiprobable = gofclass_bin_equiprobable.get_gof()
         self.assertAlmostEqual(gof_bin_equiprobable, gof_from_binned, 10)
+
+
+class TestUnbinnedMCSampler(unittest.TestCase):
+    def test_unbinnedMCSampler(self):
+        """should return data-- we're testing the GOF of observing one event<data given uniform"""
+        data = np.array([sps.uniform.rvs()])
+        data_generator = sps.uniform.rvs
+
+        def distance_measure(x):
+            return np.mean(x <= data[0])
+
+        e = EvaluatorBaseMCUnbinned(data, data_generator, distance_measure)
+
+        self.assertAlmostEqual(e.get_pvalue(n_toys=100000), data[0], places=2)
 
 
 if __name__ == "__main__":

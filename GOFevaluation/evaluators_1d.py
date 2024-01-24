@@ -5,13 +5,14 @@ from scipy.interpolate import interp1d
 
 from GOFevaluation.evaluator_base import EvaluatorBasePdf
 from GOFevaluation.evaluator_base import EvaluatorBaseSample
+from GOFevaluation.evaluator_base import EvaluatorBaseMCUnbinned
 
 
 class ADTestTwoSampleGOF(EvaluatorBaseSample):
     """Goodness of Fit based on the two-sample Anderson-Darling Test
 
     The test is described in https://www.doi.org/10.1214/aoms/1177706788
-    and https://www.doi.org/10.2307/2288805. It test if two samples
+    and https://www.doi.org/10.2307/2288805. test if two samples
     come from the same pdf. Similar to :class:`KSTestTwoSampleGOF` but more
     weight is given on tail differences due to a different weighting function.
 
@@ -141,3 +142,64 @@ class KSTestTwoSampleGOF(EvaluatorBaseSample):
     def get_pvalue(self, n_perm=1000):
         pvalue = super().get_pvalue(n_perm)
         return pvalue
+
+
+class FractionInSlice(EvaluatorBaseMCUnbinned):
+    """
+    A function that finds how likely it is that a uniformly sampled 2pi circle contain
+    an equal or greater portion in a slice set in the generator
+    angles in radians
+    """
+    def __init__(self, data, fixed_length=True):
+        """
+        if fixed_length, all toy datasets are the same length as data,
+        if not, they are generated with length according to a poisson with mu = len(data)
+        """
+        mu = len(data)
+        assert 0 < mu  # otherwise, pointless
+        if fixed_length:
+            def get_uniform_thetas():
+                return sps.uniform(-np.pi, 2 * np.pi).rvs(mu)
+        else:
+            def get_uniform_thetas():
+                return sps.uniform(-np.pi, 2 * np.pi).rvs(sps.poisson(mu).rvs())
+        distance = self.get_best_partition
+        super().__init__(data, get_uniform_thetas, distance)
+
+    @staticmethod
+    def dtheta(t0, t1):
+        """Compute smallest angle between two directions"""
+        return np.abs((t0 - t1 + np.pi) % (2 * np.pi) - np.pi)
+
+    @staticmethod
+    def get_best_partition(data_t, opening_angle=np.pi, test_angles=None, return_best_angle=False):
+        """
+        From a set of angles, find the most of them you can fit into
+         a slice of opening angle, pointing in best_angle
+        If test_angles = None, the direction of all data-points will be tried,
+        but if there are many 1000s of points,
+        it can be more performant and good enough to
+        just pass np.linspace(0, 2*np.pi, 100) instead
+        data_t array of angles
+        opening_angle: size of the slice you're trying to find the most densest of
+        test_angles: if not None, we will only test slices pointing towards these directions
+        return_best_angle: bool, if True, you get the direction of the best slice.
+        """
+        if len(data_t) == 0:
+            if return_best_angle:
+                return 1., 0.
+            else:
+                return 1.
+
+        if test_angles is None:
+            test_angles = data_t
+
+        ns = np.zeros(len(data_t))
+        for i, t in enumerate(test_angles):
+            ns[i] = np.sum(FractionInSlice.dtheta(data_t, t) < 0.5 * opening_angle)
+        topt = test_angles[np.argmax(ns)]
+        opt = np.max(ns)
+        if return_best_angle:
+            return opt / len(data_t), topt
+        else:
+            return opt / len(data_t)

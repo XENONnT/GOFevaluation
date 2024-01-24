@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
+from tqdm import tqdm
 from GOFevaluation.utils import equiprobable_histogram
 from GOFevaluation.utils import apply_irregular_binning
 from GOFevaluation.utils import plot_equiprobable_histogram
@@ -98,7 +99,8 @@ class EvaluatorBaseBinned(EvaluatorBase):
                 f'Number of reference samples ({len(reference_sample)}) '
                 + 'should be much larger than number of data samples '
                 + f'({len(data_sample)}) to ensure negligible statistical '
-                + 'fluctuations for the equiprobable binning.', stacklevel=2)
+                + 'fluctuations for the equiprobable binning.',
+                stacklevel=2)
 
         pdf, bin_edges = equiprobable_histogram(
             data_sample=reference_sample,
@@ -339,3 +341,45 @@ class EvaluatorBaseSample(EvaluatorBase):
         """
         pvalue, fake_gofs = self._get_pvalue(n_perm=n_perm, d_min=d_min)
         return pvalue, fake_gofs
+
+
+class EvaluatorBaseMCUnbinned(EvaluatorBase):
+    """
+    Base for MC-based unbinned GOF tests, takes 3 things:
+    - data: array of data coordinates
+    - data_generator: a function that generates toy samples from the tested model
+    - distance_measure: a function that evaluates how extreme
+       a data sample is given the tested model
+    """
+    def __init__(self, data, data_generator, distance_measure):
+        super().__init__()
+        self.data = data
+        self.data_generator = data_generator
+        self.distance_measure = distance_measure
+
+    def get_gof(self, **distance_measure_kwargs):
+        #wrapper solely to conform to some other cases
+        return self.distance_measure(self.data, **distance_measure_kwargs)
+
+    def get_pvalue(self, n_toys=10000, generator_kwargs={}, distance_measure_kwargs={}, disable_tqdm = True):
+        self.gof = self.get_gof( **distance_measure_kwargs)
+        fake_gofs = np.zeros(n_toys)
+        for i in tqdm(range(n_toys), disable = disable_tqdm):
+            fake_data = self.data_generator(**generator_kwargs)
+            fake_gofs[i] = self.distance_measure(fake_data, **distance_measure_kwargs)
+
+        self.fake_gofs = fake_gofs
+        percentile = sps.percentileofscore(fake_gofs, self.gof, kind='strict')
+        pvalue = 1 - percentile / 100
+
+        if pvalue == 0:
+            warnings.warn(f'p-value is 0.0. (Observed GoF: '
+                          f'{self.gof:.2e}, maximum of simulated GoFs: '
+                          f'{max(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_perm!', stacklevel=2)
+        elif pvalue == 1:
+            warnings.warn(f'p-value is 1.0. (Observed GoF '
+                          f'{self.gof:.2e}, minimum of simulated GoFs: '
+                          f'{min(fake_gofs):.2e}). For a more '
+                          f'precise result, increase n_perm!', stacklevel=2)
+        return pvalue
