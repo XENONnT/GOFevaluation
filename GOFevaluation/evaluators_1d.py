@@ -150,7 +150,11 @@ class FractionInSlice(EvaluatorBaseMCUnbinned):
     an equal or greater portion in a slice set in the generator
     angles in radians
     """
-    def __init__(self, data, opening_angle=np.pi, fixed_length=True):
+    def __init__(self, data, fixed_length=True):
+        """
+        if fixed_length, all toy datasets are the same length as data,
+        if not, they are generated with length according to a poisson with mu = len(data)
+        """
         mu = len(data)
         assert 0 < mu  # otherwise, pointless
         if fixed_length:
@@ -170,11 +174,16 @@ class FractionInSlice(EvaluatorBaseMCUnbinned):
     @staticmethod
     def get_best_partition(data_t, opening_angle=np.pi, test_angles=None, return_best_angle=False):
         """
-        Find the angle and number of events that is the most events you can fit into opening_angle
+        From a set of angles, find the most of them you can fit into
+         a slice of opening angle, pointing in best_angle
         If test_angles = None, the direction of all data-points will be tried,
         but if there are many 1000s of points,
         it can be more performant and good enough to
         just pass np.linspace(0, 2*np.pi, 100) instead
+        data_t array of angles
+        opening_angle: size of the slice you're trying to find the most densest of
+        test_angles: if not None, we will only test slices pointing towards these directions
+        return_best_angle: bool, if True, you get the direction of the best slice.
         """
         if len(data_t) == 0:
             if return_best_angle:

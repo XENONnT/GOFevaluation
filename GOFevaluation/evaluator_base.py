@@ -356,8 +356,12 @@ class EvaluatorBaseMCUnbinned(EvaluatorBase):
         self.data_generator = data_generator
         self.distance_measure = distance_measure
 
+    def get_gof(self, **distance_measure_kwargs):
+        #wrapper solely to conform to some other cases
+        return self.distance_measure(self.data, **distance_measure_kwargs)
+
     def get_pvalue(self, n_toys=10000, generator_kwargs={}, distance_measure_kwargs={}):
-        self.gof = self.distance_measure(self.data, **distance_measure_kwargs)
+        self.gof = self.get_gof(self.data, **distance_measure_kwargs)
         fake_gofs = np.zeros(n_toys)
         for i in range(n_toys):
             fake_data = self.data_generator(**generator_kwargs)
