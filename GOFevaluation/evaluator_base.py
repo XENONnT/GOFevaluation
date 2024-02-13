@@ -110,6 +110,16 @@ class EvaluatorBaseBinned(EvaluatorBase):
             **kwargs)
         pdf = pdf / np.sum(pdf)
 
+        expected_one_hot = pdf.ravel() * nevents_expected
+        if not np.allclose(expected_one_hot, expected_one_hot[0],
+                           rtol=1e-4, atol=1e-2):
+            warnings.warn(
+                'Could not achieve exact equiprobable binning, '
+                + 'the approximately equiprobable binning is used which '
+                + f'has a minimum expectation value of {min(expected_one_hot):.3f}'
+                + f'  and a maximum expectation value of {max(expected_one_hot):.3f}.',
+                stacklevel=2)
+
         binned_data = apply_irregular_binning(
             data_sample=data_sample,
             bin_edges=bin_edges,
