@@ -211,13 +211,13 @@ def get_equiprobable_binning(reference_sample, n_partitions,
         Reference: F. James, 2008: "Statistical Methods in Experimental
                     Physics", Ch. 11.2.3
     """
-    check_for_ties(reference_sample)
     if len(reference_sample.shape) == 1:
         dim = 1
     elif len(reference_sample.shape) == 2:
         dim = 2
     else:
         raise TypeError(f"reference_sample has unsupported shape {reference_sample.shape}.")
+    check_for_ties(reference_sample, dim=dim)
 
     if reference_sample_weights is None:
         weights_flag = 0
@@ -588,11 +588,18 @@ def check_sample_sanity(sample):
     assert ~np.isinf(sample).any(), 'Sample contains inf values!'
 
 
-def check_for_ties(sample):
-    any_ties = len(np.unique(sample, axis=0)) != len(sample)
+def check_for_ties(sample, dim):
+    if dim == 1:
+        any_ties = len(np.unique(sample)) != len(sample)
+    elif dim == 2:
+        any_ties = len(np.unique(sample.T[0])) != len(sample.T[0])
+        any_ties |= len(np.unique(sample.T[1])) != len(sample.T[1])
+    else:
+        raise ValueError(f'dim {dim} is not defined.')
     if any_ties:
         warnings.warn("reference_sample contains ties, this might "
-                      "cause problems!", stacklevel=2)
+                      "cause problems in the equiprobable binning.",
+                      stacklevel=2)
 
 
 def check_dimensionality_for_eqpb(data_sample, reference_sample,
