@@ -494,11 +494,11 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                        rtol=1e-4, atol=1e-2):
             midpoint = ns_expected.ravel()[0]
             label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
-                    + f'{midpoint:.1f} counts')
+                     + f'{midpoint:.1f} counts')
         else:
             warnings.warn('The expected counts in the bins are not equal, '
                           f'ranging from {np.min(ns_expected)} to '
-                            f'{np.max(ns_expected)}.', stacklevel=2)
+                          f'{np.max(ns_expected)}.', stacklevel=2)
             label = r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$'
     elif plot_mode == 'count_density':
         label = r'Counts per area in each bin'
