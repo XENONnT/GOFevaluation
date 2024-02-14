@@ -202,7 +202,7 @@ class TestEqpb(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.filterwarnings('error')
             try:
-                check_for_ties(sample)
+                check_for_ties(sample, dim=1)
             except Warning:
                 warning_raised = True
         self.assertTrue(warning_raised)
@@ -212,7 +212,7 @@ class TestEqpb(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.filterwarnings('error')
             try:
-                check_for_ties(sample)
+                check_for_ties(sample, dim=1)
             except Warning:
                 warning_raised = True
         self.assertFalse(warning_raised)
@@ -225,7 +225,7 @@ class TestEqpb(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.filterwarnings('error')
             try:
-                check_for_ties(sample)
+                check_for_ties(sample, dim=2)
             except Warning:
                 warning_raised = True
         self.assertTrue(warning_raised)
@@ -235,7 +235,7 @@ class TestEqpb(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.filterwarnings('error')
             try:
-                check_for_ties(sample)
+                check_for_ties(sample, dim=2)
             except Warning:
                 warning_raised = True
         self.assertFalse(warning_raised)
