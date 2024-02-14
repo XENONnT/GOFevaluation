@@ -129,7 +129,9 @@ class EvaluatorBaseBinned(EvaluatorBase):
             plot_equiprobable_histogram(data_sample=data_sample,
                                         bin_edges=bin_edges,
                                         order=order,
+                                        reference_sample=reference_sample,
                                         nevents_expected=nevents_expected,
+                                        reference_sample_weights=reference_sample_weights,
                                         plot_mode=plot_mode,
                                         **kwargs)
 
