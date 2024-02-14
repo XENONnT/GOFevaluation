@@ -660,7 +660,7 @@ def check_dimensionality_for_eqpb(data_sample, reference_sample,
 
 
 def _get_cmap(cmap_str, alpha=1):
-    _cmap = mpl.cm.get_cmap(cmap_str)
+    _cmap = mpl.colormaps[cmap_str]
     cmap = _cmap(np.arange(_cmap.N))
     cmap[:, -1] = alpha
     return mpl.colors.LinearSegmentedColormap.from_list("dummy", cmap)
