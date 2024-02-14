@@ -508,7 +508,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
         vmin = np.min(ns)
         vmax = np.max(ns)
     elif plot_mode == 'num_counts':
-        label = r'Number of counts in eace bin'
+        label = r'Number of counts in each bin'
         cmap_str = kwargs.pop('cmap', 'viridis')
         cmap = _get_cmap(cmap_str, alpha=alpha)
         vmin = np.min(ns)
