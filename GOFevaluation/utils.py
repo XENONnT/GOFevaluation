@@ -49,8 +49,11 @@ def equiprobable_histogram(data_sample, reference_sample, n_partitions,
                                 data_sample_weights=data_sample_weights)
     if plot:
         plot_equiprobable_histogram(data_sample=data_sample,
+                                    reference_sample=reference_sample,
                                     bin_edges=bin_edges,
                                     order=order,
+                                    data_sample_weights=data_sample_weights,
+                                    reference_sample_weights=reference_sample_weights,
                                     **kwargs)
     return n, bin_edges
 
@@ -392,7 +395,10 @@ def plot_irregular_binning(ax, bin_edges, order=None, c='k', **kwargs):
 
 
 def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
+                                reference_sample=None,
                                 ax=None, nevents_expected=None,
+                                data_sample_weights=None,
+                                reference_sample_weights=None,
                                 plot_xlim=None, plot_ylim=None,
                                 plot_mode='sigma_deviation',
                                 draw_colorbar=True, **kwargs):
@@ -430,6 +436,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     :type plot_ylim: tuple, optional
     :raises ValueError: when an unknown order is passed.
     """
+    # Setup plot
     if order is None:
         order = [0, 1]
     if ax is None:
@@ -445,7 +452,19 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     if plot_ylim is not None:
         ylim = plot_ylim
 
-    ns = apply_irregular_binning(data_sample, bin_edges, order=order)
+    # bin data and reference sample
+    ns = apply_irregular_binning(data_sample=data_sample,
+                                 bin_edges=bin_edges,
+                                 order=order,
+                                 data_sample_weights=data_sample_weights)
+    if reference_sample is not None:
+        pdf = apply_irregular_binning(data_sample=reference_sample,
+                                      bin_edges=bin_edges,
+                                      order=order,
+                                      data_sample_weights=reference_sample_weights)
+        pdf = pdf / np.sum(pdf)
+    else:
+        pdf = None
 
     be = _get_finite_bin_edges(bin_edges, data_sample, order)
     be_first = be[0]
@@ -453,24 +472,34 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
 
     alpha = kwargs.pop('alpha', 1)
 
+    # format according to plot_mode
     if plot_mode == 'sigma_deviation':
         cmap_str = kwargs.pop('cmap', 'RdBu_r')
         cmap = _get_cmap(cmap_str, alpha=alpha)
         if nevents_expected is None:
             raise ValueError('nevents_expected cannot '
                              'be None while plot_mode=\'sigma_deviation\'')
-        n_bins = get_n_bins(bin_edges)
-        midpoint = nevents_expected / n_bins
-        delta = max(midpoint - ns.min(), ns.max() - midpoint)
-        sigma_deviation = delta / np.sqrt(midpoint)
-        ns = (ns - midpoint) / np.sqrt(midpoint)
-        vmin = -sigma_deviation
-        vmax = sigma_deviation
+        if reference_sample is None:
+            raise ValueError('reference_sample cannot '
+                             'be None while plot_mode=\'sigma_deviation\'')
+        ns_expected = nevents_expected * pdf
+        ns = (ns - ns_expected) / np.sqrt(ns_expected)
+        max_deviation = max(np.abs(ns.ravel()))
+        vmin = -max_deviation
+        vmax = max_deviation
         if abs(kwargs.get('vmin', vmin)) != abs(kwargs.get('vmax', vmax)):
             warnings.warn('You are specifying different `vmin` and `vmax`!',
                           stacklevel=2)
-        label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
-                 + f'{midpoint:.1f} counts')
+        if np.allclose(ns_expected.ravel(), ns_expected.ravel()[0],
+                       rtol=1e-4, atol=1e-2):
+            midpoint = ns_expected.ravel()[0]
+            label = (r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$ ='
+                    + f'{midpoint:.1f} counts')
+        else:
+            warnings.warn('The expected counts in the bins are not equal, '
+                          f'ranging from {np.min(ns_expected)} to '
+                            f'{np.max(ns_expected)}.', stacklevel=2)
+            label = r'$\sigma$-deviation from $\mu_\mathrm{{bin}}$'
     elif plot_mode == 'count_density':
         label = r'Counts per area in each bin'
         ns = _get_count_density(ns, be_first, be_second, data_sample)
@@ -487,10 +516,10 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
     else:
         raise ValueError(f'plot_mode {plot_mode} is not defined.')
 
+    # draw bins
     norm = mpl.colors.Normalize(vmin=kwargs.pop('vmin', vmin),
                                 vmax=kwargs.pop('vmax', vmax),
                                 clip=False)
-
     edgecolor = kwargs.pop('edgecolor', 'k')
     if len(data_sample.shape) == 1:
         i = 0
@@ -540,6 +569,7 @@ def plot_equiprobable_histogram(data_sample, bin_edges, order=None,
                 j += 1
             i += 1
 
+    # Cosmetics
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
