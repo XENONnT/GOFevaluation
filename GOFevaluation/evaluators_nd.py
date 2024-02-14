@@ -8,7 +8,7 @@ from GOFevaluation.evaluator_base import EvaluatorBaseSample
 
 
 class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
-    """Goodness of Fit based on the binned poisson modified Chi2
+    """Goodness of Fit based on the binned poisson modified Chi2.
 
         Computes the binned poisson modified Chi2 from Baker+Cousins
         In the limit of large bin counts (10+) this is Chi2 distributed.
@@ -55,33 +55,34 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
         https://doi.org/10.1016/0167-5087(84)90016-4
         While the absolute likelihood is a poor GOF measure
         (see http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf)
+
     """
 
     def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
-        """Initialize with unbinned data and a normalized pdf
-        """
+        """Initialize with unbinned data and a normalized pdf."""
         super().__init__(data_sample, pdf, bin_edges, nevents_expected)
 
     @staticmethod
     def calculate_gof(binned_data, binned_reference):
-        """Get binned poisson chi2 GoF from binned data & reference
-        """
+        """Get binned poisson chi2 GOF from binned data & reference."""
         if binned_reference.min() / binned_reference.max() < 1 / 100:
             warnings.warn(
-                'Binned reference contains bin counts ranging over '
-                + 'multiple orders of magnitude '
-                + f'({binned_reference.min():.2e} - '
-                + f'{binned_reference.max():.2e}). GoF might be flawed!',
-                stacklevel=2)
+                "Binned reference contains bin counts ranging over "
+                + "multiple orders of magnitude "
+                + f"({binned_reference.min():.2e} - "
+                + f"{binned_reference.max():.2e}). GOF might be flawed!",
+                stacklevel=2,
+            )
         ret = sps.poisson(binned_data).logpmf(binned_data)
         ret -= sps.poisson(binned_reference).logpmf(binned_data)
         return 2 * np.sum(ret)
 
     def get_gof(self):
-        """gof is calculated using current class attributes
+        """GOF is calculated using current class attributes.
 
         :return: Goodness of Fit
         :rtype: float
+
         """
         gof = self.calculate_gof(self.binned_data, self.binned_reference)
         self.gof = gof
@@ -92,7 +93,7 @@ class BinnedPoissonChi2GOF(EvaluatorBaseBinned):
 
 
 class BinnedChi2GOF(EvaluatorBaseBinned):
-    """Computes the binned chi2 GoF based on Pearson's chi2.
+    """Computes the binned chi2 GOF based on Pearson's chi2.
 
         - **unbinned data, bin with regular binning**
             :param data_sample: sample of unbinned data
@@ -133,35 +134,38 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
     .. note::
         Reference:
         https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm
+
     """
 
     def __init__(self, data_sample, pdf, bin_edges, nevents_expected):
-        """Initialize with unbinned data and a normalized pdf
-        """
+        """Initialize with unbinned data and a normalized pdf."""
         super().__init__(data_sample, pdf, bin_edges, nevents_expected)
 
     @staticmethod
     def calculate_gof(binned_data, binned_reference):
-        """Get Chi2 GoF from binned data & expectations
-        """
-        assert (binned_reference > 0).all(), ("binned_reference contains "
-                                              + "entries of zero that would "
-                                              + "cause an infinite GOF value!")
+        """Get Chi2 GOF from binned data & expectations."""
+        assert (binned_reference > 0).all(), (
+            "binned_reference contains "
+            + "entries of zero that would "
+            + "cause an infinite GOF value!"
+        )
         if binned_reference.min() / binned_reference.max() < 1 / 100:
             warnings.warn(
-                'Binned reference contains bin counts ranging over '
-                + 'multiple orders of magnitude '
-                + f'({binned_reference.min():.2e} - '
-                + f'{binned_reference.max():.2e}). GoF might be flawed!',
-                stacklevel=2)
-        gof = np.sum((binned_data - binned_reference)**2 / binned_reference)
+                "Binned reference contains bin counts ranging over "
+                + "multiple orders of magnitude "
+                + f"({binned_reference.min():.2e} - "
+                + f"{binned_reference.max():.2e}). GOF might be flawed!",
+                stacklevel=2,
+            )
+        gof = np.sum((binned_data - binned_reference) ** 2 / binned_reference)
         return gof
 
     def get_gof(self):
-        """gof is calculated using current class attributes
+        """GOF is calculated using current class attributes.
 
         :return: Goodness of Fit
         :rtype: float
+
         """
         gof = self.calculate_gof(self.binned_data, self.binned_reference)
         self.gof = gof
@@ -172,7 +176,7 @@ class BinnedChi2GOF(EvaluatorBaseBinned):
 
 
 class PointToPointGOF(EvaluatorBaseSample):
-    """Goodness of Fit based on point-to-point method
+    """Goodness of Fit based on point-to-point method.
 
     :param data_sample: sample of unbinned data
     :type data_sample: array_like, n-Dimensional
@@ -188,24 +192,24 @@ class PointToPointGOF(EvaluatorBaseSample):
           analysis dimension.
         * Reference:
           https://arxiv.org/abs/hep-ex/0203010
+
     """
 
-    def __init__(self, data_sample, reference_sample, w_func='log'):
-        super().__init__(data_sample=data_sample,
-                         reference_sample=reference_sample)
+    def __init__(self, data_sample, reference_sample, w_func="log"):
+        super().__init__(data_sample=data_sample, reference_sample=reference_sample)
         self.w_func = w_func
 
     @staticmethod
     def get_distances(data_sample, reference_sample):
-        """get distances of data-data, reference-reference
-        and data-reference
+        """Get distances of data-data, reference-reference and data-reference.
 
         :param data_sample: sample of unbinned data
         :type data_sample: array_like, n-Dimensional
         :param reference_sample: sample of unbinned reference
-        :type reference_sample: array_like, n-Dimensional
-        :retrun: distance of (data-data, reference-reference, data-reference)
+        :type reference_sample: array_like, n-Dimensional :retrun: distance of (data-
+            data, reference-reference, data-reference)
         :rtype: triple of arrays
+
         """
         # For 1D input, arrays need to be transformed in
         # order for the distance measure method to work
@@ -233,8 +237,8 @@ class PointToPointGOF(EvaluatorBaseSample):
 
     @staticmethod
     def get_d_min(d_ref_ref):
-        """find d_min as the average distance of reference_sample
-        points in the region of highest density"""
+        """Find d_min as the average distance of reference_sample points in the region
+        of highest density."""
         # For now a very simple approach is chosen as the paper states that
         # the precise value of this is not critical. One might want to
         # look into a more proficient way in the future.
@@ -242,50 +246,54 @@ class PointToPointGOF(EvaluatorBaseSample):
         return d_min
 
     def weighting_function(self, d, d_min):
-        """Weigh distances d according to log profile. Pole at d = 0
-        is omitted by introducing d_min that replaces the distance for
-        d < d_min
+        """Weigh distances d according to log profile. Pole at d = 0 is omitted by
+        introducing d_min that replaces the distance for d < d_min.
 
         :param d_min: Replaces the distance for distance d < d_min.
             If None, d_min is estimated by :func:`get_dmin`
         :type d_min: float
+
         """
         d[d <= d_min] = d_min
-        if self.w_func == 'log':
+        if self.w_func == "log":
             ret = -np.log(d)
-        elif self.w_func == 'x2':
+        elif self.w_func == "x2":
             ret = d**2
-        elif self.w_func == 'x':
+        elif self.w_func == "x":
             ret = d
-        elif self.w_func == '1/x':
+        elif self.w_func == "1/x":
             ret = 1 / d
         else:
-            raise KeyError(f'w_func {self.w_func} is not defined.')
+            raise KeyError(f"w_func {self.w_func} is not defined.")
         return ret
 
     def calculate_gof(self, data_sample, reference_sample, d_min=None):
-        """Internal function to calculate gof for :func:`get_gof`
-        and :func:`get_pvalue`"""
+        """Internal function to calculate gof for :func:`get_gof` and
+        :func:`get_pvalue`"""
 
         nevents_data = np.shape(data_sample)[0]
         nevents_ref = np.shape(reference_sample)[0]
 
-        d_data_data, d_data_ref = self.get_distances(
-            data_sample, reference_sample)
+        d_data_data, d_data_ref = self.get_distances(data_sample, reference_sample)
         if d_min is None:
             d_min = self.get_d_min(d_data_ref)
 
-        ret_data_data = (1 / nevents_data ** 2 *
-                         np.sum(self.weighting_function(d_data_data, d_min=d_min)))
+        ret_data_data = (
+            1 / nevents_data**2 * np.sum(self.weighting_function(d_data_data, d_min=d_min))
+        )
         # ret_ref_ref = (1 / nevents_ref ** 2 *
         #                np.sum(self.weighting_function(d_ref_ref, d_min)))
-        ret_data_ref = (-1 / nevents_ref / nevents_data *
-                        np.sum(self.weighting_function(d_data_ref, d_min=d_min)))
+        ret_data_ref = (
+            -1
+            / nevents_ref
+            / nevents_data
+            * np.sum(self.weighting_function(d_data_ref, d_min=d_min))
+        )
         gof = ret_data_data + ret_data_ref  # ret_data_data + ret_ref_ref + ret_data_ref
         return gof
 
     def get_gof(self, d_min=None):
-        """gof is calculated using current class attributes
+        """GOF is calculated using current class attributes.
 
         :param d_min: Replaces the distance for distance d < d_min.
             If None, d_min is estimated by :func:`get_dmin`,
@@ -297,10 +305,10 @@ class PointToPointGOF(EvaluatorBaseSample):
         .. note::
             d_min should be a typical distance of the reference_sample in
             the region of highest density
+
         """
 
-        gof = self.calculate_gof(
-            self.data_sample, self.reference_sample, d_min=d_min)
+        gof = self.calculate_gof(self.data_sample, self.reference_sample, d_min=d_min)
         self.gof = gof
         return gof
 
@@ -324,5 +332,6 @@ class PointToPointGOF(EvaluatorBaseSample):
         :type d_min: float, optional
         :return: p-value
         :rtype: float
+
         """
         return super().get_pvalue(n_perm, d_min)

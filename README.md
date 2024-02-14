@@ -1,17 +1,18 @@
 # GOFevaluation
-Evaluate the Goodness-of-Fit (GoF) for binned or unbinned data.  
+Evaluate the Goodness-of-Fit (GOF) for binned or unbinned data.
 ![Test package](https://github.com/XENONnT/GOFevaluation/actions/workflows/python-package.yml/badge.svg)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/XENONnT/GOFevaluation/HEAD)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/GOFevaluation.svg)](https://pypi.python.org/pypi/GOFevaluation/)
 [![CodeFactor](https://www.codefactor.io/repository/github/xenonnt/gofevaluation/badge)](https://www.codefactor.io/repository/github/xenonnt/gofevaluation)
-[![Coverage Status](https://coveralls.io/repos/github/XENONnT/GOFevaluation/badge.svg?branch=master)](https://coveralls.io/github/XENONnT/GOFevaluation?branch=master) 
+[![Coverage Status](https://coveralls.io/repos/github/XENONnT/GOFevaluation/badge.svg?branch=master)](https://coveralls.io/github/XENONnT/GOFevaluation?branch=master)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/XENONnT/GOFevaluation/master.svg)](https://results.pre-commit.ci/latest/github/XENONnT/GOFevaluation/master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5626909.svg)](https://doi.org/10.5281/zenodo.5626909)
 
-This GoF suite comprises the possibility to calculate different 1D / nD, binned / two-sample (unbinned) GoF measures and the corresponding approximate p-value. A list of implemented measures is given below. 
+This GOF suite comprises the possibility to calculate different 1D / nD, binned / two-sample (unbinned) GOF measures and the corresponding approximate p-value. A list of implemented measures is given below.
 
- 
-## Implemented GoF measures
-| GoF measure                   | Class                     |    data input   | reference input | dim |
+
+## Implemented GOF measures
+| GOF measure                   | Class                     |    data input   | reference input | dim |
 |-------------------------------|---------------------------|:---------------:|:---------------:|:---:|
 | Kolmogorov-Smirnov            | `KSTestGOF`               |      sample     |      binned     |  1D |
 | Two-Sample Kolmogorov-Smirnov | `KSTestTwoSampleGOF`      |      sample     |      sample     |  1D |
@@ -47,8 +48,8 @@ python setup.py install --user
 You are now good to go!
 
 ## Usage
-The best way to start with the `GOFevaluation` package is to have a look at the tutorial notebook. If you click on the [mybinder](https://mybinder.org/v2/gh/XENONnT/GOFevaluation/HEAD) badge, you can execute the interactive notebook and give it a try yourself without the need of a local installation. 
-### Individual GoF Measures
+The best way to start with the `GOFevaluation` package is to have a look at the tutorial notebook. If you click on the [mybinder](https://mybinder.org/v2/gh/XENONnT/GOFevaluation/HEAD) badge, you can execute the interactive notebook and give it a try yourself without the need of a local installation.
+### Individual GOF Measures
 Depending on your data and reference input you can initialise a `gof_object` in one of the following ways:
 ```python
 import GOFevaluation as ge
@@ -63,14 +64,14 @@ gof_object = ge.BinnedPoissonChi2GOF.from_binned(binned_data, binned_reference)
 gof_object = ge.PointToPointGOF(data_sample, reference_sample)
 ```
 
-With any `gof_object` you can calculate the GoF and the corresponding p-value as follows:
+With any `gof_object` you can calculate the GOF and the corresponding p-value as follows:
 ```python
 gof = gof_object.get_gof()
 p_value = gof_object.get_pvalue()
 ```
 
-### Multiple GoF Measures at once
-You can compute GoF and p-values for multiple measures at once with the `GOFTest` class. 
+### Multiple GOF Measures at once
+You can compute GOF and p-values for multiple measures at once with the `GOFTest` class.
 
 **Example:**
 ```python
@@ -83,13 +84,13 @@ import scipy.stats as sps
 data_sample = sps.uniform.rvs(size=100, random_state=200)
 reference_sample = sps.uniform.rvs(size=300, random_state=201)
 
-# Initialise all two-sample GoF measures:
-gof_object = ge.GOFTest(data_sample=data_sample, 
+# Initialise all two-sample GOF measures:
+gof_object = ge.GOFTest(data_sample=data_sample,
                         reference_sample=reference_sample,
-                        gof_list=['ADTestTwoSampleGOF', 
-                                  'KSTestTwoSampleGOF', 
+                        gof_list=['ADTestTwoSampleGOF',
+                                  'KSTestTwoSampleGOF',
                                   'PointToPointGOF'])
-# Calculate GoFs and p-values:
+# Calculate GOFs and p-values:
 d_min = 0.01
 gof_object.get_gofs(d_min=d_min)
 # OUTPUT:
