@@ -1,3 +1,8 @@
+v0.1.4
+==================
+* Fix plotting of approximately equiprobable bins by @hammannr in https://github.com/XENONnT/GOFevaluation/pull/51
+* Use pre-commit CI by @hammannr in https://github.com/XENONnT/GOFevaluation/pull/52
+
 v0.1.3
 ==================
 * Should throw error when count_density mode with x or y limit specified by @dachengx in #46
