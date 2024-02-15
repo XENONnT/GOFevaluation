@@ -19,97 +19,107 @@ class TestPlotEqualProbable(unittest.TestCase):
         nevents_expected = sps.poisson(mu=n_data).rvs()
 
         order = [0, 1]
-        _, bin_edges = equiprobable_histogram(data_sample,
-                                              reference_sample,
-                                              n_partitions,
-                                              order=order,
-                                              plot=False)
+        _, bin_edges = equiprobable_histogram(
+            data_sample, reference_sample, n_partitions, order=order, plot=False
+        )
 
         kwargs = {}
-        plot_equiprobable_histogram(data_sample=data_sample,
-                                    bin_edges=bin_edges,
-                                    order=order,
-                                    reference_sample=reference_sample,
-                                    nevents_expected=nevents_expected,
-                                    plot_mode='sigma_deviation',
-                                    **kwargs)
+        plot_equiprobable_histogram(
+            data_sample=data_sample,
+            bin_edges=bin_edges,
+            order=order,
+            reference_sample=reference_sample,
+            nevents_expected=nevents_expected,
+            plot_mode="sigma_deviation",
+            **kwargs
+        )
 
         plot_xlim = [-3, 3]
         plot_ylim = [-3, 3]
-        plot_equiprobable_histogram(data_sample=data_sample,
-                                    bin_edges=bin_edges,
-                                    order=order,
-                                    reference_sample=reference_sample,
-                                    nevents_expected=nevents_expected,
-                                    plot_xlim=plot_xlim,
-                                    plot_ylim=plot_ylim,
-                                    plot_mode='sigma_deviation',
-                                    **kwargs)
+        plot_equiprobable_histogram(
+            data_sample=data_sample,
+            bin_edges=bin_edges,
+            order=order,
+            reference_sample=reference_sample,
+            nevents_expected=nevents_expected,
+            plot_xlim=plot_xlim,
+            plot_ylim=plot_ylim,
+            plot_mode="sigma_deviation",
+            **kwargs
+        )
 
-        kwargs = {'vmin': -1, 'vmax': 2}
-        plot_equiprobable_histogram(data_sample=data_sample,
-                                    bin_edges=bin_edges,
-                                    order=order,
-                                    reference_sample=reference_sample,
-                                    nevents_expected=nevents_expected,
-                                    plot_xlim=plot_xlim,
-                                    plot_ylim=plot_ylim,
-                                    plot_mode='sigma_deviation',
-                                    **kwargs)
+        kwargs = {"vmin": -1, "vmax": 2}
+        plot_equiprobable_histogram(
+            data_sample=data_sample,
+            bin_edges=bin_edges,
+            order=order,
+            reference_sample=reference_sample,
+            nevents_expected=nevents_expected,
+            plot_xlim=plot_xlim,
+            plot_ylim=plot_ylim,
+            plot_mode="sigma_deviation",
+            **kwargs
+        )
 
-        kwargs = {'vmin': -3, 'vmax': 3}
-        plot_equiprobable_histogram(data_sample=data_sample,
-                                    bin_edges=bin_edges,
-                                    order=order,
-                                    reference_sample=reference_sample,
-                                    nevents_expected=nevents_expected,
-                                    plot_xlim=plot_xlim,
-                                    plot_ylim=plot_ylim,
-                                    plot_mode='sigma_deviation',
-                                    **kwargs)
+        kwargs = {"vmin": -3, "vmax": 3}
+        plot_equiprobable_histogram(
+            data_sample=data_sample,
+            bin_edges=bin_edges,
+            order=order,
+            reference_sample=reference_sample,
+            nevents_expected=nevents_expected,
+            plot_xlim=plot_xlim,
+            plot_ylim=plot_ylim,
+            plot_mode="sigma_deviation",
+            **kwargs
+        )
 
         order = [1, 0]
-        _, bin_edges = equiprobable_histogram(data_sample,
-                                              reference_sample,
-                                              n_partitions,
-                                              order=order,
-                                              plot=False)
+        _, bin_edges = equiprobable_histogram(
+            data_sample, reference_sample, n_partitions, order=order, plot=False
+        )
 
-        kwargs = {'vmin': -1, 'vmax': 1}
-        plot_equiprobable_histogram(data_sample=data_sample,
-                                    bin_edges=bin_edges,
-                                    order=order,
-                                    nevents_expected=nevents_expected,
-                                    plot_xlim=plot_xlim,
-                                    plot_ylim=plot_ylim,
-                                    plot_mode='num_counts',
-                                    **kwargs)
+        kwargs = {"vmin": -1, "vmax": 1}
+        plot_equiprobable_histogram(
+            data_sample=data_sample,
+            bin_edges=bin_edges,
+            order=order,
+            nevents_expected=nevents_expected,
+            plot_xlim=plot_xlim,
+            plot_ylim=plot_ylim,
+            plot_mode="num_counts",
+            **kwargs
+        )
 
-        plot_equiprobable_histogram(data_sample=data_sample,
-                                    bin_edges=bin_edges,
-                                    order=order,
-                                    nevents_expected=nevents_expected,
-                                    plot_mode='count_density',
-                                    **kwargs)
+        plot_equiprobable_histogram(
+            data_sample=data_sample,
+            bin_edges=bin_edges,
+            order=order,
+            nevents_expected=nevents_expected,
+            plot_mode="count_density",
+            **kwargs
+        )
 
         try:
             error_raised = True
-            plot_equiprobable_histogram(data_sample=data_sample,
-                                        bin_edges=bin_edges,
-                                        order=order,
-                                        nevents_expected=nevents_expected,
-                                        plot_xlim=plot_xlim,
-                                        plot_ylim=plot_ylim,
-                                        plot_mode='count_density',
-                                        **kwargs)
+            plot_equiprobable_histogram(
+                data_sample=data_sample,
+                bin_edges=bin_edges,
+                order=order,
+                nevents_expected=nevents_expected,
+                plot_xlim=plot_xlim,
+                plot_ylim=plot_ylim,
+                plot_mode="count_density",
+                **kwargs
+            )
             error_raised = False
         except Exception:
-            print('Error correctly raised when count_density'
-                  'mode with x or y limit specified')
+            print("Error correctly raised when count_density" " mode with x or y limit specified")
         else:
             if not error_raised:
-                raise RuntimeError('Should raise error when count_density'
-                                   'mode with x or y limit specified')
+                raise RuntimeError(
+                    "Should raise error when count_density" " mode with x or y limit specified"
+                )
 
 
 if __name__ == "__main__":
