@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as sps
 import warnings
+import numbers
 from GOFevaluation.utils import equiprobable_histogram
 from GOFevaluation.utils import apply_irregular_binning
 from GOFevaluation.utils import plot_equiprobable_histogram
@@ -45,10 +46,8 @@ class EvaluatorBaseBinned(EvaluatorBase):
         check_sample_sanity(data_sample)
         super().__init__()
         self.pdf = pdf
-        assert (
-            isinstance(nevents_expected, int)
-            | isinstance(nevents_expected, np.int64)
-            | isinstance(nevents_expected, float)
+        assert isinstance(nevents_expected, numbers.Real) and not isinstance(
+            nevents_expected, bool
         ), f"nevents_expected must be numeric but is of type {type(nevents_expected)}."
         self.binned_reference = self.pdf * nevents_expected
 
