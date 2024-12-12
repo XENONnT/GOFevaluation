@@ -273,7 +273,7 @@ def get_equiprobable_binning(
         # Get binning in second dimension (for each bin in first dimension):
         bin_edges_second = []
         for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
-            mask = (first > low) & (first <= high)
+            mask = (first >= low) & (first < high)
             if weights_flag:
                 bin_edges = _weighted_equi(
                     n_partitions[order[1]], second[mask], reference_sample_weights[mask]
@@ -333,7 +333,7 @@ def apply_irregular_binning(data_sample, bin_edges, order=None, data_sample_weig
         ns = []
         i = 0
         for low, high in zip(bin_edges[0][:-1], bin_edges[0][1:]):
-            mask = (first > low) & (first <= high)
+            mask = (first >= low) & (first < high)
             if weights_flag:
                 n, _ = np.histogram(
                     second[mask], bins=bin_edges[1][i], weights=data_sample_weights[mask.flatten()]
