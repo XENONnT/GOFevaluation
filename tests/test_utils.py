@@ -87,7 +87,7 @@ class TestEqpb(unittest.TestCase):
             )
             self.assertEqual(np.sum(n), n_data)
             for expect in n.reshape(-1):
-                self.assertEqual(expect, n_data / np.product(n_partitions))
+                self.assertEqual(expect, n_data / np.prod(n_partitions))
             self.assertEqual(np.shape(bin_edges[0])[0] - 1, n_partitions[order[0]])
             self.assertEqual(np.shape(bin_edges[1])[0], n_partitions[order[0]])
             self.assertEqual(np.shape(bin_edges[1])[1] - 1, n_partitions[order[1]])

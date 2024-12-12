@@ -90,8 +90,8 @@ class TestBinnedPoissonChi2GOF(unittest.TestCase):
         reference_sample = np.linspace(0, 1, int(10 * n_data))
         reference_sample = np.vstack([reference_sample for i in range(2)]).T
 
-        binned_data = np.full(n_partitions, n_data / np.product(n_partitions))
-        binned_reference = np.full(n_partitions, n_expected / np.product(n_partitions))
+        binned_data = np.full(n_partitions, n_data / np.prod(n_partitions))
+        binned_reference = np.full(n_partitions, n_expected / np.prod(n_partitions))
         gofclass_from_binned = BinnedPoissonChi2GOF.from_binned(binned_data, binned_reference)
         gof_from_binned = gofclass_from_binned.get_gof()
 
@@ -295,8 +295,8 @@ class TestBinnedChi2GOF(unittest.TestCase):
         reference_sample = np.linspace(0, 1, int(10 * n_data))
         reference_sample = np.vstack([reference_sample for i in range(2)]).T
 
-        binned_data = np.full(n_partitions, n_data / np.product(n_partitions))
-        binned_reference = np.full(n_partitions, n_expected / np.product(n_partitions))
+        binned_data = np.full(n_partitions, n_data / np.prod(n_partitions))
+        binned_reference = np.full(n_partitions, n_expected / np.prod(n_partitions))
         gofclass_from_binned = BinnedChi2GOF.from_binned(binned_data, binned_reference)
         gof_from_binned = gofclass_from_binned.get_gof()
 
