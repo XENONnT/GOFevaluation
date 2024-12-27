@@ -12,7 +12,7 @@ with open("HISTORY.md") as file:
 
 setuptools.setup(
     name="GOFevaluation",
-    version="0.1.4",
+    version="0.1.5",
     author="GOFevaluation contributors, the XENON collaboration",
     description="Evaluate the Goodness-of-Fit(GOF) for binned or \
         unbinned data.",
@@ -25,11 +25,10 @@ setuptools.setup(
         "pytest",
         "flake8",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     url="https://github.com/XENONnT/GOFevaluation",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "License :: OSI Approved :: BSD License",

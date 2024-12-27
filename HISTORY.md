@@ -1,3 +1,9 @@
+v0.1.5
+==================
+* Allow all kind of floats for binned inputs by @jjakob03 in https://github.com/XENONnT/GOFevaluation/pull/55
+* Open right side of the bin to follow numpy convention by @dachengx in https://github.com/XENONnT/GOFevaluation/pull/56
+
+
 v0.1.4
 ==================
 * Fix plotting of approximately equiprobable bins by @hammannr in https://github.com/XENONnT/GOFevaluation/pull/51
