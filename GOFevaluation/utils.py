@@ -177,6 +177,15 @@ def _equi(n_bins, reference_sample):
     :rtype: array_like, 1-Dimensional
 
     """
+    if np.unique(reference_sample).size < n_bins:
+        raise ValueError(
+            "Number of unique values in reference_sample "
+            "smaller than n_bins, cannot perform equiprobable binning."
+        )
+    if np.unique(reference_sample).size == n_bins:
+        unique = np.unique(reference_sample)
+        bin_edges = np.hstack([-np.inf, (unique[1:] + unique[:1]) / 2, np.inf])
+        return bin_edges
     bin_edges = np.quantile(reference_sample, np.linspace(0, 1, n_bins + 1)[1:-1])
     bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
     return bin_edges
@@ -195,6 +204,15 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
     :rtype: array_like, 1-Dimensional
 
     """
+    if np.unique(reference_sample).size < n_bins:
+        raise ValueError(
+            "Number of unique values in reference_sample "
+            "smaller than n_bins, cannot perform equiprobable binning."
+        )
+    if np.unique(reference_sample).size == n_bins:
+        unique = np.unique(reference_sample)
+        bin_edges = np.hstack([-np.inf, (unique[1:] + unique[:1]) / 2, np.inf])
+        return bin_edges
     argsort = reference_sample.argsort()
     reference_sample_weights = reference_sample_weights[argsort]
     reference_sample = reference_sample[argsort]
