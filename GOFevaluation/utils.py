@@ -187,7 +187,8 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights, integer=F
     :param integer: make sure the bin edge is between integers if reference_sample is
         array of integer, defaults to False
     :type integer: bool, optional
-    :param left: if perform left-first search, only used when reference_sample is array of integer
+    :param left: if perform left-first search, only used when reference_sample is array
+        of integer
     :type left: bool, optional
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
@@ -219,9 +220,9 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights, integer=F
 
 
 def _weighted_equi_integer(nbins, reference_sample, reference_sample_weights, left=True):
-    """Perform a 1D equiprobable binning for integer reference_sample with weights.
-    The potential binning between integers are traversed.
-    The frist bin edge is selected if the frist bin size is close to 1 / nbins.
+    """Perform a 1D equiprobable binning for integer reference_sample with weights. The
+    potential binning between integers are traversed. The frist bin edge is selected if
+    the frist bin size is close to 1 / nbins.
 
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
@@ -760,7 +761,7 @@ def check_dimensionality_for_eqpb(data_sample, reference_sample, n_partitions, o
                 "-dimensional data."
             )
     else:
-        raise TypeError("reference_sample has unsupported shape " f"{reference_sample.shape}.")
+        raise TypeError("reference_sample has unsupported shape "  f"{reference_sample.shape}.")
 
 
 def _get_cmap(cmap_str, alpha=1):

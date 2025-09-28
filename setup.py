@@ -14,8 +14,10 @@ setuptools.setup(
     name="GOFevaluation",
     version="0.1.5",
     author="GOFevaluation contributors, the XENON collaboration",
-    description="Evaluate the Goodness-of-Fit(GOF) for binned or \
-        unbinned data.",
+    description=\
+                "Evaluate the Goodness-of-Fit(GOF) for binned or \
+        unbinned data."\
+                       ,
     long_description=long_description + "\n\n" + history,
     long_description_content_type="text/markdown",
     setup_requires=["pytest-runner"],

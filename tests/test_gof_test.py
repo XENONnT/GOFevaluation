@@ -16,7 +16,6 @@ class TestGOFTest(unittest.TestCase):
     def test_gof(self):
         """Check if gof values of wrapper object is the same as for individual
         calculation."""
-
         # Generate data and reference (as sample and binned) to use
         # to calculate all GOFs at once
         model = sps.uniform
