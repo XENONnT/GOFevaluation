@@ -187,7 +187,8 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights, integer=F
     :param integer: make sure the bin edge is between integers if reference_sample is
         array of integer, defaults to False
     :type integer: bool, optional
-    :param left: if perform left-first search, only used when reference_sample is array of integer
+    :param left: if perform left-first search, only used when reference_sample is array
+        of integer
     :type left: bool, optional
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
@@ -219,9 +220,9 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights, integer=F
 
 
 def _weighted_equi_integer(nbins, reference_sample, reference_sample_weights, left=True):
-    """Perform a 1D equiprobable binning for integer reference_sample with weights.
-    The potential binning between integers are traversed.
-    The frist bin edge is selected if the frist bin size is close to 1 / nbins.
+    """Perform a 1D equiprobable binning for integer reference_sample with weights. The
+    potential binning between integers are traversed. The frist bin edge is selected if
+    the frist bin size is close to 1 / nbins.
 
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
@@ -541,7 +542,7 @@ def plot_equiprobable_histogram(
         xlim, ylim = get_plot_limits(data_sample)
     if plot_mode == "count_density":
         if (plot_xlim is not None) or (plot_ylim is not None):
-            raise RuntimeError("Manually set x or y limit in" "count_density mode is misleading")
+            raise RuntimeError("Manually set x or y limit in"  "count_density mode is misleading")
     if plot_xlim is not None:
         xlim = plot_xlim
     if plot_ylim is not None:
@@ -576,9 +577,9 @@ def plot_equiprobable_histogram(
         cmap_str = kwargs.pop("cmap", "RdBu_r")
         cmap = _get_cmap(cmap_str, alpha=alpha)
         if nevents_expected is None:
-            raise ValueError("nevents_expected cannot " "be None while plot_mode='sigma_deviation'")
+            raise ValueError("nevents_expected cannot "  "be None while plot_mode='sigma_deviation'")
         if reference_sample is None:
-            raise ValueError("reference_sample cannot " "be None while plot_mode='sigma_deviation'")
+            raise ValueError("reference_sample cannot "  "be None while plot_mode='sigma_deviation'")
         ns_expected = nevents_expected * pdf
         ns = (ns - ns_expected) / np.sqrt(ns_expected)
         max_deviation = max(np.abs(ns.ravel()))
@@ -738,15 +739,15 @@ def check_for_ties(sample, dim):
 def check_dimensionality_for_eqpb(data_sample, reference_sample, n_partitions, order):
     if len(reference_sample.shape) == 1:
         assert len(data_sample.shape) == 1, (
-            "Shape of data_sample is" " incompatible with shape of reference_sample"
+            "Shape of data_sample is"  " incompatible with shape of reference_sample"
         )
-        assert isinstance(n_partitions, int), "n_partitions must be an" " integer for 1-dim. data."
+        assert isinstance(n_partitions, int), "n_partitions must be an"  " integer for 1-dim. data."
         assert order is None, (
-            "providing a not-None value for order is" " ambiguous for 1-dim. data."
+            "providing a not-None value for order is"  " ambiguous for 1-dim. data."
         )
     elif len(reference_sample.shape) == 2:
         assert len(data_sample.shape) == 2, (
-            "Shape of data_sample is" " incompatible with shape of reference_sample."
+            "Shape of data_sample is"  " incompatible with shape of reference_sample."
         )
         # Check dimensionality is two
         assert data_sample.shape[1] == reference_sample.shape[1] == len(n_partitions), (
@@ -760,7 +761,7 @@ def check_dimensionality_for_eqpb(data_sample, reference_sample, n_partitions, o
                 "-dimensional data."
             )
     else:
-        raise TypeError("reference_sample has unsupported shape " f"{reference_sample.shape}.")
+        raise TypeError("reference_sample has unsupported shape "  f"{reference_sample.shape}.")
 
 
 def _get_cmap(cmap_str, alpha=1):
