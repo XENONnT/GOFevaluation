@@ -220,9 +220,10 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights, integer=F
 
 
 def _weighted_equi_integer(nbins, reference_sample, reference_sample_weights, left=True):
-    """Perform a 1D equiprobable binning for integer reference_sample with weights. The
-    potential binning between integers are traversed. The frist bin edge is selected if
-    the frist bin size is close to 1 / nbins.
+    """Perform a 1D equiprobable binning for integer reference_sample with weights.
+
+    The potential binning between integers are traversed. The frist bin edge is
+    selected if the frist bin size is close to 1 / nbins.
 
     :param n_bins: number of partitions in this dimension
     :type n_bins: int
