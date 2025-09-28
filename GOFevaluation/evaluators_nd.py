@@ -246,8 +246,9 @@ class PointToPointGOF(EvaluatorBaseSample):
         return d_min
 
     def weighting_function(self, d, d_min):
-        """Weigh distances d according to log profile. Pole at d = 0 is omitted by
-        introducing d_min that replaces the distance for d < d_min.
+        """Weigh distances d according to log profile.
+
+        Pole at d = 0 is omitted by introducing d_min that replaces the distance for d < d_min.
 
         :param d_min: Replaces the distance for distance d < d_min.
             If None, d_min is estimated by :func:`get_dmin`

@@ -762,7 +762,7 @@ def check_dimensionality_for_eqpb(data_sample, reference_sample, n_partitions, o
                 "-dimensional data."
             )
     else:
-        raise TypeError("reference_sample has unsupported shape "  f"{reference_sample.shape}.")
+        raise TypeError(f"reference_sample has unsupported shape {reference_sample.shape}.")
 
 
 def _get_cmap(cmap_str, alpha=1):

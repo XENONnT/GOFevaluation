@@ -114,11 +114,11 @@ class TestPlotEqualProbable(unittest.TestCase):
             )
             error_raised = False
         except Exception:
-            print("Error correctly raised when count_density"  " mode with x or y limit specified")
+            print("Error correctly raised when count_density mode with x or y limit specified")
         else:
             if not error_raised:
                 raise RuntimeError(
-                    "Should raise error when count_density"  " mode with x or y limit specified"
+                    "Should raise error when count_density mode with x or y limit specified"
                 )
 
 
