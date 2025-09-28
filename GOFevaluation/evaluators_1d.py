@@ -10,7 +10,7 @@ from GOFevaluation.evaluator_base import EvaluatorBaseSample
 class ADTestTwoSampleGOF(EvaluatorBaseSample):
     """Goodness of Fit based on the two-sample Anderson-Darling Test.
 
-    It test if two samples come from the same pdf. Similar to `KSTestTwoSampleGOF` but
+    It tests if two samples come from the same pdf. Similar to `KSTestTwoSampleGOF` but
     more weight is given on tail differences due to a different weighting function. The
     test is described in
     https://www.doi.org/10.1214/aoms/1177706788
