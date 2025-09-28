@@ -12,9 +12,8 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
 
     The test is described in https://www.doi.org/10.1214/aoms/1177706788 and
     https://www.doi.org/10.2307/2288805.
-    It test if two samples come from the same pdf. Similar to `KSTestTwoSampleGOF`
-    but more weight is given on tail differences due to a different weighting
-    function.
+     It test if two samples come from the same pdf. Similar to `KSTestTwoSampleGOF` but
+    more weight is given on tail differences due to a different weighting function.
 
     :param data_sample: sample of unbinned data
     :type data_sample: array_like, 1-Dimensional
