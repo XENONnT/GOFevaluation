@@ -14,7 +14,7 @@ class ADTestTwoSampleGOF(EvaluatorBaseSample):
     more weight is given on tail differences due to a different weighting function. The
     test is described in
     https://www.doi.org/10.1214/aoms/1177706788
-    and https://www.doi.org/10.2307/2288805.
+     and https://www.doi.org/10.2307/2288805.
 
     :param data_sample: sample of unbinned data
     :type data_sample: array_like, 1-Dimensional
