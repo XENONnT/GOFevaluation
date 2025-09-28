@@ -332,6 +332,8 @@ def get_equiprobable_binning(
     elif dim == 2:
         if order is None:
             order = [0, 1]
+        if integer is None:
+            integer = [False, False]
         first = reference_sample.T[order[0]]
         second = reference_sample.T[order[1]]
         bin_edges_first = _weighted_equi(
@@ -541,7 +543,7 @@ def plot_equiprobable_histogram(
         xlim, ylim = get_plot_limits(data_sample)
     if plot_mode == "count_density":
         if (plot_xlim is not None) or (plot_ylim is not None):
-            raise RuntimeError("Manually set x or y limit in" "count_density mode is misleading")
+            raise RuntimeError("Manually set x or y limit in count_density mode is misleading")
     if plot_xlim is not None:
         xlim = plot_xlim
     if plot_ylim is not None:
@@ -576,9 +578,9 @@ def plot_equiprobable_histogram(
         cmap_str = kwargs.pop("cmap", "RdBu_r")
         cmap = _get_cmap(cmap_str, alpha=alpha)
         if nevents_expected is None:
-            raise ValueError("nevents_expected cannot " "be None while plot_mode='sigma_deviation'")
+            raise ValueError("nevents_expected cannot be None while plot_mode='sigma_deviation'")
         if reference_sample is None:
-            raise ValueError("reference_sample cannot " "be None while plot_mode='sigma_deviation'")
+            raise ValueError("reference_sample cannot be None while plot_mode='sigma_deviation'")
         ns_expected = nevents_expected * pdf
         ns = (ns - ns_expected) / np.sqrt(ns_expected)
         max_deviation = max(np.abs(ns.ravel()))
@@ -737,17 +739,15 @@ def check_for_ties(sample, dim):
 
 def check_dimensionality_for_eqpb(data_sample, reference_sample, n_partitions, order):
     if len(reference_sample.shape) == 1:
-        assert len(data_sample.shape) == 1, (
-            "Shape of data_sample is" " incompatible with shape of reference_sample"
-        )
-        assert isinstance(n_partitions, int), "n_partitions must be an" " integer for 1-dim. data."
-        assert order is None, (
-            "providing a not-None value for order is" " ambiguous for 1-dim. data."
-        )
+        assert (
+            len(data_sample.shape) == 1
+        ), "Shape of data_sample is incompatible with shape of reference_sample"
+        assert isinstance(n_partitions, int), "n_partitions must be an integer for 1-dim. data."
+        assert order is None, "providing a not-None value for order is ambiguous for 1-dim. data."
     elif len(reference_sample.shape) == 2:
-        assert len(data_sample.shape) == 2, (
-            "Shape of data_sample is" " incompatible with shape of reference_sample."
-        )
+        assert (
+            len(data_sample.shape) == 2
+        ), "Shape of data_sample is incompatible with shape of reference_sample."
         # Check dimensionality is two
         assert data_sample.shape[1] == reference_sample.shape[1] == len(n_partitions), (
             "Shape of data_sample is incompatible with shape of"
