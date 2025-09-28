@@ -394,10 +394,10 @@ def apply_irregular_binning(data_sample, bin_edges, order=None, data_sample_weig
     :rtype: array
 
     """
-    weights_flag = 0
+    weights_flag = 1
     if data_sample_weights is None:
         data_sample_weights = np.ones(len(data_sample))
-        weights_flag = 1
+        weights_flag = 0
     _check_weight_sanity(data_sample, data_sample_weights)
     if len(data_sample.shape) == 1:
         ns, _ = np.histogram(data_sample, bins=bin_edges, weights=data_sample_weights)
