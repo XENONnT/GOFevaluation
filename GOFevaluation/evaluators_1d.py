@@ -10,11 +10,11 @@ from GOFevaluation.evaluator_base import EvaluatorBaseSample
 class ADTestTwoSampleGOF(EvaluatorBaseSample):
     """Goodness of Fit based on the two-sample Anderson-Darling Test.
 
-    The test is described in https://www.doi.org/10.1214/aoms/1177706788
-    and https://www.doi.org/10.2307/2288805. It test if two samples
-    come from the same pdf. Similar to :class:`KSTestTwoSampleGOF` but more
-    weight is given on tail differences due to a different weighting function.
-
+    It tests if two samples come from the same pdf. Similar to `KSTestTwoSampleGOF` but
+    more weight is given on tail differences due to a different weighting function. The
+    test is described in
+    https://www.doi.org/10.1214/aoms/1177706788
+     and https://www.doi.org/10.2307/2288805.
 
     :param data_sample: sample of unbinned data
     :type data_sample: array_like, 1-Dimensional
@@ -87,8 +87,8 @@ class KSTestGOF(EvaluatorBasePdf):
     def get_gof(self):
         """GOF is calculated using current class attributes.
 
-        The CDF is interpolated from pdf and binning. The gof is then
-        calculated by `sps.kstest`
+        The CDF is interpolated from pdf and binning. The gof is then calculated by
+        `sps.kstest`
 
         :return: Goodness of Fit
         :rtype: float

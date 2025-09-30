@@ -14,6 +14,8 @@ def equiprobable_histogram(
     plot=False,
     reference_sample_weights=None,
     data_sample_weights=None,
+    integer=None,
+    left=True,
     **kwargs,
 ):
     """Define equiprobable histogram based on the reference sample and bin the data
@@ -36,6 +38,11 @@ def equiprobable_histogram(
     :type reference_sample_weights: array_like, 1-Dimensional
     :param data_sample_weights: weights of data_sample
     :type data_sample_weights: array_like, 1-Dimensional
+    :param integer: make sure the bin edge is between integers if reference_sample is
+        array of integer, defaults to None
+    :type integer: bool, optional
+    :param left: if perform left-first search, only used when reference_sample is array of integer
+    :type left: bool, optional
     :return: n, bin_edges
         n: number of counts of data sample in each bin
         bin_edges: For order [0, 1]([1, 0])
@@ -53,6 +60,8 @@ def equiprobable_histogram(
         n_partitions=n_partitions,
         order=order,
         reference_sample_weights=reference_sample_weights,
+        integer=integer,
+        left=left,
     )
     n = apply_irregular_binning(
         data_sample=data_sample,
@@ -166,32 +175,7 @@ def _get_count_density(ns, be_first, be_second, data_sample):
     return ns
 
 
-def _equi(n_bins, reference_sample):
-    """Perform a 1D equiprobable binning for reference_sample.
-
-    :param n_bins: number of partitions in this dimension
-    :type n_bins: int
-    :param reference_sample: sample of unbinned reference
-    :type reference_sample: array_like, 1-Dimensional
-    :return: Returns bin_edges.
-    :rtype: array_like, 1-Dimensional
-
-    """
-    if np.unique(reference_sample).size < n_bins:
-        raise ValueError(
-            "Number of unique values in reference_sample "
-            "smaller than n_bins, cannot perform equiprobable binning."
-        )
-    if np.unique(reference_sample).size == n_bins:
-        unique = np.unique(reference_sample)
-        bin_edges = np.hstack([-np.inf, (unique[1:] + unique[:1]) / 2, np.inf])
-        return bin_edges
-    bin_edges = np.quantile(reference_sample, np.linspace(0, 1, n_bins + 1)[1:-1])
-    bin_edges = np.hstack([-np.inf, bin_edges, np.inf])
-    return bin_edges
-
-
-def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
+def _weighted_equi(n_bins, reference_sample, reference_sample_weights, integer=False, left=True):
     """Perform a 1D equiprobable binning for reference_sample with weights.
 
     :param n_bins: number of partitions in this dimension
@@ -200,6 +184,12 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
     :type reference_sample: array_like, 1-Dimensional
     :param reference_sample_weights: weights of reference_sample
     :type reference_sample_weights: array_like, 1-Dimensional
+    :param integer: make sure the bin edge is between integers if reference_sample is
+        array of integer, defaults to False
+    :type integer: bool, optional
+    :param left: if perform left-first search, only used when reference_sample is array
+        of integer
+    :type left: bool, optional
     :return: Returns bin_edges.
     :rtype: array_like, 1-Dimensional
 
@@ -213,6 +203,10 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
         unique = np.unique(reference_sample)
         bin_edges = np.hstack([-np.inf, (unique[1:] + unique[:1]) / 2, np.inf])
         return bin_edges
+
+    if integer:
+        return _weighted_equi_integer(n_bins, reference_sample, reference_sample_weights, left=left)
+
     argsort = reference_sample.argsort()
     reference_sample_weights = reference_sample_weights[argsort]
     reference_sample = reference_sample[argsort]
@@ -225,8 +219,67 @@ def _weighted_equi(n_bins, reference_sample, reference_sample_weights):
     return bin_edges
 
 
+def _weighted_equi_integer(nbins, reference_sample, reference_sample_weights, left=True):
+    """Perform a 1D equiprobable binning for integer reference_sample with weights.
+
+    The potential binning between integers are traversed. The frist bin edge is
+    selected if the frist bin size is close to 1 / nbins.
+
+    :param n_bins: number of partitions in this dimension
+    :type n_bins: int
+    :param reference_sample: sample of unbinned reference
+    :type reference_sample: array_like, 1-Dimensional
+    :param reference_sample_weights: weights of reference_sample
+    :type reference_sample_weights: array_like, 1-Dimensional
+    :param left: if perform left-first search
+    :type left: bool, optional
+    :return: Returns bin_edges.
+    :rtype: array_like, 1-Dimensional
+
+    """
+    if not left:
+        bin_edges = _weighted_equi_integer(nbins, -reference_sample, reference_sample_weights)
+        bin_edges = -bin_edges[::-1]
+        return bin_edges
+
+    normalization = reference_sample_weights.sum()
+    potential_bins = np.unique(reference_sample)[:-1] + 0.5
+
+    if len(potential_bins) == 0:
+        return np.array([-np.inf, np.inf])
+
+    def get_fraction(i):
+        m = reference_sample < potential_bins[i]
+        f = reference_sample_weights[m].sum()
+        f /= normalization
+        return f
+
+    fraction = 1 / nbins
+
+    for i in range(len(potential_bins)):
+        if get_fraction(i) > fraction:
+            break
+        elif i < len(potential_bins) - 1 and get_fraction(i + 1) > fraction:
+            a = abs(get_fraction(i) - fraction)
+            b = abs(get_fraction(i + 1) - fraction)
+            if a < b:
+                break
+    if nbins > 2:
+        m = reference_sample > potential_bins[i]
+        bin_edges = _weighted_equi_integer(
+            nbins - 1, reference_sample[m], reference_sample_weights[m]
+        )
+        return np.hstack([np.array([-np.inf, potential_bins[i]]), bin_edges[1:]])
+    return np.array([-np.inf, potential_bins[i], np.inf])
+
+
 def get_equiprobable_binning(
-    reference_sample, n_partitions, order=None, reference_sample_weights=None
+    reference_sample,
+    n_partitions,
+    order=None,
+    reference_sample_weights=None,
+    integer=None,
+    left=True,
 ):
     """Define an equiprobable binning for the reference sample.
 
@@ -246,6 +299,11 @@ def get_equiprobable_binning(
     :type order: list, optional
     :param reference_sample_weights: weights of reference_sample
     :type reference_sample_weights: array_like, 1-Dimensional
+    :param integer: make sure the bin edge is between integers if reference_sample is
+        array of integer, defaults to None
+    :type integer: bool, optional
+    :param left: if perform left-first search, only used when reference_sample is array of integer
+    :type left: bool, optional
     :return: Returns bin_edges.
         1D: list of bin edges
         2D: For order [0, 1]([1, 0]) these are the bin edges in x(y) and y(x)
@@ -267,37 +325,38 @@ def get_equiprobable_binning(
     check_for_ties(reference_sample, dim=dim)
 
     if reference_sample_weights is None:
-        weights_flag = 0
-    else:
-        _check_weight_sanity(reference_sample, reference_sample_weights)
-        weights_flag = 1
+        reference_sample_weights = np.ones(len(reference_sample))
+    _check_weight_sanity(reference_sample, reference_sample_weights)
     if dim == 1:
-        if weights_flag:
-            bin_edges = _weighted_equi(n_partitions, reference_sample, reference_sample_weights)
-        else:
-            bin_edges = _equi(n_partitions, reference_sample)
+        bin_edges = _weighted_equi(
+            n_partitions, reference_sample, reference_sample_weights, integer=integer, left=left
+        )
     elif dim == 2:
         if order is None:
             order = [0, 1]
+        if integer is None:
+            integer = [False, False]
         first = reference_sample.T[order[0]]
         second = reference_sample.T[order[1]]
-        if weights_flag:
-            bin_edges_first = _weighted_equi(
-                n_partitions[order[0]], first, reference_sample_weights
-            )
-        else:
-            bin_edges_first = _equi(n_partitions[order[0]], first)
+        bin_edges_first = _weighted_equi(
+            n_partitions[order[0]],
+            first,
+            reference_sample_weights,
+            integer=integer[order[0]],
+            left=left,
+        )
 
         # Get binning in second dimension (for each bin in first dimension):
         bin_edges_second = []
         for low, high in zip(bin_edges_first[:-1], bin_edges_first[1:]):
             mask = (first >= low) & (first < high)
-            if weights_flag:
-                bin_edges = _weighted_equi(
-                    n_partitions[order[1]], second[mask], reference_sample_weights[mask]
-                )
-            else:
-                bin_edges = _equi(n_partitions[order[1]], second[mask])
+            bin_edges = _weighted_equi(
+                n_partitions[order[1]],
+                second[mask],
+                reference_sample_weights[mask],
+                integer=integer[order[1]],
+                left=left,
+            )
             bin_edges_second.append(bin_edges)
         bin_edges_second = np.array(bin_edges_second)
         bin_edges = [bin_edges_first, bin_edges_second]
@@ -335,11 +394,11 @@ def apply_irregular_binning(data_sample, bin_edges, order=None, data_sample_weig
     :rtype: array
 
     """
+    weights_flag = 1
     if data_sample_weights is None:
+        data_sample_weights = np.ones(len(data_sample))
         weights_flag = 0
-    else:
-        _check_weight_sanity(data_sample, data_sample_weights)
-        weights_flag = 1
+    _check_weight_sanity(data_sample, data_sample_weights)
     if len(data_sample.shape) == 1:
         ns, _ = np.histogram(data_sample, bins=bin_edges, weights=data_sample_weights)
     else:
@@ -352,12 +411,9 @@ def apply_irregular_binning(data_sample, bin_edges, order=None, data_sample_weig
         i = 0
         for low, high in zip(bin_edges[0][:-1], bin_edges[0][1:]):
             mask = (first >= low) & (first < high)
-            if weights_flag:
-                n, _ = np.histogram(
-                    second[mask], bins=bin_edges[1][i], weights=data_sample_weights[mask.flatten()]
-                )
-            else:
-                n, _ = np.histogram(second[mask], bins=bin_edges[1][i])
+            n, _ = np.histogram(
+                second[mask], bins=bin_edges[1][i], weights=data_sample_weights[mask.flatten()]
+            )
             ns.append(n)
             i += 1
     if weights_flag:
@@ -489,7 +545,7 @@ def plot_equiprobable_histogram(
         xlim, ylim = get_plot_limits(data_sample)
     if plot_mode == "count_density":
         if (plot_xlim is not None) or (plot_ylim is not None):
-            raise RuntimeError("Manually set x or y limit in" "count_density mode is misleading")
+            raise RuntimeError("Manually set x or y limit in count_density mode is misleading")
     if plot_xlim is not None:
         xlim = plot_xlim
     if plot_ylim is not None:
@@ -524,9 +580,9 @@ def plot_equiprobable_histogram(
         cmap_str = kwargs.pop("cmap", "RdBu_r")
         cmap = _get_cmap(cmap_str, alpha=alpha)
         if nevents_expected is None:
-            raise ValueError("nevents_expected cannot " "be None while plot_mode='sigma_deviation'")
+            raise ValueError("nevents_expected cannot be None while plot_mode='sigma_deviation'")
         if reference_sample is None:
-            raise ValueError("reference_sample cannot " "be None while plot_mode='sigma_deviation'")
+            raise ValueError("reference_sample cannot be None while plot_mode='sigma_deviation'")
         ns_expected = nevents_expected * pdf
         ns = (ns - ns_expected) / np.sqrt(ns_expected)
         max_deviation = max(np.abs(ns.ravel()))
@@ -685,17 +741,15 @@ def check_for_ties(sample, dim):
 
 def check_dimensionality_for_eqpb(data_sample, reference_sample, n_partitions, order):
     if len(reference_sample.shape) == 1:
-        assert len(data_sample.shape) == 1, (
-            "Shape of data_sample is" " incompatible with shape of reference_sample"
-        )
-        assert isinstance(n_partitions, int), "n_partitions must be an" " integer for 1-dim. data."
-        assert order is None, (
-            "providing a not-None value for order is" " ambiguous for 1-dim. data."
-        )
+        assert (
+            len(data_sample.shape) == 1
+        ), "Shape of data_sample is incompatible with shape of reference_sample"
+        assert isinstance(n_partitions, int), "n_partitions must be an integer for 1-dim. data."
+        assert order is None, "providing a not-None value for order is ambiguous for 1-dim. data."
     elif len(reference_sample.shape) == 2:
-        assert len(data_sample.shape) == 2, (
-            "Shape of data_sample is" " incompatible with shape of reference_sample."
-        )
+        assert (
+            len(data_sample.shape) == 2
+        ), "Shape of data_sample is incompatible with shape of reference_sample."
         # Check dimensionality is two
         assert data_sample.shape[1] == reference_sample.shape[1] == len(n_partitions), (
             "Shape of data_sample is incompatible with shape of"
@@ -708,7 +762,7 @@ def check_dimensionality_for_eqpb(data_sample, reference_sample, n_partitions, o
                 "-dimensional data."
             )
     else:
-        raise TypeError("reference_sample has unsupported shape " f"{reference_sample.shape}.")
+        raise TypeError(f"reference_sample has unsupported shape {reference_sample.shape}.")
 
 
 def _get_cmap(cmap_str, alpha=1):

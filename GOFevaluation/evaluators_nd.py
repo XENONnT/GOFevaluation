@@ -246,8 +246,9 @@ class PointToPointGOF(EvaluatorBaseSample):
         return d_min
 
     def weighting_function(self, d, d_min):
-        """Weigh distances d according to log profile. Pole at d = 0 is omitted by
-        introducing d_min that replaces the distance for d < d_min.
+        """Weigh distances d according to log profile.
+
+        Pole at d = 0 is omitted by introducing d_min that replaces the distance for d < d_min.
 
         :param d_min: Replaces the distance for distance d < d_min.
             If None, d_min is estimated by :func:`get_dmin`
@@ -270,7 +271,6 @@ class PointToPointGOF(EvaluatorBaseSample):
     def calculate_gof(self, data_sample, reference_sample, d_min=None):
         """Internal function to calculate gof for :func:`get_gof` and
         :func:`get_pvalue`"""
-
         nevents_data = np.shape(data_sample)[0]
         nevents_ref = np.shape(reference_sample)[0]
 
@@ -307,7 +307,6 @@ class PointToPointGOF(EvaluatorBaseSample):
             the region of highest density
 
         """
-
         gof = self.calculate_gof(self.data_sample, self.reference_sample, d_min=d_min)
         self.gof = gof
         return gof
@@ -315,20 +314,18 @@ class PointToPointGOF(EvaluatorBaseSample):
     def get_pvalue(self, n_perm=1000, d_min=None):
         """The approximate p-value is calculated.
 
-        Computes the p-value by means of re-sampling data sample
-        and reference sample. For each re-sampling, the gof is calculated.
-        The p-value can then be obtained from the distribution of these
-        fake-gofs.
+        Computes the p-value by means of re-sampling data sample and reference sample.
+        For each re-sampling, the gof is calculated. The p-value can then be obtained
+        from the distribution of these fake-gofs.
 
-        Note that this is only an approximate method, since the model is not
-        refitted to the re-sampled data. Especially with low statistics and
-        many fit parameters, this can introduce a bias towards larger p-values.
+        Note that this is only an approximate method, since the model is not refitted
+        to the re-sampled data. Especially with low statistics and many fit parameters,
+        this can introduce a bias towards larger p-values.
 
         :param n_perm: Number of fake-gofs calculated, defaults to 1000
         :type n_perm: int, optional
-        :param d_min: Replaces the distance for distance d < d_min.
-            If None, d_min is estimated by :func:`get_dmin`,
-            defaults to None
+        :param d_min: Replaces the distance for distance d < d_min. If None, d_min is
+            estimated by :func:`get_dmin`, defaults to None
         :type d_min: float, optional
         :return: p-value
         :rtype: float

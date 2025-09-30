@@ -15,7 +15,6 @@ from GOFevaluation.evaluators_nd import BinnedChi2GOF
 class TestKSTestGOF(unittest.TestCase):
     def test_value(self):
         """Compare result of method to manually calculated gof."""
-
         # Generate Test Data
         n_samples = 100
         # pseudo random data with fixed seed for reproducibility
@@ -51,7 +50,6 @@ class TestKSTestTwoSampleGOF(unittest.TestCase):
 
     def test_value(self):
         """Compare result of method to manually calculated gof."""
-
         # Generate Test Data (simple case of n_sample=n_reference)
         n_samples = 100
         n_reference = 300
