@@ -12,7 +12,7 @@ with open("HISTORY.md") as file:
 
 setuptools.setup(
     name="GOFevaluation",
-    version="0.1.5",
+    version="0.1.6",
     author="GOFevaluation contributors, the XENON collaboration",
     description="Evaluate the Goodness-of-Fit(GOF) for binned or unbinned data.",
     long_description=long_description + "\n\n" + history,
