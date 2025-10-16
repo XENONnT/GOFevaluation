@@ -1,3 +1,9 @@
+v0.1.6
+==================
+* Imitate equal probability binning for discretized values by @dachengx in https://github.com/XENONnT/GOFevaluation/pull/58
+* Equal probability binning on integer sample by @dachengx in https://github.com/XENONnT/GOFevaluation/pull/59
+
+
 v0.1.5
 ==================
 * Allow all kind of floats for binned inputs by @jjakob03 in https://github.com/XENONnT/GOFevaluation/pull/55
