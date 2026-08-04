@@ -694,11 +694,7 @@ def plot_equiprobable_histogram(
             extend = "max"
 
         fig.colorbar(
-            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
-            ax=ax,
-            label=label,
-            extend=extend,
-            cax=cax
+            mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, label=label, extend=extend, cax=cax
         )
     return
 
