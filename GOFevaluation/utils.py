@@ -498,6 +498,7 @@ def plot_equiprobable_histogram(
     plot_ylim=None,
     plot_mode="sigma_deviation",
     draw_colorbar=True,
+    cax=None,
     **kwargs,
 ):
     """Plot 1d/2d histogram of data sample binned according to the passed irregular
@@ -533,6 +534,8 @@ def plot_equiprobable_histogram(
     :param plot_ylim: ylim to use for the plot. If None is passed, take min and
         max values of the data sample. Defaults to None.
     :type plot_ylim: tuple, optional
+    :param cax: Axis the color bar should be drawn into.
+    :type cax: matplotlib axis, optional
     :raises ValueError: when an unknown order is passed.
 
     """
@@ -691,10 +694,7 @@ def plot_equiprobable_histogram(
             extend = "max"
 
         fig.colorbar(
-            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
-            ax=ax,
-            label=label,
-            extend=extend,
+            mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, label=label, extend=extend, cax=cax
         )
     return
 
