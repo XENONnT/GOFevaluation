@@ -32,7 +32,7 @@ jobs:
         pip install -r requirements.txt
     - name: Install GOFevaluation
       run: |
-        pip install .
+        pip install -e .
     - name: Test with pytest
       run: |
         pytest
@@ -42,5 +42,5 @@ jobs:
         NUMBA_DISABLE_JIT: 1
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        coverage run --source=GOFevaluation setup.py test -v
+        coverage run --source=GOFevaluation -m pytest -v
         coveralls --service=github
